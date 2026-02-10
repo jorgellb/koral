@@ -65,7 +65,7 @@ export async function POST({ request }: any) {
         const clientId = import.meta.env.GMAIL_CLIENT_ID || '';
         const clientSecret = import.meta.env.GMAIL_CLIENT_SECRET || '';
         const refreshToken = import.meta.env.GMAIL_REFRESH_TOKEN || '';
-        const recipientEmail = import.meta.env.RECIPIENT_EMAIL || 'koraldentalclinic@gmail.com';
+        const recipientEmail = import.meta.env.RECIPIENT_EMAIL || 'clinicakoralweb@gmail.com';
 
         if (!clientId || !clientSecret || !refreshToken) {
             throw new Error('Missing GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET or GMAIL_REFRESH_TOKEN in environment variables (Cloudflare Secrets)');
