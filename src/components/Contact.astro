@@ -186,15 +186,17 @@ const pricingHref = lang === 'es' ? '/precio-y-financiacion/' : `/${lang}/pricin
         }
         (form as HTMLFormElement).reset();
       } else {
-        throw new Error();
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorMsg);
       }
     } catch (err) {
+      console.error('Form error:', err);
       if (status) {
-        status.textContent = errorMsg;
+        status.textContent = err.message || errorMsg;
         status.className = 'p-4 rounded-xl text-center font-bold block bg-red-50 text-red-600 opacity-100';
       }
       if (window.showToast) {
-        window.showToast(errorMsg, 'error');
+        window.showToast(err.message || errorMsg, 'error');
       }
     }
     

@@ -1,17 +1,24 @@
+import type { APIContext } from 'astro';
+
 export const prerender = false;
 
-export async function POST({ request }: any) {
+export async function POST(context: APIContext) {
+    const { request, locals } = context;
+
     try {
         const data = await request.json();
         const { name, email, phone, reason, time, message } = data;
 
-        const resendApiKey = import.meta.env.RESEND_API_KEY || 're_UNWbDc3p_MepVsWdzq8fSRFHUQkWoNrH5';
-        const rawRecipients = import.meta.env.RECIPIENT_EMAILS || 'koraldentalclinic@gmail.com,clinicakoralweb@gmail.com';
+        // In Cloudflare, secrets are in locals.runtime.env
+        const env = (locals as any).runtime?.env || (globalThis as any).process?.env || {};
+
+        const resendApiKey = env.RESEND_API_KEY || import.meta.env.RESEND_API_KEY || 're_UNWbDc3p_MepVsWdzq8fSRFHUQkWoNrH5';
+        const rawRecipients = env.RECIPIENT_EMAILS || import.meta.env.RECIPIENT_EMAILS || 'koraldentalclinic@gmail.com,clinicakoralweb@gmail.com';
         const recipients = rawRecipients.split(',').map((r: string) => r.trim());
 
         if (!resendApiKey) {
             return new Response(JSON.stringify({
-                error: 'Falta la API Key de Resend (RESEND_API_KEY)'
+                error: 'Falta la API Key de Resend'
             }), { status: 500 });
         }
 
@@ -20,7 +27,6 @@ export async function POST({ request }: any) {
             ? `Nueva Cita: ${name}`
             : `Nuevo Contacto: ${name}`;
 
-        // Create HTML content with premium styling
         const htmlContent = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #e2e8f0; border-radius: 24px; color: #0f172a; line-height: 1.6;">
                 <h2 style="color: #2563eb; margin-bottom: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 20px;">
@@ -45,7 +51,6 @@ export async function POST({ request }: any) {
             </div>
         `;
 
-        // Send via Resend API using fetch (Cloudflare compatible)
         const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -69,13 +74,15 @@ export async function POST({ request }: any) {
                 headers: { 'Content-Type': 'application/json' }
             });
         } else {
-            throw new Error(JSON.stringify(result));
+            return new Response(JSON.stringify({ error: result.message || 'Error de la API de Resend' }), {
+                status: response.status,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
     } catch (error: any) {
-        console.error('Resend API Error:', error);
         return new Response(JSON.stringify({
-            error: 'Error al enviar el email'
+            error: 'Error interno del servidor'
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
