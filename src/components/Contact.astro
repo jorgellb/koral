@@ -28,7 +28,7 @@ const errorMsg = t('form.status.error');
             <span class="inline-block px-4 py-1.5 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] mb-8 w-fit border border-white/10">
               {t('appointment.facilities')}
             </span>
-            <h2 class="text-4xl md:text-5xl font-black mb-8 leading-[1.1] tracking-tight italic uppercase">
+            <h2 class="text-4xl md:text-5xl font-black mb-8 leading-[1.1] tracking-tight italic uppercase text-white">
               {t('appointment.title.main')}
             </h2>
             <p class="text-lg text-blue-100/80 mb-12 leading-relaxed">
@@ -86,10 +86,20 @@ const errorMsg = t('form.status.error');
                     <label class="text-[10px] font-black uppercase tracking-widest text-blue-200/40 ml-1">{t('form.reason')}</label>
                     <select name="reason" class="w-full px-6 py-4 bg-white/10 border border-white/10 rounded-2xl focus:bg-white/20 focus:border-accent text-white transition-all outline-none appearance-none cursor-pointer group" required>
                       <option value="" disabled selected class="text-slate-900">{t('form.reason.default')}</option>
-                      <option value="Ortodoncia" class="text-slate-900">{t('nav.treatments.ortodoncia')}</option>
-                      <option value="Implantes" class="text-slate-900">{t('nav.treatments.implantes')}</option>
-                      <option value="Odontopediatría" class="text-slate-900">{t('nav.treatments.odontopediatria')}</option>
-                      <option value="Higiene" class="text-slate-900">{t('form.reason.opt11')}</option>
+                      <option value={t('form.reason.opt1')} class="text-slate-900">{t('form.reason.opt1')}</option>
+                      <option value={t('form.reason.opt2')} class="text-slate-900">{t('form.reason.opt2')}</option>
+                      <option value={t('form.reason.opt3')} class="text-slate-900">{t('form.reason.opt3')}</option>
+                      <option value={t('form.reason.opt4')} class="text-slate-900">{t('form.reason.opt4')}</option>
+                      <option value={t('form.reason.opt5')} class="text-slate-900">{t('form.reason.opt5')}</option>
+                      <option value={t('form.reason.opt6')} class="text-slate-900">{t('form.reason.opt6')}</option>
+                      <option value={t('form.reason.opt7')} class="text-slate-900">{t('form.reason.opt7')}</option>
+                      <option value={t('form.reason.opt8')} class="text-slate-900">{t('form.reason.opt8')}</option>
+                      <option value={t('form.reason.opt9')} class="text-slate-900">{t('form.reason.opt9')}</option>
+                      <option value={t('form.reason.opt10')} class="text-slate-900">{t('form.reason.opt10')}</option>
+                      <option value={t('form.reason.opt11')} class="text-slate-900">{t('form.reason.opt11')}</option>
+                      <option value={t('form.reason.opt12')} class="text-slate-900">{t('form.reason.opt12')}</option>
+                      <option value={t('form.reason.opt13')} class="text-slate-900">{t('form.reason.opt13')}</option>
+                      <option value={t('form.reason.opt14')} class="text-slate-900">{t('form.reason.opt14')}</option>
                       <option value="Otros" class="text-slate-900">Otros</option>
                     </select>
                   </div>
