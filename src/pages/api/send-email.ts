@@ -58,7 +58,7 @@ export async function POST(context: APIContext) {
                 'Authorization': `Bearer ${resendApiKey}`
             },
             body: JSON.stringify({
-                from: 'Clinica Koral <onboarding@resend.dev>',
+                from: 'Clinica Koral <web@clinicadentalkoral.es>',
                 to: recipients,
                 reply_to: email,
                 subject: subject,
