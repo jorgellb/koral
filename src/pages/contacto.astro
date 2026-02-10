@@ -163,13 +163,21 @@ const t = useTranslations(lang);
       });
 
       if (response.ok) {
-        alert(successMsg);
+        if (window.showToast) {
+          window.showToast(successMsg);
+        } else {
+          alert(successMsg);
+        }
         (form as HTMLFormElement).reset();
       } else {
         throw new Error();
       }
     } catch (err) {
-      alert(errorMsg);
+      if (window.showToast) {
+        window.showToast(errorMsg, 'error');
+      } else {
+        alert(errorMsg);
+      }
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;

@@ -3,6 +3,7 @@ import { getLangFromUrl } from '../i18n/utils';
 import '../styles/global.css';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import CookieBanner from '../components/CookieBanner.astro';
+import Toast from '../components/Toast.astro';
 
 interface Props {
   title: string;
@@ -226,6 +227,7 @@ const fullOgImage = new URL(ogImage, site).toString();
     <slot />
     <WhatsAppFloat />
     <CookieBanner />
+    <Toast />
     
     <script>
       // Scroll reveal animation with better performance

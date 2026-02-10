@@ -181,6 +181,9 @@ const pricingHref = lang === 'es' ? '/precio-y-financiacion/' : `/${lang}/pricin
           status.textContent = successMsg;
           status.className = 'p-4 rounded-xl text-center font-bold block bg-green-50 text-green-600 opacity-100';
         }
+        if (window.showToast) {
+          window.showToast(successMsg);
+        }
         (form as HTMLFormElement).reset();
       } else {
         throw new Error();
@@ -189,6 +192,9 @@ const pricingHref = lang === 'es' ? '/precio-y-financiacion/' : `/${lang}/pricin
       if (status) {
         status.textContent = errorMsg;
         status.className = 'p-4 rounded-xl text-center font-bold block bg-red-50 text-red-600 opacity-100';
+      }
+      if (window.showToast) {
+        window.showToast(errorMsg, 'error');
       }
     }
     
