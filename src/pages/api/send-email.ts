@@ -9,17 +9,16 @@ export async function POST(context: APIContext) {
         const data = await request.json();
         const { name, email, phone, reason, time, message } = data;
 
-        // In Cloudflare, secrets are in locals.runtime.env
-        const env = (locals as any).runtime?.env || (globalThis as any).process?.env || {};
+        // Exhaustive environment variable check for Cloudflare/Vercel/Local
+        const env = (locals as any).runtime?.env || (globalThis as any).process?.env || import.meta.env || {};
 
+        // Priority: runtime env > build-time env > hardcoded fallback
         const resendApiKey = env.RESEND_API_KEY || import.meta.env.RESEND_API_KEY || 're_UNWbDc3p_MepVsWdzq8fSRFHUQkWoNrH5';
         const rawRecipients = env.RECIPIENT_EMAILS || import.meta.env.RECIPIENT_EMAILS || 'koraldentalclinic@gmail.com,clinicakoralweb@gmail.com';
         const recipients = rawRecipients.split(',').map((r: string) => r.trim());
 
-        if (!resendApiKey) {
-            return new Response(JSON.stringify({
-                error: 'Falta la API Key de Resend'
-            }), { status: 500 });
+        if (!resendApiKey || resendApiKey.startsWith('re_') === false) {
+            console.error('Invalid or missing RESEND_API_KEY');
         }
 
         const isAppointment = !!(reason || time);
@@ -42,7 +41,7 @@ export async function POST(context: APIContext) {
                 </div>
 
                 <div style="border-left: 4px solid #2563eb; padding-left: 20px; font-style: italic; color: #475569; margin-bottom: 24px;">
-                    <p style="margin: 0;">"${message}"</p>
+                    <p style="margin: 0;">"${message || 'Sin mensaje'}"</p>
                 </div>
 
                 <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; font-size: 12px; color: #94a3b8; text-align: center;">
@@ -66,7 +65,7 @@ export async function POST(context: APIContext) {
             })
         });
 
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
 
         if (response.ok) {
             return new Response(JSON.stringify({ message: 'Email enviado correctamente' }), {
@@ -74,15 +73,19 @@ export async function POST(context: APIContext) {
                 headers: { 'Content-Type': 'application/json' }
             });
         } else {
-            return new Response(JSON.stringify({ error: result.message || 'Error de la API de Resend' }), {
+            console.error('Resend Error Response:', result);
+            return new Response(JSON.stringify({
+                error: result.message || 'Error en la API de Resend. Verifica la configuración en Cloudflare.'
+            }), {
                 status: response.status,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
     } catch (error: any) {
+        console.error('Server Internal Error:', error);
         return new Response(JSON.stringify({
-            error: 'Error interno del servidor'
+            error: 'Error interno: ' + (error.message || 'Error desconocido')
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
