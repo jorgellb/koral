@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import MainSections from '../components/MainSections.astro';
+import Treatments from '../components/Treatments.astro';
+import Team from '../components/Team.astro';
+import Contact from '../components/Contact.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import { useTranslations } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang as any);
+
+// WebPage + BreadcrumbList schema for homepage
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}#webpage`,
+      "url": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}`,
+      "name": t('home.meta.title'),
+      "description": t('home.meta.description'),
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" },
+      "about": { "@id": "https://clinicadentalkoral.es/#dentist" },
+      "inLanguage": lang === 'es' ? 'es-ES' : lang === 'en' ? 'en-GB' : lang === 'de' ? 'de-DE' : lang === 'nl' ? 'nl-NL' : 'fr-FR'
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://clinicadentalkoral.es/#website",
+      "url": "https://clinicadentalkoral.es",
+      "name": "Clinica Dental Koral",
+      "publisher": { "@id": "https://clinicadentalkoral.es/#dentist" },
+      "inLanguage": ["es-ES", "en-GB", "de-DE", "nl-NL", "fr-FR"]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": lang === 'es' ? 'Inicio' : lang === 'en' ? 'Home' : lang === 'de' ? 'Startseite' : lang === 'nl' ? 'Home' : 'Accueil',
+          "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}`
+        }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('home.meta.title')} description={t('home.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  <main>
+    <MainSections />
+    <Treatments />
+    <Team />
+    <Contact />
+    <FooterInfo />
+  </main>
+</Layout>

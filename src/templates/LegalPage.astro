@@ -1,0 +1,81 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={`${title} | Clínica Koral Dental`} lang={lang}>
+  <Navigation />
+  
+  <main class="min-h-screen bg-white overflow-hidden">
+    <!-- Premium Legal Hero -->
+    <section class="relative pt-44 pb-32 bg-slate-50 border-b border-slate-100">
+       <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
+          <svg width="100%" height="100%"><pattern id="legalGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#legalGrid)"/></svg>
+       </div>
+       
+       <div class="container mx-auto px-6 relative z-10 text-center">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-8 text-slate-400 shadow-sm">
+             {t('legal.header')}
+          </div>
+          <h1 class="text-6xl md:text-8xl font-black text-primary tracking-tighter mb-4 italic leading-none">
+             {title}
+          </h1>
+          <div class="w-24 h-1 bg-accent mx-auto rounded-full"></div>
+       </div>
+    </section>
+
+    <!-- Content Container -->
+    <section class="py-24 relative">
+       <!-- Decorative side element -->
+       <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-1/2 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 max-w-4xl relative">
+          <div class="legal-content">
+             <slot />
+          </div>
+       </div>
+    </section>
+  </main>
+
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  @reference "../styles/global.css";
+
+  .legal-content h2 {
+    @apply text-3xl font-black text-primary mt-20 mb-10 border-b border-primary/5 pb-6 italic tracking-tight;
+  }
+  .legal-content h3 {
+    @apply text-xl font-black text-primary mt-12 mb-6 italic tracking-tight uppercase;
+  }
+  .legal-content p {
+    @apply text-slate-500 leading-loose mb-8 text-lg font-light;
+  }
+  .legal-content ul {
+    @apply mb-12 space-y-4;
+  }
+  .legal-content li {
+    @apply text-slate-500 leading-relaxed text-base flex gap-4 items-start;
+  }
+  .legal-content li::before {
+    content: "→";
+    @apply text-accent font-black mt-0.5;
+  }
+  .legal-content strong {
+    @apply text-primary font-black;
+  }
+  .legal-content a {
+    @apply text-accent font-black hover:text-primary underline decoration-accent/20 underline-offset-4 transition-colors;
+  }
+</style>

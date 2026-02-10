@@ -1,0 +1,202 @@
+---
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { ShieldCheck, Calendar, CreditCard, MousePointer2 } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const pricingHref = lang === 'es' ? '/precio-y-financiacion/' : `/${lang}/pricing-and-financing/`;
+---
+
+<section id="appointment" class="section-padding bg-slate-50 relative overflow-hidden">
+  <!-- Decoration -->
+  <div class="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none">
+     <svg width="100%" height="100%"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/></svg>
+  </div>
+
+  <div class="container mx-auto px-6 relative z-10">
+    <div class="grid lg:grid-cols-12 gap-16 items-start">
+      
+      <!-- Info Column -->
+      <div class="lg:col-span-5 fade-up">
+        <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-4">{t('appointment.facilities')}</h2>
+        <h3 class="text-4xl md:text-5xl mb-8 leading-tight">
+          {t('appointment.title.main')}
+        </h3>
+        
+        <p class="text-slate-600 text-lg mb-10">
+          {t('appointment.desc.main')}
+        </p>
+
+        <div class="mb-12">
+            <a href={pricingHref} class="inline-flex items-center gap-3 px-8 py-4 bg-white border-2 border-accent text-accent rounded-full font-black uppercase tracking-widest hover:bg-accent hover:text-white transition-all shadow-xl shadow-accent/5 group">
+               {t('treatments.more')}
+               <MousePointer2 size={18} class="group-hover:translate-x-1 transition-transform" />
+            </a>
+        </div>
+
+        <div class="space-y-8">
+           <div class="flex items-start gap-6 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div class="bg-accent text-white p-3 rounded-xl shadow-lg shadow-accent/20">
+                 <CreditCard size={24} />
+              </div>
+              <div>
+                 <h4 class="font-black text-primary text-xl mb-1">{t('appointment.financing.title')}</h4>
+                 <p class="text-slate-500">{t('appointment.financing.desc')}</p>
+              </div>
+           </div>
+
+           <div class="flex items-start gap-6 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div class="bg-accent text-white p-3 rounded-xl shadow-lg shadow-accent/20">
+                 <ShieldCheck size={24} />
+              </div>
+              <div>
+                 <h4 class="font-black text-primary text-xl mb-1">{t('appointment.free.title')}</h4>
+                 <p class="text-slate-500">{t('appointment.free.desc')}</p>
+              </div>
+           </div>
+        </div>
+
+
+      </div>
+
+      <!-- Form Column -->
+      <div class="lg:col-span-7 fade-up" style="transition-delay: 0.2s">
+        <div class="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl relative overflow-hidden">
+           <!-- Form Decoration -->
+           <div class="absolute top-0 right-0 p-8">
+              <Calendar class="text-slate-50 w-24 h-24" />
+           </div>
+
+           <h4 class="text-3xl font-black text-primary mb-2 relative z-10">{t('appointment.request.title')}</h4>
+           <p class="text-slate-500 mb-10 relative z-10">{t('appointment.request.desc')}</p>
+           
+            <form id="contactForm" class="space-y-6 relative z-10">
+               <div class="grid md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.name')}</label>
+                     <input type="text" name="name" placeholder={t('form.placeholder.name')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all outline-none" required />
+                  </div>
+                  <div class="space-y-2">
+                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.email')}</label>
+                     <input type="email" name="email" placeholder={t('form.placeholder.email')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all outline-none" required />
+                  </div>
+               </div>
+
+               <div class="grid md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.reason')}</label>
+                      <select name="reason" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none appearance-none cursor-pointer" required>
+                         <option value="" disabled selected>{t('form.reason.default')}</option>
+                         <option value="Ortodoncia">{t('form.reason.opt1')}</option>
+                         <option value="Ortodoncia Infantil">{t('form.reason.opt2')}</option>
+                         <option value="Segunda Opiniòn Ortodoncia">{t('form.reason.opt3')}</option>
+                         <option value="Revisión General">{t('form.reason.opt4')}</option>
+                         <option value="Implantes">{t('form.reason.opt5')}</option>
+                         <option value="Carillas">{t('form.reason.opt6')}</option>
+                         <option value="Blanqueamiento">{t('form.reason.opt7')}</option>
+                         <option value="Estética Dental">{t('form.reason.opt8')}</option>
+                         <option value="Bebé 0-3">{t('form.reason.opt9')}</option>
+                         <option value="Niños 4+">{t('form.reason.opt10')}</option>
+                         <option value="Higiene">{t('form.reason.opt11')}</option>
+                         <option value="Encías">{t('form.reason.opt12')}</option>
+                         <option value="Dolor">{t('form.reason.opt13')}</option>
+                         <option value="Ácido Hialurónico">{t('form.reason.opt14')}</option>
+                      </select>
+                  </div>
+                  <div class="space-y-2">
+                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.time')}</label>
+                     <select name="time" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none appearance-none cursor-pointer" required>
+                        <option value="" disabled selected>{t('form.time.default')}</option>
+                        <option value="Mañana">{t('form.time.morning')}</option>
+                        <option value="Tarde">{t('form.time.afternoon')}</option>
+                        <option value="Cualquier Horario">{t('form.time.any')}</option>
+                     </select>
+                  </div>
+               </div>
+
+               <div class="space-y-2">
+                  <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.phone')}</label>
+                  <input type="tel" name="phone" placeholder={t('form.placeholder.phone')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all outline-none" required />
+               </div>
+
+               <div class="pt-4">
+                  <label class="flex items-start gap-4 cursor-pointer group">
+                     <input type="checkbox" name="consent" class="mt-1 w-5 h-5 rounded border-slate-200 text-accent focus:ring-accent" required />
+                     <span class="text-sm text-slate-500 leading-relaxed group-hover:text-primary transition-colors" set:html={t('form.consent')}>
+                     </span>
+                  </label>
+               </div>
+
+              <button type="submit" class="w-full py-5 bg-accent text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/30 hover:bg-primary hover:shadow-primary/30 hover:-translate-y-1 transition-all">
+                 {t('form.submit')}
+              </button>
+              
+              <div id="formStatus" class="p-4 rounded-xl text-center font-bold hidden opacity-0 transition-opacity"></div>
+           </form>
+
+           <div class="mt-8 pt-8 border-t border-slate-100 space-y-4 text-[9px] text-slate-400 leading-tight uppercase tracking-tight font-medium">
+              <div><span class="font-black text-slate-500">{t('legal.footer.responsible')}:</span> {t('legal.footer.responsible.desc')}</div>
+              <div><span class="font-black text-slate-500">{t('legal.footer.purpose')}:</span> {t('legal.footer.purpose.desc')}</div>
+              <div><span class="font-black text-slate-500">{t('legal.footer.legalization')}:</span> {t('legal.footer.legalization.desc')}</div>
+              <div><span class="font-black text-slate-500">{t('legal.footer.recipients')}:</span> {t('legal.footer.recipients.desc')}</div>
+              <div><span class="font-black text-slate-500">{t('legal.footer.rights')}:</span> {t('legal.footer.rights.desc')}</div>
+              <div><span class="font-black text-slate-500">{t('legal.footer.additional')}:</span> {t('legal.footer.additional.desc')}</div>
+           </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ 
+  sendingMsg: t('form.status.sending'), 
+  successMsg: t('form.status.success'), 
+  errorMsg: t('form.status.error') 
+}}>
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('formStatus');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form as HTMLFormElement);
+    const data = Object.fromEntries(formData.entries());
+
+    if (status) {
+      status.textContent = sendingMsg;
+      status.className = 'p-4 rounded-xl text-center font-bold block bg-slate-100 text-slate-500 opacity-100';
+      status.style.display = 'block';
+    }
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        if (status) {
+          status.textContent = successMsg;
+          status.className = 'p-4 rounded-xl text-center font-bold block bg-green-50 text-green-600 opacity-100';
+        }
+        (form as HTMLFormElement).reset();
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      if (status) {
+        status.textContent = errorMsg;
+        status.className = 'p-4 rounded-xl text-center font-bold block bg-red-50 text-red-600 opacity-100';
+      }
+    }
+    
+    setTimeout(() => {
+       if (status) {
+         status.classList.add('opacity-0');
+         setTimeout(() => status.style.display = 'none', 500);
+       }
+    }, 5000);
+  });
+</script>

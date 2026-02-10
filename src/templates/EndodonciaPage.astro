@@ -1,0 +1,304 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  Microscope, 
+  Activity, 
+  ShieldCheck, 
+  Zap, 
+  Search, 
+  CheckCircle2, 
+  HelpCircle, 
+  AlertTriangle,
+  FileText,
+  MousePointer2
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const steps = [
+  {
+    num: '01',
+    title: t('endodoncia.step1.title'),
+    desc: t('endodoncia.step1.desc'),
+    icon: Search
+  },
+  {
+    num: '02',
+    title: t('endodoncia.step2.title'),
+    desc: t('endodoncia.step2.desc'),
+    icon: Zap
+  },
+  {
+    num: '03',
+    title: t('endodoncia.step3.title'),
+    desc: t('endodoncia.step3.desc'),
+    icon: Activity
+  },
+  {
+    num: '04',
+    title: t('endodoncia.step4.title'),
+    desc: t('endodoncia.step4.desc'),
+    icon: Microscope
+  },
+  {
+    num: '05',
+    title: t('endodoncia.step5.title'),
+    desc: t('endodoncia.step5.desc'),
+    icon: CheckCircle2
+  }
+];
+
+const faqs = [
+  {
+    question: t('endodoncia.faq.q1.q'),
+    answer: t('endodoncia.faq.q1.a')
+  },
+  {
+    question: t('endodoncia.faq.q2.q'),
+    answer: t('endodoncia.faq.q2.a')
+  },
+  {
+    question: t('endodoncia.faq.q3.q'),
+    answer: t('endodoncia.faq.q3.a')
+  },
+  {
+    question: t('endodoncia.faq.q4.q'),
+    answer: t('endodoncia.faq.q4.a')
+  },
+  {
+    question: t('endodoncia.faq.q5.q'),
+    answer: t('endodoncia.faq.q5.a')
+  }
+];
+
+const slug = lang === 'es' ? '/endodoncia' : `/${lang}/endodoncia`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('endodoncia.meta.title'),
+      "description": t('endodoncia.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.endodoncia'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('endodoncia.meta.title')} description={t('endodoncia.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-24 bg-[#F8FAFC] overflow-hidden">
+       <div class="absolute top-0 right-0 w-1/3 h-full bg-accent/5 -skew-x-12 translate-x-20 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full mb-8 shadow-sm">
+                   <Microscope size={16} class="text-accent" />
+                   <span class="text-xs font-black uppercase tracking-widest text-primary">{t('endodoncia.hero.badge')}</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
+                   {t('endodoncia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('endodoncia.hero.title.italic')}</span>
+                </h1>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-xl">
+                   {t('endodoncia.hero.subtitle')}
+                </p>
+             </div>
+             
+             <div class="fade-up" style="transition-delay: 0.2s">
+                <div class="relative group">
+                   <div class="absolute -inset-4 bg-accent/10 rounded-[3rem] -rotate-2"></div>
+                   <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl skew-y-1">
+                      <img src="/equipo/angeles-parrar.jpg" alt={t('endodoncia.hero.image.alt')} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                      <div class="absolute bottom-6 left-6 right-6 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20">
+                         <p class="text-primary font-black text-lg">{t('endodoncia.hero.doctor.name')}</p>
+                         <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('endodoncia.hero.doctor.role')}</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Why Endodontics -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-20 items-center">
+             <div class="fade-up order-2 lg:order-1">
+                <div class="grid sm:grid-cols-2 gap-6">
+                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
+                      <div class="text-accent mb-4"><AlertTriangle size={32} /></div>
+                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c1.title')}</h4>
+                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c1.desc')}</p>
+                   </div>
+                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
+                      <div class="text-accent mb-4"><Activity size={32} /></div>
+                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c2.title')}</h4>
+                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c2.desc')}</p>
+                   </div>
+                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
+                      <div class="text-accent mb-4"><ShieldCheck size={32} /></div>
+                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c3.title')}</h4>
+                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c3.desc')}</p>
+                   </div>
+                   <div class="p-8 bg-white border-2 border-accent/20 rounded-[2.5rem] shadow-xl shadow-accent/5">
+                      <p class="text-primary font-black text-lg mb-2 italic">{t('endodoncia.why.c4.title')}</p>
+                      <p class="text-sm text-slate-500">{t('endodoncia.why.c4.desc')}</p>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="fade-up order-1 lg:order-2">
+                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6 text-white bg-accent inline-block px-4 py-1 rounded-full">{t('endodoncia.symptom.badge')}</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight">{t('endodoncia.symptom.title')}</h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p set:html={t('endodoncia.symptom.p1')}></p>
+                   <p set:html={t('endodoncia.symptom.p2')}></p>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Step by Step -->
+    <section class="py-24 bg-primary text-white overflow-hidden relative">
+       <div class="absolute inset-0 opacity-5">
+          <svg width="100%" height="100%"><pattern id="dotsGrid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="white"/></pattern><rect width="100%" height="100%" fill="url(#dotsGrid)"/></svg>
+       </div>
+
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="text-center mb-20 fade-up">
+             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('endodoncia.steps.badge')}</h4>
+             <h3 class="text-4xl md:text-6xl font-black mb-6 text-white">{t('endodoncia.steps.title')}</h3>
+          </div>
+
+          <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-8">
+             {steps.map((step, idx) => (
+                <div class="fade-up group" style={`transition-delay: ${idx * 0.1}s`}>
+                   <div class="h-full bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2rem] hover:bg-white/10 transition-all flex flex-col">
+                      <div class="flex justify-between items-start mb-8">
+                         <span class="text-4xl font-black text-accent group-hover:scale-110 transition-transform">{step.num}</span>
+                         <div class="p-3 bg-white text-primary rounded-xl"><step.icon size={24} /></div>
+                      </div>
+                      <h5 class="text-xl font-black mb-4 leading-tight text-white">{step.title}</h5>
+                      <p class="text-slate-100/80 text-sm leading-relaxed mt-auto font-medium">{step.desc}</p>
+                   </div>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Reendodoncia Section -->
+    <section class="py-32 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="max-w-6xl mx-auto rounded-[4rem] border-2 border-slate-100 p-12 md:p-20 relative overflow-hidden">
+             <!-- Abstract background element -->
+             <div class="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-slate-50 rounded-full blur-3xl pointer-events-none"></div>
+             
+             <div class="lg:flex gap-16 items-center relative z-10">
+                <div class="lg:w-1/2 mb-12 lg:mb-0">
+                   <h4 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('endodoncia.reendo.badge')}</h4>
+                   <h3 class="text-4xl font-black text-primary mb-8 leading-tight">{t('endodoncia.reendo.title')}</h3>
+                   <div class="space-y-6 text-slate-500 leading-relaxed text-lg">
+                      <p set:html={t('endodoncia.reendo.p1')}></p>
+                      <p set:html={t('endodoncia.reendo.p2')}></p>
+                      <div class="flex items-center gap-4 p-4 bg-primary text-white rounded-2xl shadow-xl">
+                         <div class="p-2 bg-accent rounded-lg"><Microscope size={20} /></div>
+                         <p class="font-bold text-sm">{t('endodoncia.reendo.doctor')}</p>
+                      </div>
+                   </div>
+                </div>
+                
+                <div class="lg:w-1/2">
+                   <div class="bg-indigo-50 p-12 rounded-[3.5rem] border border-indigo-100">
+                      <h5 class="text-xl font-black text-primary mb-6 flex items-center gap-3 italic">
+                         <Zap class="text-accent" /> {t('endodoncia.reendo.fail.title')}
+                      </h5>
+                      <ul class="space-y-4">
+                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.1')}</span>
+                         </li>
+                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.2')}</span>
+                         </li>
+                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.3')}</span>
+                         </li>
+                      </ul>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('endodoncia.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('endodoncia.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

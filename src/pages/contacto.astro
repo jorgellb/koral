@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { MessageSquare, Phone, Mail, MapPin, Send, ShieldCheck } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={t('contact.title.meta')} lang={lang}>
+  <Navigation />
+  
+  <main class="bg-white">
+    <!-- Hero Section -->
+    <section class="relative pt-44 pb-32 bg-slate-900 overflow-hidden">
+      <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <svg width="100%" height="100%"><pattern id="gridContact" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/></pattern><rect width="100%" height="100%" fill="url(#gridContact)"/></svg>
+      </div>
+      
+      <div class="container mx-auto px-6 relative z-10 text-center">
+        <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-8 italic uppercase">
+          {t('contact.hero.title')}
+        </h1>
+        <p class="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
+          {t('contact.hero.subtitle')}
+        </p>
+      </div>
+    </section>
+
+    <!-- Simple Contact Form Section -->
+    <section class="py-24 relative overflow-hidden">
+      <div class="container mx-auto px-6">
+        <div class="max-w-5xl mx-auto">
+          <div class="grid lg:grid-cols-2 gap-20 items-start">
+            
+            <!-- Left: Info -->
+            <div class="fade-up">
+              <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-6">{t('contact.channels.title')}</h2>
+              <h3 class="text-4xl font-black text-primary mb-12 italic leading-tight uppercase">{t('contact.channels.subtitle')}</h3>
+              
+              <div class="space-y-8">
+                <div class="flex items-center gap-6 group">
+                  <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-accent border border-slate-100 group-hover:bg-accent group-hover:text-white transition-all shadow-sm">
+                    <Phone size={24} />
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('footer.contact.title')}</p>
+                    <a href="tel:+34950395319" class="text-lg font-bold text-primary hover:text-accent transition-colors">+34 950 39 53 19</a>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-6 group">
+                  <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-accent border border-slate-100 group-hover:bg-accent group-hover:text-white transition-all shadow-sm">
+                    <Mail size={24} />
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('form.email').replace('*', '')}</p>
+                    <a href="mailto:koraldentalclinic@gmail.com" class="text-lg font-bold text-primary hover:text-accent transition-colors">koraldentalclinic@gmail.com</a>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-6 group">
+                  <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-accent border border-slate-100 group-hover:bg-accent group-hover:text-white transition-all shadow-sm">
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('footer.location.title')}</p>
+                    <p class="text-lg font-bold text-primary">{t('top.address')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Form -->
+            <div class="bg-white p-10 md:p-14 rounded-[3.5rem] border border-slate-100 shadow-2xl relative">
+              <h4 class="text-2xl font-black text-primary mb-8 italic">{t('contact.form.title')}</h4>
+              <form id="simpleContactForm" class="space-y-6">
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.name')}</label>
+                  <input type="text" name="name" placeholder={t('form.placeholder.name')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none" required />
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.email')}</label>
+                    <input type="email" name="email" placeholder={t('form.placeholder.email')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none" required />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('form.phone')}</label>
+                    <input type="tel" name="phone" placeholder={t('form.placeholder.phone')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none" required />
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('contact.form.message')}</label>
+                  <textarea name="message" rows="4" placeholder={t('form.placeholder.message')} class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-accent transition-all outline-none resize-none" required></textarea>
+                </div>
+
+                <div class="pt-2">
+                  <label class="flex items-start gap-4 cursor-pointer group">
+                    <input type="checkbox" name="consent" class="mt-1 w-5 h-5 rounded border-slate-200 text-accent focus:ring-accent" required />
+                    <span class="text-xs text-slate-500 leading-relaxed font-medium" set:html={t('form.consent')}>
+                    </span>
+                  </label>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-accent hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
+                  {t('contact.form.send')} <Send size={18} />
+                </button>
+              </form>
+
+              <!-- Footer Legal Info for Simple Form -->
+              <div class="mt-8 pt-8 border-t border-slate-100 space-y-4 text-[9px] text-slate-400 leading-tight uppercase tracking-tight font-medium">
+                <div><span class="font-black text-slate-500">{t('legal.footer.responsible')}:</span> {t('legal.footer.responsible.desc')}</div>
+                <div><span class="font-black text-slate-500">{t('legal.footer.purpose')}:</span> {t('legal.footer.purpose.desc')}</div>
+                <div><span class="font-black text-slate-500">{t('legal.footer.legalization')}:</span> {t('legal.footer.legalization.desc')}</div>
+                <div><span class="font-black text-slate-500">{t('legal.footer.recipients')}:</span> {t('legal.footer.recipients.desc')}</div>
+                <div><span class="font-black text-slate-500">{t('legal.footer.rights')}:</span> {t('legal.footer.rights.desc')}</div>
+                <div><span class="font-black text-slate-500">{t('legal.footer.additional')}:</span> {t('legal.footer.additional.desc')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Appointment Section (The existing Contact.astro but embedded/styled for this page) -->
+    <div id="appointment-anchor">
+      <Contact lang={lang} />
+    </div>
+
+  </main>
+
+  <FooterInfo />
+</Layout>
+
+<script define:vars={{ successMsg: t('contact.form.success') }}>
+  // Simple form handling logic
+  const form = document.getElementById('simpleContactForm');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert(successMsg);
+    (e.target as HTMLFormElement).reset();
+  });
+</script>

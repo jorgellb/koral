@@ -1,0 +1,304 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { CheckCircle2, ChevronDown, Sparkles, Smile, Target, Zap, Clock, ShieldCheck, HelpCircle } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const faqs = [
+  {
+    question: t('ortodoncia.faq.q1'),
+    answer: t('ortodoncia.faq.a1')
+  },
+  {
+    question: t('ortodoncia.faq.q2'),
+    answer: t('ortodoncia.faq.a2')
+  },
+  {
+    question: t('ortodoncia.faq.q3'),
+    answer: t('ortodoncia.faq.a3')
+  },
+  {
+    question: t('ortodoncia.faq.q4'),
+    answer: t('ortodoncia.faq.a4')
+  },
+  {
+    question: t('ortodoncia.faq.q5'),
+    answer: t('ortodoncia.faq.a5')
+  }
+];
+
+const problems = [
+  { title: t('ortodoncia.prob.t1'), desc: t('ortodoncia.prob.d1') },
+  { title: t('ortodoncia.prob.t2'), desc: t('ortodoncia.prob.d2') },
+  { title: t('ortodoncia.prob.t3'), desc: t('ortodoncia.prob.d3') },
+  { title: t('ortodoncia.prob.t4'), desc: t('ortodoncia.prob.d4') },
+  { title: t('ortodoncia.prob.t5'), desc: t('ortodoncia.prob.d5') },
+  { title: t('ortodoncia.prob.t6'), desc: t('ortodoncia.prob.d6') }
+];
+
+// FAQPage + MedicalWebPage + BreadcrumbList Schema
+const ortodonciaSlug = lang === 'es' ? '/ortodoncia' : `/${lang}/ortodoncia`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('ortodoncia.meta.title'),
+      "description": t('ortodoncia.meta.description'),
+      "url": `https://clinicadentalkoral.es${ortodonciaSlug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" },
+      "about": {
+        "@type": "MedicalProcedure",
+        "name": "Ortodoncia",
+        "procedureType": "https://schema.org/TherapeuticProcedure"
+      },
+      "mainEntity": { "@id": `https://clinicadentalkoral.es${ortodonciaSlug}#faq` }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `https://clinicadentalkoral.es${ortodonciaSlug}#faq`,
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.ortodoncia'), "item": `https://clinicadentalkoral.es${ortodonciaSlug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('ortodoncia.meta.title')} description={t('ortodoncia.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Simple Hero -->
+    <section class="relative pt-32 pb-20 bg-primary overflow-hidden">
+       <!-- Decoration -->
+       <div class="absolute top-0 right-0 w-1/2 h-full bg-accent/10 skew-x-12 translate-x-32 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="max-w-4xl fade-up">
+             <span class="inline-block px-4 py-1 bg-white/10 text-accent-light rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-white/10 backdrop-blur-md">
+                {t('ortodoncia.hero.badge')}
+             </span>
+             <h1 class="text-5xl md:text-7xl lg:text-8xl text-white font-black leading-[1.1] mb-8">
+               {t('ortodoncia.hero.title')} <span class="text-accent italic font-serif">{t('ortodoncia.hero.title.italic')}</span>
+             </h1>
+             <p class="text-xl md:text-2xl text-slate-300 leading-relaxed max-w-2xl">
+                {t('ortodoncia.hero.subtitle')}
+             </p>
+          </div>
+       </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6">{t('ortodoncia.philosophy.badge')}</h2>
+                <h3 class="text-4xl font-black text-primary mb-8 leading-tight">{t('ortodoncia.philosophy.title')}</h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p>
+                      {t('ortodoncia.philosophy.p1').split(t('ortodoncia.philosophy.p1.strong')).map((text, i, arr) => (
+                        <>
+                          {text}
+                          {i < arr.length - 1 && <strong>{t('ortodoncia.philosophy.p1.strong')}</strong>}
+                        </>
+                      ))}
+                   </p>
+                   <p>
+                      {t('ortodoncia.philosophy.p2').split(t('ortodoncia.philosophy.p2.strong')).map((text, i, arr) => (
+                        <>
+                          {text}
+                          {i < arr.length - 1 && <strong>{t('ortodoncia.philosophy.p2.strong')}</strong>}
+                        </>
+                      ))}
+                   </p>
+                   <div class="bg-slate-50 p-8 rounded-3xl border-l-4 border-accent mt-8 flex items-start gap-4">
+                      <div class="bg-accent text-white p-2 rounded-lg"><Zap size={20} /></div>
+                      <p class="text-primary font-bold">
+                         {t('ortodoncia.philosophy.warning')}
+                      </p>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="relative fade-up" style="transition-delay: 0.2s">
+                <div class="absolute -inset-4 bg-accent/5 rounded-[3rem] rotate-3"></div>
+                <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl skew-y-1">
+                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt="Planificación Ortodoncia" class="w-full h-full object-cover" />
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Types of Orthodontics -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6">
+          <div class="max-w-3xl mb-16 fade-up">
+             <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-4">{t('ortodoncia.options.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary leading-tight">{t('ortodoncia.options.title')}</h3>
+             <p class="text-slate-500 mt-6 text-lg">
+                {t('ortodoncia.options.subtitle')}
+             </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8">
+             <!-- Invisalign -->
+             <div class="fade-up p-8 md:p-12 bg-white rounded-[3rem] border border-slate-100 shadow-xl group hover:-translate-y-2 transition-all duration-500">
+                <div class="w-16 h-16 bg-blue-50 text-accent rounded-2xl flex items-center justify-center mb-8 group-hover:bg-accent group-hover:text-white transition-colors duration-500">
+                   <Sparkles size={32} />
+                </div>
+                <h4 class="text-2xl font-black text-primary mb-6">{t('ortodoncia.options.invisalign.title')}</h4>
+                <div class="space-y-4 text-slate-600">
+                   <p>{t('ortodoncia.options.invisalign.desc')}</p>
+                   <p class="font-bold text-accent">{t('ortodoncia.options.invisalign.advantage')}</p>
+                </div>
+             </div>
+
+             <!-- Brackets -->
+             <div class="fade-up p-8 md:p-12 bg-white rounded-[3rem] border border-slate-100 shadow-xl group hover:-translate-y-2 transition-all duration-500" style="transition-delay: 0.1s">
+                <div class="w-16 h-16 bg-indigo-50 text-accent rounded-2xl flex items-center justify-center mb-8 group-hover:bg-accent group-hover:text-white transition-colors duration-500">
+                   <Target size={32} />
+                </div>
+                <h4 class="text-2xl font-black text-primary mb-6">{t('ortodoncia.options.brackets.title')}</h4>
+                <div class="space-y-4 text-slate-600">
+                   <p>{t('ortodoncia.options.brackets.desc')}</p>
+                   <p class="font-bold text-accent">{t('ortodoncia.options.brackets.advantage')}</p>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Problems Section -->
+    <section class="py-24 bg-white overflow-hidden">
+       <div class="container mx-auto px-6">
+          <div class="text-center max-w-4xl mx-auto mb-20 fade-up">
+             <h4 class="text-accent font-black uppercase tracking-[0.3em] mb-4 text-sm">{t('ortodoncia.problems.badge')}</h4>
+             <h3 class="text-4xl md:text-5xl font-black text-primary mb-6">{t('ortodoncia.problems.title')}</h3>
+             <p class="text-xl text-slate-500 italic">{t('ortodoncia.problems.quote')}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+             {problems.map((prob, idx) => (
+                <div class="fade-up flex gap-6 group" style={`transition-delay: ${idx * 0.05}s`}>
+                   <div class="flex-none w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
+                      <CheckCircle2 size={24} />
+                   </div>
+                   <div>
+                      <h5 class="text-xl font-black text-primary mb-2">{prob.title}</h5>
+                      <p class="text-slate-500 leading-relaxed">{prob.desc}</p>
+                   </div>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- The Study Section -->
+    <section class="py-24 bg-primary text-white overflow-hidden relative">
+       <!-- Decoration -->
+       <div class="absolute inset-0 opacity-10">
+          <svg width="100%" height="100%"><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white"/></pattern><rect width="100%" height="100%" fill="url(#dots)"/></svg>
+       </div>
+
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="lg:flex items-center gap-20">
+             <div class="lg:w-1/2 fade-up">
+                <span class="text-accent font-black uppercase tracking-widest text-xs mb-6 block">{t('ortodoncia.study.badge')}</span>
+                <h3 class="text-4xl md:text-5xl font-black mb-10 leading-snug text-white">{t('ortodoncia.study.title')}</h3>
+                <div class="space-y-8">
+                   <div class="flex gap-6 items-start p-6 rounded-3xl bg-white/5 border border-white/10 transition-colors hover:bg-white/10 group">
+                      <div class="p-4 bg-white text-accent rounded-2xl shadow-xl shadow-accent/20 group-hover:scale-110 transition-transform"><ShieldCheck size={28} /></div>
+                      <div>
+                         <p class="font-black text-xl text-white mb-2 tracking-tight">{t('ortodoncia.study.tech.title')}</p>
+                         <p class="text-slate-300 leading-relaxed">{t('ortodoncia.study.tech.desc')}</p>
+                      </div>
+                   </div>
+                   <div class="flex gap-6 items-start p-6 rounded-3xl bg-white/5 border border-white/10 transition-colors hover:bg-white/10 group">
+                      <div class="p-4 bg-white text-accent rounded-2xl shadow-xl shadow-accent/20 group-hover:scale-110 transition-transform"><Smile size={28} /></div>
+                      <div>
+                         <p class="font-black text-xl text-white mb-2 tracking-tight">{t('ortodoncia.study.harmony.title')}</p>
+                         <p class="text-slate-300 leading-relaxed">{t('ortodoncia.study.harmony.desc')}</p>
+                      </div>
+                   </div>
+                </div>
+                <div class="mt-12">
+                   <a href="#appointment" class="inline-flex items-center gap-3 bg-accent text-white px-10 py-5 rounded-full font-black uppercase tracking-widest hover:bg-white hover:text-primary transition-all shadow-xl shadow-accent/20">
+                      {t('ortodoncia.study.cta')} <ChevronDown size={20} class="-rotate-90" />
+                   </a>
+                </div>
+             </div>
+             
+             <div class="lg:w-1/2 mt-16 lg:mt-0 fade-up" style="transition-delay: 0.2s">
+                <div class="p-4 bg-white/5 backdrop-blur-md rounded-[3rem] border border-white/10 relative">
+                   <div class="bg-white rounded-[2.5rem] p-10 text-primary">
+                      <p class="text-2xl font-serif italic mb-8">{t('ortodoncia.study.quote')}</p>
+                      <hr class="border-slate-100 mb-8" />
+                      <div class="flex items-center gap-4">
+                         <div class="font-black text-sm uppercase tracking-tighter">{t('ortodoncia.study.team')}</div>
+                         <div class="h-1 w-12 bg-accent"></div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('ortodoncia.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('ortodoncia.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

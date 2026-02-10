@@ -1,0 +1,302 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { Facebook, Instagram, Phone, MapPin, Globe, ChevronDown } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const socialLinks = [
+  { icon: Facebook, href: 'https://www.facebook.com/koralclinicadental', name: 'Facebook' },
+  { icon: Instagram, href: 'https://www.instagram.com/koraldental', name: 'Instagram' },
+  { icon: 'tiktok', href: 'https://www.tiktok.com/@koraldental', name: 'TikTok' }
+];
+
+const mainNav = [
+  { name: t('nav.home'), href: `/${lang === 'es' ? '' : lang}` },
+  { name: t('nav.team'), href: `/${lang === 'es' ? 'equipo' : lang + '/equipo'}` },
+  { 
+    name: t('nav.treatments'), 
+    href: '#treatments',
+    dropdown: [
+      { name: t('nav.treatments.ortodoncia'), href: `/${lang === 'es' ? 'ortodoncia' : lang + '/ortodoncia'}` },
+      { name: t('nav.treatments.implantes'), href: `/${lang === 'es' ? 'implantes-dentales' : lang + '/implantes-dentales'}` },
+      { name: t('nav.treatments.odontopediatria'), href: `/${lang === 'es' ? 'odontopediatria' : lang + '/odontopediatria'}` },
+      { name: t('nav.treatments.endodoncia'), href: `/${lang === 'es' ? 'endodoncia' : lang + '/endodoncia'}` },
+      { name: t('nav.treatments.estetica'), href: `/${lang === 'es' ? 'estetica-dental' : lang + '/estetica-dental'}` },
+      { name: t('nav.treatments.rehabilitacion'), href: `/${lang === 'es' ? 'rehabilitacion-oral' : lang + '/rehabilitacion-oral'}` },
+      { name: t('nav.treatments.periodoncia'), href: `/${lang === 'es' ? 'periodoncia' : lang + '/periodoncia'}` },
+      { name: t('nav.treatments.cirugia'), href: `/${lang === 'es' ? 'cirugia-oral' : lang + '/cirugia-oral'}` },
+      { name: t('nav.treatments.armonia'), href: `/${lang === 'es' ? 'armonia-orofacial' : lang + '/armonia-orofacial'}` },
+    ]
+  },
+  { name: t('nav.contact'), href: `/${lang === 'es' ? 'contacto' : lang + '/contacto'}` },
+];
+
+const languages = [
+  { code: 'es', name: 'ES', flag: '🇪🇸' },
+  { code: 'en', name: 'EN', flag: '🇬🇧' },
+  { code: 'de', name: 'DE', flag: '🇩🇪' },
+  { code: 'nl', name: 'NL', flag: '🇳🇱' },
+  { code: 'fr', name: 'FR', flag: '🇫🇷' }
+];
+---
+
+<!-- Top Bar (desktop only) -->
+<div class="hidden md:block bg-primary text-white py-2 text-xs font-medium">
+  <div class="container mx-auto px-6 flex justify-between items-center">
+    <div class="flex gap-6 items-center">
+      <span class="flex items-center gap-2 opacity-80"><MapPin size={12} /> {t('top.address')}</span>
+      <a href="tel:+34950395319" class="flex items-center gap-2 hover:text-accent transition-colors"><Phone size={12} /> +34 950 39 53 19</a>
+      <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="flex items-center gap-2 hover:text-accent transition-colors">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.396.015 12.03a11.811 11.811 0 001.592 5.96L0 24l6.117-1.605a11.803 11.803 0 005.925 1.577h.005c6.632 0 12.028-5.398 12.03-12.03a11.85 11.85 0 00-3.486-8.422z"/></svg>
+        +34 634 68 36 39
+      </a>
+    </div>
+    <div class="flex gap-4">
+      {socialLinks.map(link => (
+        <a href={link.href} target="_blank" rel="noopener noreferrer" class="opacity-80 hover:opacity-100 hover:text-accent transition-all">
+          {link.icon === 'tiktok' ? (
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.47-.88-.64-1.6-1.51-2.03-2.52v9.3c.01 1.25-.32 2.51-1.01 3.55-.7 1.05-1.74 1.87-2.92 2.33-1.18.47-2.5.54-3.73.22-1.22-.32-2.33-1.04-3.15-2.01-.82-.97-1.31-2.22-1.38-3.48-.07-1.26.24-2.54.91-3.62.67-1.08 1.71-1.93 2.92-2.37.76-.28 1.56-.4 2.37-.38v4.03c-.63-.04-1.28.08-1.85.38-.56.3-.98.81-1.18 1.4-.2.59-.16 1.26.11 1.81.27.55.76.98 1.34 1.18.57.2 1.22.16 1.76-.11.54-.27.94-.75 1.12-1.32.06-.18.09-.37.09-.57V.02z"/></svg>
+          ) : (
+             <link.icon size={12} />
+          )}
+        </a>
+      ))}
+    </div>
+  </div>
+</div>
+
+<!-- Main Header -->
+<header class="sticky top-0 z-50 glass h-20 flex items-center">
+  <nav class="container mx-auto px-6 flex justify-between items-center w-full">
+    <a href="/" class="transition-transform hover:scale-105 duration-300 flex-shrink-0">
+      <img src="/Logo/logokoral.png" alt="Clínica Dental Koral" class="w-32 md:w-40" loading="eager" />
+    </a>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden lg:flex items-center gap-8">
+      <div class="flex gap-8">
+        {mainNav.map(item => (
+          <div class="relative group py-4">
+            <a href={item.href} class="text-sm font-semibold tracking-wide text-primary uppercase hover:text-accent transition-colors relative">
+              {item.name}
+              <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
+            </a>
+            
+            {item.dropdown && (
+              <div class="absolute top-full left-0 mt-2 w-72 bg-white border border-slate-100 shadow-2xl rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 overflow-hidden transform scale-95 group-hover:scale-100 origin-top-left">
+                <div class="grid p-4">
+                  {item.dropdown.map(subItem => (
+                    <a href={subItem.href} class="px-4 py-3 text-sm font-medium text-slate-600 hover:text-accent hover:bg-slate-50 rounded-xl transition-all">
+                      {subItem.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div class="h-6 w-px bg-slate-200 mx-2"></div>
+
+      <div class="flex items-center gap-6 text-primary">
+         <div class="relative group py-2">
+            <button class="flex items-center gap-2 hover:text-accent transition-colors cursor-pointer font-bold text-sm">
+              <Globe size={18} />
+              {lang.toUpperCase()}
+            </button>
+            <div class="absolute top-full right-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 min-w-[140px] overflow-hidden">
+              {languages.map(l => (
+                <a href={l.code === 'es' ? '/' : `/${l.code}/`} class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-slate-50 transition-colors">
+                  <span class="text-lg">{l.flag}</span>
+                  <span class="font-medium">{l.name}</span>
+                </a>
+              ))}
+            </div>
+         </div>
+
+         <a href="#appointment" class="bg-accent text-white px-6 py-2.5 rounded-full text-sm font-bold tracking-wide uppercase hover:bg-primary transition-all shadow-lg shadow-accent/20 hover:shadow-primary/20 hover:-translate-y-0.5">
+           {t('nav.appointment')}
+         </a>
+      </div>
+    </div>
+
+    <!-- Mobile hamburger button -->
+    <button id="mobile-toggle" class="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-[6px] group z-50" aria-label="Abrir menú">
+      <span id="bar1" class="block w-6 h-[2px] bg-primary rounded-full transition-all duration-300 origin-center"></span>
+      <span id="bar2" class="block w-6 h-[2px] bg-primary rounded-full transition-all duration-300"></span>
+      <span id="bar3" class="block w-6 h-[2px] bg-primary rounded-full transition-all duration-300 origin-center"></span>
+    </button>
+  </nav>
+</header>
+
+<!-- Mobile Overlay -->
+<div id="mobile-overlay" class="fixed inset-0 bg-black/40 z-[98] hidden opacity-0 transition-opacity duration-300 lg:hidden" style="backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+
+<!-- Mobile Menu Panel -->
+<div id="mobile-menu" class="fixed top-0 right-0 w-[84vw] max-w-[360px] h-[100dvh] z-[99] lg:hidden" style="transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);visibility:hidden;background:rgba(255,255,255,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:-16px 0 48px rgba(0,0,0,0.08)">
+  
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:24px;border-bottom:1px solid #f1f5f9">
+    <img src="/Logo/logokoral.png" alt="Logo" style="width:100px" loading="lazy" />
+    <button id="mobile-close" aria-label="Cerrar menú" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f8fafc;border:none;cursor:pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Scrollable Content -->
+  <div style="overflow-y:auto;height:calc(100dvh - 89px);padding:24px;-webkit-overflow-scrolling:touch">
+    
+    <!-- Nav Links -->
+    <nav style="display:flex;flex-direction:column;gap:4px">
+      {mainNav.map(item => (
+        <div>
+          {item.dropdown ? (
+            <div>
+              <button class="mobile-accordion-btn" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 8px;font-size:18px;font-weight:800;color:#0f172a;background:none;border:none;cursor:pointer;text-align:left;border-bottom:1px solid #f8fafc">
+                <span>{item.name}</span>
+                <svg class="mobile-accordion-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.3s ease"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="mobile-accordion-panel" style="display:none;padding:4px 0 12px 16px;border-left:2px solid #dbeafe">
+                {item.dropdown.map(subItem => (
+                  <a href={subItem.href} class="mobile-link" style="display:block;padding:10px 12px;font-size:15px;font-weight:600;color:#64748b;text-decoration:none;border-radius:8px">{subItem.name}</a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <a href={item.href} class="mobile-link" style="display:block;padding:14px 8px;font-size:18px;font-weight:800;color:#0f172a;text-decoration:none;border-bottom:1px solid #f8fafc">{item.name}</a>
+          )}
+        </div>
+      ))}
+    </nav>
+
+    <!-- Separator -->
+    <div style="margin:24px 0;height:1px;background:#e2e8f0"></div>
+
+    <!-- Languages -->
+    <div>
+      <p style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.2em;color:#94a3b8;margin-bottom:12px">{t('nav.languages')}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        {languages.map(l => (
+          <a href={l.code === 'es' ? '/' : `/${l.code}/`} class="mobile-link" style={`display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;font-weight:700;font-size:13px;border:1px solid ${lang === l.code ? '#2563eb' : '#f1f5f9'};background:${lang === l.code ? '#eff6ff' : '#f8fafc'};color:${lang === l.code ? '#2563eb' : '#475569'}`}>
+            <span style="font-size:18px">{l.flag}</span>
+            {l.name}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- CTA button -->
+    <div style="margin-top:32px;padding-top:24px;border-top:1px solid #e2e8f0">
+      <a href="#appointment" class="mobile-link" style="display:block;width:100%;padding:18px;background:#2563eb;color:white;text-align:center;border-radius:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;font-size:14px;text-decoration:none;box-shadow:0 10px 25px -5px rgba(37,99,235,0.3)">
+        {t('nav.appointment')}
+      </a>
+    </div>
+
+    <!-- Mobile contact info -->
+    <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px">
+      <a href="tel:+34950395319" style="display:flex;align-items:center;gap:8px;padding:10px;color:#475569;text-decoration:none;font-size:13px;font-weight:600">
+        <Phone size={14} /> +34 950 39 53 19
+      </a>
+      <a href="https://wa.me/34634683639" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:10px;color:#475569;text-decoration:none;font-size:13px;font-weight:600">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.396.015 12.03a11.811 11.811 0 001.592 5.96L0 24l6.117-1.605a11.803 11.803 0 005.925 1.577h.005c6.632 0 12.028-5.398 12.03-12.03a11.85 11.85 0 00-3.486-8.422z"/></svg>
+        +34 634 68 36 39
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const toggle = document.getElementById('mobile-toggle');
+    const closeBtn = document.getElementById('mobile-close');
+    const menu = document.getElementById('mobile-menu');
+    const overlay = document.getElementById('mobile-overlay');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    const bar3 = document.getElementById('bar3');
+    let isOpen = false;
+
+    function openMenu() {
+      if (isOpen) return;
+      isOpen = true;
+      menu.style.visibility = 'visible';
+      overlay.style.display = 'block';
+      
+      requestAnimationFrame(() => {
+        menu.style.transform = 'translateX(0)';
+        overlay.style.opacity = '1';
+      });
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      
+      // Animate hamburger to X
+      bar1.style.transform = 'translateY(8px) rotate(45deg)';
+      bar2.style.opacity = '0';
+      bar3.style.transform = 'translateY(-8px) rotate(-45deg)';
+    }
+
+    function closeMenu() {
+      if (!isOpen) return;
+      isOpen = false;
+      menu.style.transform = 'translateX(100%)';
+      overlay.style.opacity = '0';
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      
+      // Animate X back to hamburger
+      bar1.style.transform = '';
+      bar2.style.opacity = '1';
+      bar3.style.transform = '';
+
+      setTimeout(() => {
+        if (!isOpen) {
+          menu.style.visibility = 'hidden';
+          overlay.style.display = 'none';
+        }
+      }, 400);
+    }
+
+    toggle?.addEventListener('click', () => isOpen ? closeMenu() : openMenu());
+    closeBtn?.addEventListener('click', closeMenu);
+    overlay?.addEventListener('click', closeMenu);
+
+    // Accordion toggles
+    document.querySelectorAll('.mobile-accordion-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = btn.nextElementSibling;
+        const icon = btn.querySelector('.mobile-accordion-icon');
+        const wasOpen = panel.style.display === 'block';
+        
+        // Close all panels
+        document.querySelectorAll('.mobile-accordion-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.mobile-accordion-icon').forEach(i => i.style.transform = '');
+        
+        if (!wasOpen) {
+          panel.style.display = 'block';
+          icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // Close menu on any link click
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        setTimeout(closeMenu, 150);
+      });
+    });
+
+    // Swipe to close
+    let touchStartX = 0;
+    menu?.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    menu?.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].clientX - touchStartX;
+      if (diff > 80) closeMenu();
+    }, { passive: true });
+  })();
+</script>

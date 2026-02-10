@@ -1,0 +1,324 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  Sparkles, 
+  Zap, 
+  CheckCircle2, 
+  HelpCircle, 
+  ChevronRight,
+  Palette,
+  Camera,
+  Star,
+  Layers,
+  Smile,
+  ShieldCheck
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const veneersProblems = [
+  t('estetica.problems.list.1'),
+  t('estetica.problems.list.2'),
+  t('estetica.problems.list.3'),
+  t('estetica.problems.list.4'),
+  t('estetica.problems.list.5')
+];
+
+const faqs = [
+  {
+    question: t('estetica.faq.q1.q'),
+    answer: t('estetica.faq.q1.a')
+  },
+  {
+    question: t('estetica.faq.q2.q'),
+    answer: t('estetica.faq.q2.a')
+  },
+  {
+    question: t('estetica.faq.q3.q'),
+    answer: t('estetica.faq.q3.a')
+  },
+  {
+    question: t('estetica.faq.q4.q'),
+    answer: t('estetica.faq.q4.a')
+  },
+  {
+    question: t('estetica.faq.q5.q'),
+    answer: t('estetica.faq.q5.a')
+  }
+];
+
+const slug = lang === 'es' ? '/estetica-dental' : `/${lang}/estetica-dental`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('estetica.meta.title'),
+      "description": t('estetica.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.estetica'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('estetica.meta.title')} description={t('estetica.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-24 bg-white overflow-hidden">
+       <div class="absolute top-0 right-0 w-1/2 h-full bg-accent/5 skew-x-12 translate-x-32 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-accent rounded-full text-xs font-black tracking-widest uppercase mb-8 border border-blue-100">
+                   <Palette size={14} /> {t('estetica.hero.badge')}
+                </span>
+                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
+                   {t('estetica.hero.title')} <br/> <span class="text-accent italic font-serif">{t('estetica.hero.title.italic')}</span>
+                </h1>
+                <p class="text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
+                   {t('estetica.hero.subtitle')}
+                </p>
+                <div class="flex flex-wrap gap-4">
+                   <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <CheckCircle2 size={16} class="text-accent" />
+                      <span class="text-xs font-bold text-primary uppercase tracking-tighter">{t('estetica.hero.result.natural')}</span>
+                   </div>
+                   <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                      <CheckCircle2 size={16} class="text-accent" />
+                      <span class="text-xs font-bold text-primary uppercase tracking-tighter">{t('estetica.hero.result.minimal')}</span>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="relative fade-up" style="transition-delay: 0.2s">
+                <!-- Dual Prominence Layout - No Overlap -->
+                <div class="grid grid-cols-2 gap-4 md:gap-8 items-end relative group">
+                   <!-- Background Decoration -->
+                   <div class="absolute -inset-10 bg-accent/10 rounded-full blur-[100px] pointer-events-none"></div>
+                   
+                   <!-- Minerva -->
+                   <div class="space-y-4">
+                      <div class="aspect-[3/4.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 transform hover:-translate-y-2 transition-all duration-700">
+                         <img src="/equipo/minerva.jpg" alt="Minerva" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
+                      </div>
+                      <div class="pl-4">
+                         <p class="text-primary font-black text-sm uppercase tracking-tighter">Minerva</p>
+                         <p class="text-accent text-[10px] font-bold uppercase tracking-widest">{t('estetica.hero.specialist.role')}</p>
+                      </div>
+                   </div>
+
+                   <!-- Blaneirys -->
+                   <div class="space-y-4 pb-12">
+                      <div class="aspect-[3/4.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 transform hover:-translate-y-2 transition-all duration-700">
+                         <img src="/equipo/blaneirys.jpg" alt="Blaneirys" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
+                      </div>
+                      <div class="pl-4">
+                         <p class="text-primary font-black text-sm uppercase tracking-tighter">Blaneirys</p>
+                         <p class="text-accent text-[10px] font-bold uppercase tracking-widest">{t('estetica.hero.specialist.role')}</p>
+                      </div>
+                   </div>
+
+                   <!-- Floating Badge Connection -->
+                   <div class="absolute top-0 right-0 bg-primary text-white p-6 rounded-3xl shadow-xl shadow-primary/20 z-30 transform -rotate-6">
+                      <p class="text-[10px] font-black uppercase tracking-[0.2em] leading-tight opacity-60 mb-1">{t('estetica.hero.floating.specialists')}</p>
+                      <p class="text-lg font-black italic text-accent leading-none">{t('estetica.hero.floating.harmony')}</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Teeth Whitening Section -->
+    <section class="py-24 bg-slate-50 overflow-hidden">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up lg:pr-12">
+                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6">{t('estetica.whitening.badge')}</h2>
+                <h3 class="text-4xl font-black text-primary mb-8 leading-tight italic">{t('estetica.whitening.title')}</h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p set:html={t('estetica.whitening.desc')}></p>
+                   <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                      <h4 class="font-black text-primary mb-4 flex items-center gap-2">
+                         <Zap size={20} class="text-accent" /> {t('estetica.whitening.method.title')}
+                      </h4>
+                      <p class="text-sm mb-4 italic">{t('estetica.whitening.method.subtitle')}</p>
+                      <ul class="space-y-3">
+                         <li class="flex items-center gap-3 text-sm font-medium">
+                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                            {t('estetica.whitening.method.step1')}
+                         </li>
+                         <li class="flex items-center gap-3 text-sm font-medium">
+                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                            {t('estetica.whitening.method.step2')}
+                         </li>
+                         <li class="flex items-center gap-3 text-sm font-medium">
+                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                            {t('estetica.whitening.method.step3')}
+                         </li>
+                      </ul>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="grid grid-cols-2 gap-6 fade-up" style="transition-delay: 0.2s">
+                <div class="aspect-square bg-white p-8 rounded-[3rem] shadow-xl flex flex-col justify-center items-center text-center group hover:bg-accent transition-all duration-500">
+                   <div class="text-accent group-hover:text-white transition-colors mb-6"><Sparkles size={48} /></div>
+                   <p class="text-primary group-hover:text-white font-black text-xs uppercase tracking-[0.2em]">{t('estetica.whitening.box1.title')}</p>
+                </div>
+                <div class="aspect-square bg-primary p-8 rounded-[3rem] shadow-xl flex flex-col justify-center items-center text-center group hover:-translate-y-2 transition-all duration-500">
+                   <div class="text-accent mb-6"><ShieldCheck size={48} /></div>
+                   <p class="text-white font-black text-xs uppercase tracking-[0.2em]">{t('estetica.whitening.box2.title')}</p>
+                </div>
+                <div class="col-span-2 p-10 bg-white rounded-[3rem] border border-slate-100 shadow-sm flex items-center gap-8 group">
+                   <div class="w-20 h-20 bg-blue-50 text-accent rounded-2xl flex-none flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Camera size={32} />
+                   </div>
+                   <div>
+                      <h5 class="font-black text-primary mb-1 uppercase tracking-tighter">{t('estetica.whitening.box3.title')}</h5>
+                      <p class="text-xs text-slate-500">{t('estetica.whitening.box3.desc')}</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Veneers Section -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
+             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('estetica.veneers.badge')}</h4>
+             <h3 class="text-4xl md:text-5xl font-black text-primary mb-6 leading-tight">{t('estetica.veneers.title')}</h3>
+             <p class="text-slate-500 italic">{t('estetica.veneers.quote')}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8 mb-20">
+             <!-- Porcelain -->
+             <div class="fade-up bg-primary p-12 rounded-[4rem] text-white relative overflow-hidden group">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all"></div>
+                <div class="relative z-10">
+                   <span class="inline-block px-4 py-1 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-white/10">{t('estetica.veneers.porcelain.badge')}</span>
+                   <h4 class="text-3xl font-black mb-6 italic text-white">01. {t('estetica.veneers.porcelain.title')}</h4>
+                   <p class="text-slate-300 leading-relaxed mb-8">
+                      {t('estetica.veneers.porcelain.desc')}
+                   </p>
+                   <div class="flex items-center gap-4 text-accent font-black text-xs uppercase tracking-widest">
+                      <Layers size={20} /> {t('estetica.veneers.porcelain.feature')}
+                   </div>
+                </div>
+             </div>
+
+             <!-- Composite -->
+             <div class="fade-up bg-slate-50 p-12 rounded-[4rem] text-primary border border-slate-100 group">
+                <span class="inline-block px-4 py-1 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest mb-6">{t('estetica.veneers.composite.badge')}</span>
+                <h4 class="text-3xl font-black mb-6 italic">02. {t('estetica.veneers.composite.title')}</h4>
+                <p class="text-slate-500 leading-relaxed mb-8">
+                   {t('estetica.veneers.composite.desc')}
+                </p>
+                <div class="flex items-center gap-4 text-primary font-black text-xs uppercase tracking-widest">
+                   <Palette size={20} /> {t('estetica.veneers.composite.feature')}
+                </div>
+             </div>
+          </div>
+
+          <!-- Problems Solved -->
+          <div class="max-w-5xl mx-auto bg-[#0A1A2F] rounded-[3.5rem] p-12 md:p-20 relative overflow-hidden shadow-3xl text-white">
+             <div class="absolute top-0 right-0 w-1/3 h-full bg-accent/10 blur-3xl pointer-events-none"></div>
+             
+             <div class="lg:flex gap-20 items-center relative z-10">
+                <div class="lg:w-1/2 mb-12 lg:mb-0">
+                   <h3 class="text-3xl font-black mb-8 leading-tight italic text-white">{t('estetica.problems.title')}</h3>
+                   <ul class="space-y-4">
+                      {veneersProblems.map(problem => (
+                         <li class="flex items-center gap-4 group">
+                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
+                               <CheckCircle2 size={16} />
+                            </div>
+                            <span class="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">{problem}</span>
+                         </li>
+                      ))}
+                   </ul>
+                </div>
+                
+                <div class="lg:w-1/2">
+                   <div class="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
+                      <div class="flex gap-4 items-center mb-6">
+                         <div class="p-3 bg-accent text-white rounded-xl"><Star /></div>
+                         <h4 class="text-xl font-black text-white">{t('estetica.secret.title')}</h4>
+                      </div>
+                      <p class="text-slate-400 text-sm leading-relaxed italic">
+                         {t('estetica.secret.desc')}
+                      </p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('estetica.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('estetica.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

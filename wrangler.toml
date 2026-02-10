@@ -1,0 +1,14 @@
+name = "clinica-dental-koral"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Non-sensitive environment variables can go here
+RECIPIENT_EMAIL = "koraldentalclinic@gmail.com"
+
+# For sensitive variables (OAuth credentials), set them via:
+# npx wrangler secret put GMAIL_USER
+# npx wrangler secret put GMAIL_CLIENT_ID
+# npx wrangler secret put GMAIL_CLIENT_SECRET
+# npx wrangler secret put GMAIL_REFRESH_TOKEN
+# npx wrangler secret put GMAIL_ACCESS_TOKEN

@@ -1,0 +1,134 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { ChevronRight, Heart } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const teamMembers = [
+  { name: 'Dra. Ana Padilla', role: 'Cirugía, implantología y estética dental', image: '/equipo/Ana-padilla.jpg' },
+  { name: 'Melina Bernkopf', role: 'Recepcionista', image: '/equipo/Melina-bernkopf.jpg' },
+  { name: 'Dra. Ana Soler', role: 'Ortodoncista, Odontopediatría', image: '/equipo/ana-soler.jpg' },
+  { name: 'Ángela Perez', role: 'Auxiliar de clínica', image: '/equipo/angela-perez-.jpg' },
+  { name: 'Dra. Ángeles Parra', role: 'Odontología general, Endodoncista', image: '/equipo/angeles-parrar.jpg' },
+  { name: 'Ellé – Louise Warner', role: 'Asesora dental', image: '/equipo/elle-louise-warner.jpg' },
+  { name: 'Anda Dorela', role: 'Auxiliar de clínica', image: '/equipo/Anda-dorela.jpg' },
+  { name: 'Blaneirys Peña', role: 'Higienista Dental', image: '/equipo/blaneirys.jpg' },
+  { name: 'Minerva Aznar', role: 'Higienista Dental', image: '/equipo/minerva.jpg' },
+  { name: 'María Luisa Aguacil', role: 'Auxiliar de clínica', image: '/equipo/maria-luisa.jpg' },
+  { name: 'Dra. Lorraynne Barbosa', role: 'Odontología general', image: '/equipo/Lorraynne-Barbosa.jpg' }
+];
+
+const slug = lang === 'es' ? '/equipo' : `/${lang}/equipo`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      "name": t('team.meta.title'),
+      "description": t('team.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.team'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('team.meta.title')} description={t('team.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative min-h-[70vh] flex items-center pt-20 overflow-hidden bg-primary">
+      <div class="absolute inset-0 z-0">
+        <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt="Dra. Ana Padilla" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" />
+        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent"></div>
+      </div>
+      
+      <div class="container mx-auto px-6 relative z-10">
+        <div class="max-w-3xl fade-up">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-xs font-black tracking-widest uppercase mb-8 shadow-lg shadow-accent/20">
+            <Heart size={14} fill="currentColor" /> #personastratandopersonas
+          </span>
+          <h1 class="text-xs font-black uppercase tracking-[0.4em] text-accent-light mb-4">{t('team.factor')}</h1>
+          <h2 class="text-5xl md:text-7xl text-white mb-8 leading-[1.1] font-black underline-offset-8">
+            {t('team.page.title')}
+          </h2>
+          <div class="grid md:grid-cols-2 gap-12 mt-12">
+            <div class="prose prose-invert">
+              <p class="text-xl text-slate-300 leading-relaxed">
+                {t('team.page.lead')}
+              </p>
+            </div>
+            <div class="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10">
+               <p class="text-white italic text-lg leading-relaxed mb-6">
+                 {t('team.page.quote')}
+               </p>
+               <div class="flex items-center gap-4">
+                  <div class="h-12 w-12 rounded-full overflow-hidden border-2 border-accent">
+                    <img src="/equipo/Ana-padilla.jpg" alt="Ana Padilla" class="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p class="text-white font-black text-sm uppercase">{t('team.page.quote.author')}</p>
+                    <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('team.page.quote.role')}</p>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Intro Text -->
+    <section class="py-24 bg-white relative">
+       <div class="container mx-auto px-6">
+          <div class="max-w-4xl mx-auto text-center fade-up">
+             <h3 class="text-4xl md:text-5xl font-black text-primary mb-8">{t('team.page.intro.title')}</h3>
+             <p class="text-xl text-slate-600 leading-relaxed">
+               {t('team.page.intro.desc')}
+             </p>
+          </div>
+       </div>
+    </section>
+
+    <!-- Team Grid -->
+    <section class="pb-32 bg-slate-50/50">
+       <div class="container mx-auto px-6">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 -mt-20 relative z-20">
+             {teamMembers.map((member, index) => (
+               <div class="fade-up group" style={`transition-delay: ${index * 0.05}s`}>
+                  <div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl transition-all duration-500 hover:shadow-2xl hover:shadow-accent/10 hover:-translate-y-4">
+                     <div class="aspect-[4/5] overflow-hidden relative">
+                        <img src={member.image} alt={member.name} class="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                     </div>
+                     <div class="p-8">
+                        <h4 class="text-xl font-black text-primary mb-2 group-hover:text-accent transition-colors">{member.name}</h4>
+                        <p class="text-xs font-black uppercase tracking-widest text-slate-400 leading-loose">
+                           {member.role}
+                        </p>
+                     </div>
+                  </div>
+               </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>

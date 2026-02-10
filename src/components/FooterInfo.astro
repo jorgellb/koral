@@ -1,0 +1,112 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { Facebook, Instagram, Phone, MapPin, Clock, ArrowRight } from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="section-padding bg-white border-t border-slate-100">
+  <div class="container mx-auto px-6">
+    <div class="grid lg:grid-cols-4 md:grid-cols-2 gap-12">
+      <!-- About -->
+      <div class="space-y-6 fade-up">
+        <img src="/Logo/logokoral.png" alt="Koral Logo" class="w-48" />
+        <p class="text-slate-500 leading-relaxed">
+           {t('footer.about.desc')}
+        </p>
+        <div class="flex gap-4">
+           <a href="https://www.facebook.com/koralclinicadental" target="_blank" rel="noopener" class="p-3 bg-slate-50 rounded-xl hover:bg-accent hover:text-white transition-all"><Facebook size={20} /></a>
+           <a href="https://www.instagram.com/koraldental" target="_blank" rel="noopener" class="p-3 bg-slate-50 rounded-xl hover:bg-accent hover:text-white transition-all"><Instagram size={20} /></a>
+           <a href="https://www.tiktok.com/@koraldental" target="_blank" rel="noopener" class="p-3 bg-slate-50 rounded-xl hover:bg-accent hover:text-white transition-all">
+             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.47-.88-.64-1.6-1.51-2.03-2.52v9.3c.01 1.25-.32 2.51-1.01 3.55-.7 1.05-1.74 1.87-2.92 2.33-1.18.47-2.5.54-3.73.22-1.22-.32-2.33-1.04-3.15-2.01-.82-.97-1.31-2.22-1.38-3.48-.07-1.26.24-2.54.91-3.62.67-1.08 1.71-1.93 2.92-2.37.76-.28 1.56-.4 2.37-.38v4.03c-.63-.04-1.28.08-1.85.38-.56.3-.98.81-1.18 1.4-.2.59-.16 1.26.11 1.81.27.55.76.98 1.34 1.18.57.2 1.22.16 1.76-.11.54-.27.94-.75 1.12-1.32.06-.18.09-.37.09-.57V.02z"/></svg>
+           </a>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="space-y-6 fade-up" style="transition-delay: 0.1s">
+        <h4 class="text-xs font-black uppercase tracking-[0.3em] text-accent flex items-center gap-2">
+           <Clock size={14} /> {t('footer.schedule.title')}
+        </h4>
+        <ul class="space-y-3 text-slate-600">
+           <li class="flex justify-between border-b border-slate-50 pb-2"><span>{t('footer.schedule.mon')}:</span> <span class="font-bold text-primary">10:00–20:00</span></li>
+           <li class="flex justify-between border-b border-slate-50 pb-2"><span>{t('footer.schedule.tue')}:</span> <span class="font-bold text-primary">08:00–16:00</span></li>
+           <li class="flex justify-between border-b border-slate-50 pb-2"><span>{t('footer.schedule.wed')}:</span> <span class="font-bold text-primary">10:00–18:00</span></li>
+           <li class="flex justify-between border-b border-slate-50 pb-2"><span>{t('footer.schedule.thu')}:</span> <span class="font-bold text-primary">08:00–16:00</span></li>
+           <li class="flex justify-between border-b border-slate-50 pb-2"><span>{t('footer.schedule.fri')}:</span> <span class="font-bold text-primary">08:00–16:00</span></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="space-y-6 fade-up" style="transition-delay: 0.2s">
+        <h4 class="text-xs font-black uppercase tracking-[0.3em] text-accent flex items-center gap-2">
+           <Phone size={14} /> {t('footer.contact.title')}
+        </h4>
+        <div class="p-6 rounded-[2rem] border border-slate-100 space-y-6 bg-slate-50/10 transition-all hover:border-accent group">
+           <!-- Phone Item -->
+           <a href="tel:+34950395319" class="flex items-center gap-4 group/item">
+              <div class="text-accent group-hover/item:scale-110 transition-transform"><Phone size={24} /></div>
+              <div>
+                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('footer.contact.cta')}</p>
+                 <p class="text-primary font-bold">+34 950 39 53 19</p>
+              </div>
+           </a>
+           
+           <div class="h-px bg-slate-100"></div>
+
+           <!-- WhatsApp Item -->
+           <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="flex items-center gap-4 group/item">
+              <div class="text-accent group-hover/item:scale-110 transition-transform">
+                 <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.396.015 12.03a11.811 11.811 0 001.592 5.96L0 24l6.117-1.605a11.803 11.803 0 005.925 1.577h.005c6.632 0 12.028-5.398 12.03-12.03a11.85 11.85 0 00-3.486-8.422z"/></svg>
+              </div>
+              <div>
+                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">WhatsApp</p>
+                 <p class="text-primary font-bold">+34 634 683 639</p>
+              </div>
+           </a>
+        </div>
+      </div>
+
+      <!-- Quick Links / Location -->
+      <div class="space-y-6 fade-up" style="transition-delay: 0.3s">
+        <h4 class="text-xs font-black uppercase tracking-[0.3em] text-accent flex items-center gap-2">
+           <MapPin size={14} /> {t('footer.location.title')}
+        </h4>
+        <p class="text-slate-600 font-bold leading-snug">
+           Av. de Baria, 4, local<br/>04620 Vera, Almería
+        </p>
+        <a href="https://www.google.com/maps/dir/?api=1&destination=Clinica+Dental+Koral+Vera+Almeria" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest text-xs hover:text-accent transition-colors group">
+           {t('footer.location.how-to-get')} <ArrowRight size={14} class="group-hover:translate-x-1 transition-transform" />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Full Width Map with high-end overlay -->
+<section class="relative h-[450px] w-full group overflow-hidden grayscale hover:grayscale-0 transition-all duration-1000">
+  <iframe 
+    src="https://maps.google.com/maps?q=Av.%20de%20Baria,%204,%2004620%20Vera,%20Almer%C3%ADa&t=&z=17&ie=UTF8&iwloc=&output=embed" 
+    class="w-full h-full border-0"
+    allowfullscreen="" 
+    loading="lazy" 
+    referrerpolicy="no-referrer-when-downgrade"
+    title="Clinica Dental Koral - Ubicacion en Vera, Almeria">
+  </iframe>
+  <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+</section>
+
+<footer class="py-12 bg-white border-t border-slate-50">
+  <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+    <p class="text-slate-400 text-sm font-medium">
+      {new Date().getFullYear()} &copy; {t('footer.rights')}
+    </p>
+    
+    <div class="flex gap-8 text-xs font-black uppercase tracking-widest text-slate-400">
+       <a href={lang === 'es' ? '/aviso-legal' : lang === 'en' ? '/en/legal-notice' : lang === 'de' ? '/de/impressum' : lang === 'nl' ? '/nl/juridische-mededeling' : '/fr/mentions-legales'} class="hover:text-primary transition-colors">{t('footer.legal.notice')}</a>
+       <a href={lang === 'es' ? '/politica-privacidad' : lang === 'en' ? '/en/privacy-policy' : lang === 'de' ? '/de/datenschutz' : lang === 'nl' ? '/nl/privacybeleid' : '/fr/politique-de-confidentialite'} class="hover:text-primary transition-colors">{t('footer.legal.privacy')}</a>
+       <a href={lang === 'es' ? '/cookies' : lang === 'en' ? '/en/cookie-policy' : lang === 'de' ? '/de/cookies' : lang === 'nl' ? '/nl/cookies' : '/fr/cookies'} class="hover:text-primary transition-colors">{t('footer.legal.cookies')}</a>
+    </div>
+  </div>
+</footer>

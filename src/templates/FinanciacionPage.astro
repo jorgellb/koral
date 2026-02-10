@@ -1,0 +1,154 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  CreditCard, 
+  Users, 
+  Gem, 
+  CheckCircle2, 
+  Star,
+  Quote
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={t('financiacion.meta.title')} description={t('financiacion.meta.description')} lang={lang}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative pt-40 pb-24 bg-slate-50 overflow-hidden">
+       <div class="absolute top-0 right-0 w-1/2 h-full bg-accent/5 -skew-x-12 translate-x-20 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full mb-8 shadow-sm">
+                   <CreditCard size={16} class="text-accent" />
+                   <span class="text-xs font-black uppercase tracking-widest text-primary">{t('financiacion.hero.badge')}</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black text-primary leading-[1.1] mb-8">
+                   {t('financiacion.hero.title')}
+                </h1>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-8">
+                   {t('financiacion.hero.p1')}
+                </p>
+                <div class="p-4 bg-accent/10 border-l-4 border-accent rounded-r-2xl">
+                   <p class="text-[10px] font-bold text-accent uppercase tracking-wider leading-relaxed">
+                      {t('financiacion.hero.keywords')}
+                   </p>
+                </div>
+             </div>
+             
+             <div class="fade-up" style="transition-delay: 0.2s">
+                <div class="relative">
+                   <div class="absolute -inset-4 bg-accent/10 rounded-[3rem] rotate-2"></div>
+                   <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-700">
+                      <img src="/precio-financiacion/precio-financiacion-dental-vera-almeria.jpg" alt={t('financiacion.image.alt')} class="w-full h-full object-cover" />
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Content Sections -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-20 items-stretch">
+             <!-- Multidisciplinary -->
+             <div class="fade-up p-12 bg-slate-50 rounded-[3rem] border border-slate-100 flex flex-col h-full">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-accent shadow-sm mb-8">
+                   <Users size={32} />
+                </div>
+                <h2 class="text-3xl font-black text-primary mb-6">{t('financiacion.multidisciplinary.title')}</h2>
+                <p class="text-lg text-slate-600 leading-relaxed mb-8 flex-grow">
+                   {t('financiacion.multidisciplinary.p1')}
+                </p>
+                <div class="pt-8 border-t border-slate-200">
+                   <div class="flex items-center gap-3 text-accent font-black uppercase tracking-widest text-xs">
+                      <CheckCircle2 size={16} />
+                      Presupuestos detallados por área
+                   </div>
+                </div>
+             </div>
+
+             <!-- Your Ally -->
+             <div class="fade-up p-12 bg-white rounded-[3rem] border border-slate-100 shadow-xl flex flex-col h-full section-hover">
+                <div class="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent shadow-sm mb-8">
+                   <Star size={32} />
+                </div>
+                <h2 class="text-3xl font-black text-primary mb-6 italic">{t('financiacion.ally.title')}</h2>
+                <p class="text-lg text-slate-600 leading-relaxed mb-8 flex-grow">
+                   {t('financiacion.ally.p1')}
+                </p>
+                <div class="pt-8 border-t border-slate-100">
+                   <p class="text-xs font-black text-accent uppercase tracking-[0.2em] leading-tight">
+                      Sin bancos · Sin intereses · A tu medida
+                   </p>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Quality Investment -->
+    <section class="py-32 bg-slate-900 overflow-hidden relative">
+       <div class="absolute inset-0 opacity-10">
+          <svg width="100%" height="100%"><pattern id="gridLarge" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#gridLarge)"/></svg>
+       </div>
+
+       <div class="container mx-auto px-6 relative z-10 text-white">
+          <div class="max-w-4xl mx-auto text-center mb-20 fade-up">
+             <div class="inline-block p-4 bg-accent rounded-full mb-8 shadow-xl shadow-accent/20">
+                <Gem size={32} />
+             </div>
+             <h2 class="text-4xl md:text-6xl font-black mb-10 leading-tight text-white">
+                {t('financiacion.quality.title')}
+             </h2>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+             <div class="fade-up group p-10 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 hover:bg-white/10 transition-all">
+                <p class="text-lg leading-relaxed text-white">
+                   {t('financiacion.quality.p1')}
+                </p>
+             </div>
+             <div class="fade-up group p-10 bg-accent/20 backdrop-blur-md rounded-[2.5rem] border border-accent/20 hover:bg-accent/30 transition-all shadow-2xl">
+                <p class="text-lg leading-relaxed text-white">
+                   {t('financiacion.quality.p2')}
+                </p>
+             </div>
+             <div class="fade-up group p-10 bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 hover:bg-white/10 transition-all">
+                <p class="text-lg leading-relaxed text-white font-medium italic">
+                   {t('financiacion.quality.p3')}
+                </p>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Quote -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6 max-w-4xl text-center">
+          <div class="fade-up flex flex-col items-center">
+             <Quote size={48} class="text-accent/20 mb-8" />
+             <p class="text-3xl md:text-4xl font-serif italic text-primary leading-tight mb-8">
+                "{t('financiacion.quote')}"
+             </p>
+             <div class="w-20 h-1 bg-accent rounded-full"></div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>

@@ -1,0 +1,254 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  Sparkles, 
+  Droplets, 
+  Heart, 
+  ShieldCheck, 
+  Smile, 
+  CheckCircle2, 
+  HelpCircle, 
+  Zap,
+  Target,
+  Sun
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const definitionTitle = t('armonia.definition.title').replace('<br/>', '<br/>');
+
+const benefits = [
+  t('armonia.hylauronic.benefits.1'),
+  t('armonia.hylauronic.benefits.2'),
+  t('armonia.hylauronic.benefits.3'),
+  t('armonia.hylauronic.benefits.4'),
+  t('armonia.hylauronic.benefits.5'),
+  t('armonia.hylauronic.benefits.6')
+];
+
+const faqs = [
+  {
+    question: t('armonia.faq.q1.q'),
+    answer: t('armonia.faq.q1.a')
+  },
+  {
+    question: t('armonia.faq.q2.q'),
+    answer: t('armonia.faq.q2.a')
+  },
+  {
+    question: t('armonia.faq.q3.q'),
+    answer: t('armonia.faq.q3.a')
+  },
+  {
+    question: t('armonia.faq.q4.q'),
+    answer: t('armonia.faq.q4.a')
+  },
+  {
+    question: t('armonia.faq.q5.q'),
+    answer: t('armonia.faq.q5.a')
+  }
+];
+
+const slug = lang === 'es' ? '/armonia-orofacial' : `/${lang}/armonia-orofacial`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('armonia.meta.title'),
+      "description": t('armonia.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.armonia'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('armonia.meta.title')} description={t('armonia.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section: Premium Aesthetics -->
+    <section class="relative pt-32 pb-24 bg-white overflow-hidden">
+       <!-- Gradient decoration -->
+       <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-pink-50/50 via-blue-50/30 to-transparent pointer-events-none"></div>
+       <div class="absolute -top-24 -right-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <span class="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-500 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 border border-pink-100 shadow-sm">
+                   <Sparkles size={14} /> {t('armonia.hero.badge')}
+                </span>
+                <h1 class="text-5xl md:text-8xl font-black text-primary leading-[0.9] tracking-tighter mb-8">
+                   {t('armonia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('armonia.hero.title.span')}</span>
+                </h1>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-10">
+                   {t('armonia.hero.desc')}
+                </p>
+                <div class="flex flex-wrap gap-4">
+                   <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                      <ShieldCheck size={18} class="text-accent" />
+                      <span class="text-xs font-black text-primary uppercase tracking-tighter">{t('armonia.hero.safe')}</span>
+                   </div>
+                   <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                      <Target size={18} class="text-accent" />
+                      <span class="text-xs font-black text-primary uppercase tracking-tighter">{t('armonia.hero.natural')}</span>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="relative fade-up" style="transition-delay: 0.2s">
+                <div class="aspect-[4/5] rounded-[3.5rem] overflow-hidden shadow-2xl relative group">
+                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt={t('armonia.hero.image.alt')} class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" />
+                   <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
+                   
+                   <!-- Floating Quote -->
+                   <div class="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl">
+                      <p class="text-primary font-black italic text-lg leading-tight mb-2">{t('armonia.hero.quote')}</p>
+                      <div class="flex items-center gap-2">
+                         <div class="w-6 h-0.5 bg-accent"></div>
+                         <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('armonia.hero.philosophy')}</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Definition Section -->
+    <section class="py-24 bg-slate-50 relative overflow-hidden">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-20 items-center">
+             <div class="fade-up">
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-6">{t('armonia.definition.badge')}</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight" set:html={definitionTitle}></h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p>
+                      {t('armonia.definition.p1')}
+                   </p>
+                   <p>
+                      {t('armonia.definition.p2')}
+                   </p>
+                </div>
+             </div>
+             
+             <div class="grid grid-cols-2 gap-6 fade-up" style="transition-delay: 0.2s">
+                <div class="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
+                   <div class="w-12 h-12 bg-pink-50 text-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Heart /></div>
+                   <h4 class="font-black text-primary mb-3 text-sm uppercase">{t('armonia.definition.card1.title')}</h4>
+                   <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{t('armonia.definition.card1.desc')}</p>
+                </div>
+                <div class="p-8 bg-primary rounded-[2.5rem] p-8 text-white shadow-xl hover:-translate-y-2 transition-transform group">
+                   <div class="w-12 h-12 bg-white/10 text-accent rounded-xl flex items-center justify-center mb-6"><Sun /></div>
+                   <h4 class="font-black text-white mb-3 text-sm uppercase">{t('armonia.definition.card2.title')}</h4>
+                   <p class="text-[10px] text-white/60 font-bold uppercase tracking-widest leading-relaxed">{t('armonia.definition.card2.desc')}</p>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Hyaluronic Acid Section -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6">
+          <div class="max-w-6xl mx-auto bg-slate-900 rounded-[4rem] overflow-hidden shadow-3xl flex flex-col lg:flex-row text-white">
+             <div class="lg:w-1/2 p-12 md:p-20 flex flex-col justify-center">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-[10px] font-black tracking-widest uppercase mb-8">{t('armonia.hylauronic.badge')}</div>
+                <h3 class="text-4xl md:text-6xl font-black mb-8 italic text-white">{t('armonia.hylauronic.title')}</h3>
+                <p class="text-slate-300 text-lg leading-relaxed mb-10">
+                   {t('armonia.hylauronic.desc')}
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                   <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
+                      <div class="text-accent mb-2"><Droplets size={24} /></div>
+                      <p class="text-xs font-black uppercase tracking-widest">{t('armonia.hylauronic.hydration')}</p>
+                   </div>
+                   <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
+                      <div class="text-accent mb-2"><Zap size={24} /></div>
+                      <p class="text-xs font-black uppercase tracking-widest">{t('armonia.hylauronic.immediate')}</p>
+                   </div>
+                </div>
+             </div>
+             <div class="lg:w-1/2 bg-slate-100 p-12 md:p-20 text-primary">
+                <h4 class="text-3xl font-black mb-10 leading-tight">{t('armonia.hylauronic.why_choose')}</h4>
+                <div class="space-y-4">
+                   {benefits.map(benefit => (
+                      <div class="flex items-center gap-4 group">
+                         <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 size={16} /></div>
+                         <span class="font-bold text-sm tracking-tight text-slate-700">{benefit}</span>
+                      </div>
+                   ))}
+                </div>
+                <!-- Mini Tag -->
+                <div class="mt-12 p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
+                   <Smile class="text-accent" size={32} />
+                   <p class="text-xs text-slate-500 font-medium leading-relaxed italic">{t('armonia.hylauronic.note')}</p>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('armonia.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('armonia.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

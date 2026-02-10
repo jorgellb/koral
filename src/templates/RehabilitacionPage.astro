@@ -1,0 +1,262 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  Compass, 
+  Layers, 
+  ShieldCheck, 
+  Zap, 
+  Search, 
+  CheckCircle2, 
+  HelpCircle, 
+  Activity,
+  Box,
+  Binary
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const heroPlanning = t('rehabilitacion.hero.planning').replace(' ', '<br/>');
+const heroResults = t('rehabilitacion.hero.results').replace('Resultados ', 'Resultados <br/>');
+const visionTitle = t('rehabilitacion.vision.title').replace(' que', ' que<br/>');
+
+const pillars = [
+  {
+    title: t('rehabilitacion.pillar.1.title'),
+    desc: t('rehabilitacion.pillar.1.desc'),
+    icon: Search
+  },
+  {
+    title: t('rehabilitacion.pillar.2.title'),
+    desc: t('rehabilitacion.pillar.2.desc'),
+    icon: Compass
+  },
+  {
+    title: t('rehabilitacion.pillar.3.title'),
+    desc: t('rehabilitacion.pillar.3.desc'),
+    icon: Layers
+  },
+  {
+    title: t('rehabilitacion.pillar.4.title'),
+    desc: t('rehabilitacion.pillar.4.desc'),
+    icon: Activity
+  }
+];
+
+const faqs = [
+  {
+    question: t('rehabilitacion.faq.q1.q'),
+    answer: t('rehabilitacion.faq.q1.a')
+  },
+  {
+    question: t('rehabilitacion.faq.q2.q'),
+    answer: t('rehabilitacion.faq.q2.a')
+  },
+  {
+    question: t('rehabilitacion.faq.q3.q'),
+    answer: t('rehabilitacion.faq.q3.a')
+  },
+  {
+    question: t('rehabilitacion.faq.q4.q'),
+    answer: t('rehabilitacion.faq.q4.a')
+  },
+  {
+    question: t('rehabilitacion.faq.q5.q'),
+    answer: t('rehabilitacion.faq.q5.a')
+  }
+];
+
+const slug = lang === 'es' ? '/rehabilitacion-oral' : `/${lang}/rehabilitacion-oral`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('rehabilitacion.meta.title'),
+      "description": t('rehabilitacion.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.rehabilitacion'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('rehabilitacion.meta.title')} description={t('rehabilitacion.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-24 bg-slate-900 overflow-hidden">
+       <!-- Abstract architecture lines -->
+       <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+          <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+             <path d="M0,1000 L1000,0 M200,1000 L1000,200 M400,1000 L1000,400 M600,1000 L1000,600 M800,1000 L1000,800" stroke="white" stroke-width="0.5" fill="none" />
+             <path d="M1000,1000 L0,0 M800,1000 L0,200 M600,1000 L0,400 M400,1000 L0,600 M200,1000 L0,800" stroke="white" stroke-width="0.5" fill="none" />
+          </svg>
+       </div>
+       
+       <div class="container mx-auto px-6 relative z-10 text-white">
+          <div class="max-w-4xl">
+             <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-lg shadow-accent/20">
+                {t('rehabilitacion.hero.badge')}
+             </span>
+             <h1 class="text-5xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter text-white">
+                {t('rehabilitacion.hero.title')} <br/> <span class="text-accent underline decoration-accent/30 underline-offset-8 italic">{t('rehabilitacion.hero.title.span')}</span>
+             </h1>
+             <p class="text-xl md:text-2xl text-slate-300 leading-relaxed mb-12 max-w-2xl font-light">
+                {t('rehabilitacion.hero.desc')}
+             </p>
+             <div class="flex gap-6">
+                 <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-accent ring-1 ring-white/20"><Binary /></div>
+                    <p class="text-[10px] font-black uppercase tracking-widest leading-tight" set:html={heroPlanning}></p>
+                 </div>
+                 <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-accent ring-1 ring-white/20"><ShieldCheck /></div>
+                    <p class="text-[10px] font-black uppercase tracking-widest leading-tight" set:html={heroResults}></p>
+                 </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Integral Vision Section -->
+    <section class="py-24 bg-white relative">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-20 items-center">
+             <div class="fade-up">
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-6">{t('rehabilitacion.vision.badge')}</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight" set:html={visionTitle}></h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p>
+                      {t('rehabilitacion.vision.p1')}
+                   </p>
+                   <p class="italic border-l-4 border-accent pl-8 py-2">
+                      {t('rehabilitacion.vision.quote')}
+                   </p>
+                </div>
+             </div>
+             
+             <div class="grid grid-cols-2 gap-4 fade-up" style="transition-delay: 0.2s">
+                {pillars.map((pillar, idx) => (
+                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-all group">
+                      <div class="text-accent mb-4 group-hover:scale-110 transition-transform"><pillar.icon size={32} /></div>
+                      <h4 class="font-black text-primary mb-2 text-sm uppercase tracking-tighter">{pillar.title}</h4>
+                      <p class="text-[10px] text-slate-500 font-medium leading-relaxed uppercase">{pillar.desc}</p>
+                   </div>
+                ))}
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Conservative Philosophy -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6">
+          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
+             <h4 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('rehabilitacion.philosophy.badge')}</h4>
+             <h3 class="text-4xl md:text-5xl font-black text-primary mb-6 leading-tight italic">{t('rehabilitacion.philosophy.title')}</h3>
+             <p class="text-slate-500">{t('rehabilitacion.philosophy.desc')}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-12">
+             <!-- Inlays vs Crowns -->
+             <div class="fade-up bg-white p-12 rounded-[4rem] shadow-xl border border-slate-100 group">
+                <div class="flex gap-6 items-start mb-8">
+                   <div class="p-4 bg-accent/10 text-accent rounded-2xl group-hover:bg-accent group-hover:text-white transition-all"><Box size={32} /></div>
+                   <div>
+                      <h4 class="text-2xl font-black text-primary mb-2">{t('rehabilitacion.inlays.title')}</h4>
+                      <p class="text-sm font-bold text-accent uppercase tracking-widest">{t('rehabilitacion.inlays.subtitle')}</p>
+                   </div>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-10" set:html={t('rehabilitacion.inlays.desc')}></p>
+                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-sm text-slate-500">
+                   <div class="text-accent"><CheckCircle2 size={16} /></div>
+                   {t('rehabilitacion.inlays.check')}
+                </div>
+             </div>
+
+             <!-- Decay Prevention -->
+             <div class="fade-up bg-primary p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden group">
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                <div class="relative z-10">
+                   <h4 class="text-2xl font-black mb-8 italic text-white">{t('rehabilitacion.prevention.title')}</h4>
+                   <p class="text-slate-300 leading-relaxed mb-10">
+                      {t('rehabilitacion.prevention.desc')}
+                   </p>
+                   <ul class="space-y-4">
+                      <li class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                         <Search size={20} class="text-accent" />
+                         <span class="text-xs font-black uppercase tracking-widest">{t('rehabilitacion.prevention.list.1')}</span>
+                      </li>
+                      <li class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                         <Activity size={20} class="text-accent" />
+                         <span class="text-xs font-black uppercase tracking-widest">{t('rehabilitacion.prevention.list.2')}</span>
+                      </li>
+                   </ul>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-white">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('rehabilitacion.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('rehabilitacion.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl bg-slate-50 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-white pt-6">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

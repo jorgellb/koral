@@ -1,0 +1,338 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import { 
+  ShieldCheck, 
+  Zap, 
+  Search, 
+  CheckCircle2, 
+  HelpCircle, 
+  AlertCircle,
+  Microscope,
+  Stethoscope,
+  Scissors,
+  Syringe,
+  History,
+  Target
+} from 'lucide-astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const heroEfficient = t('cirugia.hero.efficient').replace('<br/>', '<br/>');
+const heroPostop = t('cirugia.hero.postop').replace('<br/>', '<br/>');
+const expertiseBioSafetyTitle = t('cirugia.expertise.bio_safety.title').replace('<br/>', '<br/>');
+const expertiseAnesthesiaTitle = t('cirugia.expertise.anesthesia.title').replace('<br/>', '<br/>');
+const wisdomTitle = t('cirugia.wisdom.title').replace('<br/>', '<br/>');
+
+const procedures = [
+  {
+    title: t('cirugia.procedures.1.title'),
+    desc: t('cirugia.procedures.1.desc'),
+    icon: Scissors
+  },
+  {
+    title: t('cirugia.procedures.2.title'),
+    desc: t('cirugia.procedures.2.desc'),
+    icon: Target
+  },
+  {
+    title: t('cirugia.procedures.3.title'),
+    desc: t('cirugia.procedures.3.desc'),
+    icon: Microscope
+  },
+  {
+    title: t('cirugia.procedures.4.title'),
+    desc: t('cirugia.procedures.4.desc'),
+    icon: Stethoscope
+  }
+];
+
+const faqs = [
+  {
+    question: t('cirugia.faq.q1.q'),
+    answer: t('cirugia.faq.q1.a')
+  },
+  {
+    question: t('cirugia.faq.q2.q'),
+    answer: t('cirugia.faq.q2.a')
+  },
+  {
+    question: t('cirugia.faq.q3.q'),
+    answer: t('cirugia.faq.q3.a')
+  },
+  {
+    question: t('cirugia.faq.q4.q'),
+    answer: t('cirugia.faq.q4.a')
+  },
+  {
+    question: t('cirugia.faq.q5.q'),
+    answer: t('cirugia.faq.q5.a')
+  }
+];
+
+const slug = lang === 'es' ? '/cirugia-oral' : `/${lang}/cirugia-oral`;
+const pageSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "name": t('cirugia.meta.title'),
+      "description": t('cirugia.meta.description'),
+      "url": `https://clinicadentalkoral.es${slug}`,
+      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
+        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.cirugia'), "item": `https://clinicadentalkoral.es${slug}` }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={t('cirugia.meta.title')} description={t('cirugia.meta.description')} lang={lang} schema={pageSchema}>
+  <Navigation />
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-24 bg-slate-50 overflow-hidden">
+       <!-- Geometric aesthetic background -->
+       <div class="absolute top-0 right-0 w-1/2 h-full bg-primary/5 -skew-x-12 translate-x-20 pointer-events-none"></div>
+       
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+             <div class="fade-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full mb-8 shadow-sm">
+                   <ShieldCheck size={16} class="text-accent" />
+                   <span class="text-xs font-black uppercase tracking-widest text-primary">{t('cirugia.hero.badge')}</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
+                   {t('cirugia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('cirugia.hero.title.span')}</span>
+                </h1>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-10">
+                   {t('cirugia.hero.desc')}
+                </p>
+                <div class="flex items-center gap-6">
+                   <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-accent shadow-sm border border-slate-100"><Zap /></div>
+                      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary" set:html={heroEfficient}></p>
+                   </div>
+                   <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-xl"><History /></div>
+                      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary" set:html={heroPostop}></p>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="relative fade-up" style="transition-delay: 0.2s">
+                <div class="aspect-video lg:aspect-square bg-white rounded-[3.5rem] border border-slate-100 shadow-2xl overflow-hidden relative group">
+                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt={t('cirugia.hero.image.alt')} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                   <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
+                   <!-- Experience Badge -->
+                   <div class="absolute bottom-8 left-8 right-8 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
+                      <p class="text-primary font-black text-lg mb-1 italic">{t('cirugia.hero.doctor')}</p>
+                      <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('cirugia.hero.specialist')}</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Expertise & Facilities -->
+    <section class="py-24 bg-white relative">
+       <div class="container mx-auto px-6">
+          <div class="grid lg:grid-cols-2 gap-20 items-center">
+             <div class="order-2 lg:order-1 fade-up">
+                <div class="grid grid-cols-2 gap-6 md:gap-8">
+                   <!-- Seguridad Biológica -->
+                   <div class="relative group">
+                      <div class="absolute -inset-2 bg-gradient-to-r from-accent to-blue-400 rounded-[2.5rem] opacity-0 group-hover:opacity-10 transition-opacity blur-xl"></div>
+                      <div class="relative h-full bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 hover:border-accent/30 transition-all duration-500 shadow-sm hover:shadow-xl">
+                         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-accent shadow-sm mb-6 group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                            <ShieldCheck size={32} />
+                         </div>
+                         <h4 class="font-black text-primary text-base uppercase tracking-tight mb-3" set:html={expertiseBioSafetyTitle}></h4>
+                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{t('cirugia.expertise.bio_safety.desc')}</p>
+                      </div>
+                   </div>
+
+                   <!-- Anestesia Local -->
+                   <div class="relative group lg:mt-12">
+                      <div class="absolute -inset-2 bg-gradient-to-r from-primary to-slate-800 rounded-[2.5rem] opacity-0 group-hover:opacity-10 transition-opacity blur-xl"></div>
+                      <div class="relative h-full bg-primary rounded-[2.5rem] p-8 text-white shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                         <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-accent mb-6">
+                            <Syringe size={32} />
+                         </div>
+                         <h4 class="font-black text-white text-base uppercase tracking-tight mb-3" set:html={expertiseAnesthesiaTitle}></h4>
+                         <p class="text-[10px] text-white/60 font-medium uppercase tracking-widest leading-relaxed">{t('cirugia.expertise.anesthesia.desc')}</p>
+                      </div>
+                   </div>
+
+                   <!-- Cabinet Info (Full Width) -->
+                   <div class="col-span-2 p-10 bg-white rounded-[3.5rem] border border-slate-100 flex flex-col md:flex-row items-center gap-10 shadow-sm hover:shadow-md transition-shadow">
+                      <div class="w-24 h-24 bg-accent/10 text-accent rounded-3xl flex items-center justify-center flex-none relative overflow-hidden group">
+                         <div class="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                         <Microscope size={48} class="relative z-10 group-hover:text-white transition-colors" />
+                      </div>
+                      <div>
+                         <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest mb-4">{t('cirugia.expertise.cabinet.badge')}</div>
+                         <h5 class="text-2xl font-black text-primary mb-3 italic">{t('cirugia.expertise.cabinet.title')}</h5>
+                         <p class="text-sm text-slate-500 leading-relaxed font-medium capitalize">{t('cirugia.expertise.cabinet.desc')}</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+             
+             <div class="order-1 lg:order-2 fade-up" style="transition-delay: 0.2s">
+                <h2 class="text-sm font-black uppercase tracking-[0.4em] text-accent mb-6">{t('cirugia.excellence.badge')}</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight">{t('cirugia.excellence.title')}</h3>
+                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
+                   <p>
+                      {t('cirugia.excellence.p1')}
+                   </p>
+                   <p set:html={t('cirugia.excellence.p2')}>
+                   </p>
+                   <div class="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 border-l-4 border-l-accent">
+                      <p class="text-sm font-bold text-primary italic">{t('cirugia.excellence.quote')}</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- Surgical Procedures -->
+    <section class="py-24 bg-primary text-white overflow-hidden relative">
+       <!-- Grid decorative background -->
+       <div class="absolute inset-0 opacity-10">
+          <svg width="100%" height="100%"><pattern id="gridSurgery" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="white" stroke-width="0.5"/></pattern><rect width="100%" height="100%" fill="url(#gridSurgery)"/></svg>
+       </div>
+
+       <div class="container mx-auto px-6 relative z-10">
+          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
+             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('cirugia.procedures.badge')}</h4>
+             <h3 class="text-4xl md:text-6xl font-black mb-10 text-white">{t('cirugia.procedures.title')}</h3>
+          </div>
+
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+             {procedures.map((proc, idx) => (
+                <div class="fade-up group" style={`transition-delay: ${idx * 0.1}s`}>
+                   <div class="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[3rem] h-full hover:bg-white/10 transition-all flex flex-col items-center text-center">
+                      <div class="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-xl shadow-accent/5">
+                         <proc.icon size={32} />
+                      </div>
+                      <h5 class="text-xl font-black mb-4 italic text-white">{proc.title}</h5>
+                      <p class="text-slate-400 text-sm leading-relaxed">{proc.desc}</p>
+                   </div>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Wisdom Teeth Focus -->
+    <section class="py-24 bg-white relative">
+       <div class="container mx-auto px-6">
+          <div class="max-w-6xl mx-auto rounded-[4rem] border-2 border-slate-100 p-12 md:p-20 relative overflow-hidden bg-slate-50 group">
+             <!-- Interactive corner -->
+             <div class="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-bl-[4rem] flex items-center justify-center text-accent">
+                <AlertCircle size={40} />
+             </div>
+             
+             <div class="lg:flex gap-16 items-center">
+                <div class="lg:w-1/2 mb-12 lg:mb-0">
+                   <h2 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('cirugia.wisdom.badge')}</h2>
+                   <h3 class="text-4xl font-black text-primary mb-8 leading-tight italic" set:html={wisdomTitle}></h3>
+                   <div class="space-y-6 text-slate-600 leading-relaxed text-lg">
+                      <p>
+                         {t('cirugia.wisdom.p1')}
+                      </p>
+                      <p set:html={t('cirugia.wisdom.p2')}>
+                      </p>
+                   </div>
+                </div>
+                
+                <div class="lg:w-1/2">
+                   <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                      <h4 class="text-primary font-black text-xl mb-6">{t('cirugia.wisdom.reasons.title')}</h4>
+                      <ul class="space-y-4">
+                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.1')}</span>
+                         </li>
+                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.2')}</span>
+                         </li>
+                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.3')}</span>
+                         </li>
+                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
+                            <CheckCircle2 class="text-accent flex-none" size={20} />
+                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.4')}</span>
+                         </li>
+                      </ul>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-24 bg-slate-50">
+       <div class="container mx-auto px-6 max-w-4xl">
+          <div class="text-center mb-16 fade-up">
+             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('cirugia.faq.badge')}</h2>
+             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('cirugia.faq.title')}</h3>
+          </div>
+
+          <div class="space-y-4">
+             {faqs.map((faq, idx) => (
+                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                   <details class="group">
+                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
+                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
+                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
+                      </summary>
+                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
+                         <p>{faq.answer}</p>
+                      </div>
+                   </details>
+                </div>
+             ))}
+          </div>
+       </div>
+    </section>
+
+    <!-- Final CTA -->
+    <Contact />
+  </main>
+  
+  <FooterInfo />
+</Layout>
+
+<style>
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+</style>
