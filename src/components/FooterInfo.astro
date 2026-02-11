@@ -1,6 +1,6 @@
 ---
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
-import { Facebook, Instagram, Phone, MapPin, Clock, ArrowRight } from 'lucide-astro';
+import { Facebook, Instagram, Phone, MapPin, Clock, ArrowRight, Heart } from 'lucide-astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -108,5 +108,12 @@ const t = useTranslations(lang);
        <a href={lang === 'es' ? '/politica-privacidad' : lang === 'en' ? '/en/privacy-policy' : lang === 'de' ? '/de/datenschutz' : lang === 'nl' ? '/nl/privacybeleid' : '/fr/politique-de-confidentialite'} class="hover:text-primary transition-colors">{t('footer.legal.privacy')}</a>
        <a href={lang === 'es' ? '/cookies' : lang === 'en' ? '/en/cookie-policy' : lang === 'de' ? '/de/cookies' : lang === 'nl' ? '/nl/cookies' : '/fr/cookies'} class="hover:text-primary transition-colors">{t('footer.legal.cookies')}</a>
     </div>
+  </div>
+  
+  <div class="container mx-auto px-6 mt-8 pt-8 border-t border-slate-100 flex justify-center">
+    <p class="text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2">
+      Diseñado con <Heart size={10} class="text-rose-500 fill-rose-500 animate-pulse" /> por 
+      <a href="https://platanitorico.com/" target="_blank" rel="noopener" class="font-black text-slate-500 hover:text-accent transition-colors">Platanito rico</a>
+    </p>
   </div>
 </footer>
