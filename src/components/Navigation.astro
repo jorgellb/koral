@@ -77,16 +77,16 @@ const languages = [
     <div class="hidden lg:flex items-center gap-8 h-full">
       <div class="flex gap-8 h-full">
         {mainNav.map(item => (
-          <div class="relative group h-full flex items-center">
-            <a href={item.href} class="text-sm font-semibold tracking-wide text-primary uppercase hover:text-accent transition-colors relative flex items-center gap-1 py-2">
+          <div class="relative group desktop-nav-item h-full flex items-center" data-has-dropdown={item.dropdown ? 'true' : undefined}>
+            <a href={item.href} class="text-sm font-semibold tracking-wide text-primary uppercase hover:text-accent transition-colors relative flex items-center gap-1 py-2 desktop-nav-link">
               {item.name}
-              {item.dropdown && <ChevronDown size={14} class="group-hover:rotate-180 transition-transform duration-300" />}
+              {item.dropdown && <ChevronDown size={14} class="desktop-dropdown-chevron group-hover:rotate-180 transition-transform duration-300" />}
               <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
             </a>
-            
+
             {item.dropdown && (
-              <div class="absolute top-full left-0 w-72 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                <div class="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden p-3 ring-1 ring-slate-900/5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              <div class="desktop-dropdown-panel absolute top-full left-0 w-72 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div class="desktop-dropdown-card bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden p-3 ring-1 ring-slate-900/5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                   <div class="grid relative gap-1">
                     {item.dropdown.map(subItem => (
                       <a href={subItem.href} class="relative px-4 py-3 text-sm font-bold text-slate-600 hover:text-white hover:bg-accent rounded-xl transition-all flex items-center justify-between group/sub">
@@ -302,5 +302,50 @@ const languages = [
       const diff = e.changedTouches[0].clientX - touchStartX;
       if (diff > 80) closeMenu();
     }, { passive: true });
+
+    // Desktop dropdown: click/tap handling for touch & hybrid devices.
+    // On devices without precise hover (touch screens, 2-in-1s), tapping the
+    // trigger toggles the dropdown instead of navigating to the link's href.
+    const dropdownItems = document.querySelectorAll('.desktop-nav-item[data-has-dropdown="true"]');
+    const hasFineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    function closeAllDropdowns(except: Element | null) {
+      dropdownItems.forEach(g => {
+        if (g !== except) g.classList.remove('dd-open');
+      });
+    }
+
+    dropdownItems.forEach(group => {
+      const trigger = group.querySelector('.desktop-nav-link');
+      trigger?.addEventListener('click', e => {
+        if (hasFineHover) return; // mouse users: let hover handle it; allow link nav if needed
+        e.preventDefault();
+        const wasOpen = group.classList.contains('dd-open');
+        closeAllDropdowns(group);
+        if (!wasOpen) group.classList.add('dd-open');
+      });
+    });
+
+    // Tap/click outside any dropdown closes them all
+    document.addEventListener('click', e => {
+      const target = e.target;
+      if (target instanceof Element && !target.closest('.desktop-nav-item[data-has-dropdown="true"]')) {
+        closeAllDropdowns(null);
+      }
+    });
   })();
 </script>
+
+<style>
+  /* Desktop dropdown: open state triggered by JS click (touch devices). */
+  .desktop-nav-item.dd-open .desktop-dropdown-panel {
+    opacity: 1;
+    visibility: visible;
+  }
+  .desktop-nav-item.dd-open .desktop-dropdown-card {
+    transform: translateY(0);
+  }
+  .desktop-nav-item.dd-open .desktop-dropdown-chevron {
+    transform: rotate(180deg);
+  }
+</style>
