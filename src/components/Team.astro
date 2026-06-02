@@ -20,34 +20,42 @@ const team = [
 ];
 ---
 
-<section class="section-padding bg-white relative overflow-hidden">
+<section class="section-padding relative overflow-hidden" style="background:linear-gradient(180deg,#ffffff 0%, #faf9f6 100%)">
   <!-- Decorative background elements -->
-  <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50 border-l border-slate-100 -skew-x-12 translate-x-1/2 pointer-events-none z-0"></div>
+  <div class="absolute top-0 right-0 w-1/3 h-full bg-cream/40 border-l border-slate-100/60 -skew-x-12 translate-x-1/2 pointer-events-none z-0" style="background:rgba(250,247,242,0.5)"></div>
   <div class="absolute bottom-20 left-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- Subtle gold dot grid -->
+  <div class="absolute top-32 right-32 grid grid-cols-6 gap-3 opacity-20 pointer-events-none">
+    {[...Array(24)].map(() => (
+      <span class="w-1 h-1 rounded-full bg-gold"></span>
+    ))}
+  </div>
 
   <div class="container mx-auto px-6 relative z-10">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8 fade-up">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-16 lg:mb-20 gap-8 fade-up">
        <div class="max-w-3xl">
-          <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-accent rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-8 border border-blue-100 shadow-sm">
+          <span class="eyebrow mb-5">
+             <span class="w-6 h-px bg-accent"></span>
              {t('team.factor')}
           </span>
-          <h3 class="text-4xl md:text-6xl font-black text-primary leading-tight tracking-tighter italic">
+          <h3 class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-primary leading-[1.05] tracking-[-0.025em] mt-4">
              {t('team.title')}
           </h3>
+          <div class="gold-line mt-6 max-w-[80px]"></div>
        </div>
-       
+
        <!-- Controls -->
-       <div class="flex items-center gap-6">
-          <div class="hidden md:flex flex-col items-end gap-2 pr-6 border-r border-slate-100">
-             <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none">{t('team.slider.scroll')}</p>
-             <p class="text-xs font-bold text-primary italic leading-none">{t('team.slider.view')}</p>
+       <div class="flex items-center gap-5">
+          <div class="hidden md:flex flex-col items-end gap-1.5 pr-5 border-r border-slate-200">
+             <p class="text-[10px] font-bold uppercase text-slate-400 tracking-[0.22em] leading-none">{t('team.slider.scroll')}</p>
+             <p class="text-xs font-semibold text-primary leading-none font-display italic">{t('team.slider.view')}</p>
           </div>
-          <div class="flex gap-4">
-             <button id="slider-prev" class="w-16 h-16 rounded-2xl border border-slate-100 bg-white flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm hover:shadow-xl group">
-               <ChevronLeft size={24} class="group-hover:-translate-x-1 transition-transform" />
+          <div class="flex gap-3">
+             <button id="slider-prev" class="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer shadow-soft group">
+               <ChevronLeft size={22} class="group-hover:-translate-x-1 transition-transform" />
              </button>
-             <button id="slider-next" class="w-16 h-16 rounded-2xl border border-slate-100 bg-white flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer shadow-sm hover:shadow-xl group">
-               <ChevronRight size={24} class="group-hover:translate-x-1 transition-transform" />
+             <button id="slider-next" class="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer shadow-soft group">
+               <ChevronRight size={22} class="group-hover:translate-x-1 transition-transform" />
              </button>
           </div>
        </div>
@@ -56,31 +64,25 @@ const team = [
     <!-- Team Slider Container -->
     <div class="relative">
        <div id="team-slider-container" class="overflow-visible">
-          <div id="team-slider" class="flex gap-10 transition-transform duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform">
+          <div id="team-slider" class="flex gap-7 md:gap-8 transition-transform duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform">
             {team.map((member) => (
-              <div class="flex-none w-[320px] md:w-[450px] fade-up">
-                <div class="relative rounded-[3rem] overflow-hidden aspect-[4/5] group/card border border-slate-100 bg-slate-50 shadow-sm hover:shadow-3xl transition-all duration-700">
-                   <img src={member.image} alt={member.name} class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover/card:grayscale-0 group-hover/card:scale-110" loading="lazy" decoding="async" />
-                   
-                   <!-- Mirror gradient overlay -->
-                   <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent translate-y-full group-hover/card:translate-y-0 transition-transform duration-700"></div>
-                   
-                   <div class="absolute bottom-0 left-0 right-0 p-10 translate-y-8 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-700 delay-100">
-                      <div class="w-10 h-1 bg-accent mb-6 rounded-full"></div>
-                      <h4 class="text-white text-3xl font-black mb-2 italic tracking-tighter">{member.name}</h4>
-                      <p class="text-slate-300 font-bold uppercase tracking-[0.3em] text-xs">{member.role}</p>
-                   </div>
+              <div class="flex-none w-[280px] md:w-[340px] fade-up team-member">
+                <div class="relative rounded-[2rem] overflow-hidden aspect-[4/5] group/card border border-slate-100 bg-slate-50 shadow-soft hover:shadow-elevated transition-all duration-700">
+                   <img src={member.image} alt={member.name} class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover/card:grayscale-0 group-hover/card:scale-105" loading="lazy" decoding="async" />
 
-                   <!-- Professional Badge -->
-                   <div class="absolute top-8 right-8 w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center text-white opacity-0 scale-50 group-hover/card:opacity-100 group-hover/card:scale-100 transition-all duration-500">
-                      <div class="w-2 h-2 bg-accent rounded-full animate-ping"></div>
+                   <!-- Bottom gradient always present subtly, more on hover -->
+                   <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent opacity-60 group-hover/card:opacity-95 transition-opacity duration-700"></div>
+
+                   <!-- Tag badge top-right -->
+                   <div class="absolute top-5 left-5 px-3 py-1.5 bg-white/15 backdrop-blur-md rounded-full border border-white/25 text-white text-[9px] font-bold uppercase tracking-[0.2em] opacity-0 group-hover/card:opacity-100 -translate-y-2 group-hover/card:translate-y-0 transition-all duration-500">
+                      Koral
                    </div>
                 </div>
-                
-                <!-- Visible Info for Mobile/Tablet -->
-                <div class="mt-8 px-4 flex flex-col lg:hidden">
-                   <h4 class="text-primary text-2xl font-black italic tracking-tighter mb-1">{member.name}</h4>
-                   <p class="text-accent text-xs font-black uppercase tracking-[0.2em]">{member.role}</p>
+
+                <!-- Info always visible below card -->
+                <div class="mt-6 px-1">
+                   <h4 class="text-primary text-xl md:text-2xl font-bold tracking-tight mb-1 leading-tight">{member.name}</h4>
+                   <p class="text-accent text-[11px] font-bold uppercase tracking-[0.22em]">{member.role}</p>
                 </div>
               </div>
             ))}
@@ -88,7 +90,7 @@ const team = [
        </div>
 
        <!-- Slider Progress Bar -->
-       <div class="mt-20 h-px bg-slate-100 relative max-w-xl">
+       <div class="mt-16 lg:mt-20 h-px bg-slate-200/60 relative max-w-xl">
           <div id="slider-progress" class="absolute top-0 left-0 h-full bg-accent transition-all duration-500 w-0"></div>
        </div>
     </div>
