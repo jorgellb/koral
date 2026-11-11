@@ -1,0 +1,91 @@
+---
+/**
+ * FAQ accordion (native <details>, no JS) + FAQPage structured data.
+ * Answers may contain trusted HTML from the translation files.
+ */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import SectionHeading from './SectionHeading.astro';
+import CoralBranch from '../svg/CoralBranch.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  accent?: string;
+  description?: string;
+  faqs: { question: string; answer: string }[];
+  id?: string;
+  schema?: boolean;
+  class?: string;
+}
+
+const { eyebrow, title, accent, description, faqs, id = 'faq', schema = true, class: className = '' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const stripTags = (html: string) => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const faqSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: stripTags(faq.question),
+    acceptedAnswer: { '@type': 'Answer', text: stripTags(faq.answer) },
+  })),
+});
+---
+
+<section id={id} class:list={['section-y relative overflow-clip bg-sand', className]}>
+  <CoralBranch seed={41} color="coral" class="pointer-events-none absolute -right-10 bottom-0 hidden h-[360px] w-auto opacity-[0.12] md:block" />
+
+  <div class="container-k relative">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-5">
+        <div class="lg:sticky lg:top-32">
+          <SectionHeading eyebrow={eyebrow} title={title} accent={accent} description={description} />
+
+          <div class="mt-10 rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-soft)]" data-reveal style="--d:.15s">
+            <p class="font-display text-2xl text-ocean-900">{t('faq.more.title')}</p>
+            <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{t('faq.more.desc')}</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-teal !px-5 !py-3 text-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5 5.2-1.4A9.9 9.9 0 1 0 12.04 2Zm5.8 14.1c-.25.7-1.45 1.33-2 1.4-.52.08-1.17.11-1.88-.12a17 17 0 0 1-1.7-.63c-2.99-1.29-4.94-4.3-5.09-4.5-.15-.2-1.22-1.62-1.22-3.09s.77-2.2 1.05-2.5a1.1 1.1 0 0 1 .79-.37h.57c.18 0 .43-.07.67.51.25.6.84 2.06.92 2.2.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.39-.45.52-.15.15-.3.31-.13.6.17.3.77 1.27 1.65 2.06 1.14 1.01 2.1 1.33 2.39 1.48.3.15.47.12.64-.07.18-.2.75-.87.94-1.17.2-.3.4-.25.67-.15.27.1 1.73.82 2.03.97.3.15.5.22.57.35.07.12.07.72-.18 1.42Z" /></svg>
+                WhatsApp
+              </a>
+              <a href="tel:+34950395319" class="btn btn-outline !px-5 !py-3 text-sm">{t('nav.call')}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7">
+        <div class="divide-y divide-ocean-900/[0.08] border-y border-ocean-900/[0.08]">
+          {faqs.map((faq, i) => (
+            <details class="faq-item group" data-reveal style={`--d:${Math.min(i, 6) * 0.05}s`} open={i === 0}>
+              <summary class="flex cursor-pointer list-none items-start gap-5 py-6 md:py-7">
+                <span class="font-display mt-0.5 w-8 shrink-0 text-lg italic text-coral">{String(i + 1).padStart(2, '0')}</span>
+                <h3 class="flex-1 font-sans text-lg font-semibold leading-snug tracking-tight text-ocean-900 md:text-xl" set:html={faq.question} />
+                <span class="faq-toggle relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ocean-900/10 bg-white text-accent transition-all duration-500 group-open:rotate-45 group-open:border-accent group-open:bg-accent group-open:text-white" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+                </span>
+              </summary>
+              <div class="faq-answer pb-7 pl-13 pr-2 text-[16px] leading-relaxed text-slate-600 md:pr-14 [&_a]:font-semibold [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-[3px] [&_strong]:font-semibold [&_strong]:text-ocean-900" set:html={faq.answer} />
+            </details>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{schema && <script type="application/ld+json" set:html={faqSchema} />}
+
+<style is:global>
+  .faq-item[open] .faq-answer {
+    animation: faq-in 0.5s var(--ease-out-expo);
+  }
+  @keyframes faq-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .pl-13 { padding-left: 3.25rem; }
+</style>

@@ -1,0 +1,33 @@
+---
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+import SectionHeading from './ui/SectionHeading.astro';
+import ProcessSteps from './ui/ProcessSteps.astro';
+import CoralBranch from './svg/CoralBranch.astro';
+import Bubbles from './svg/Bubbles.astro';
+import Waves from './svg/Waves.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const steps = [1, 2, 3, 4].map((n) => ({
+  title: t(`process.${n}.title` as any),
+  desc: t(`process.${n}.desc` as any),
+}));
+---
+
+<section class="relative isolate overflow-hidden bg-ocean text-white">
+  <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+  <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <Bubbles count={10} seed={21} />
+    <CoralBranch seed={77} color="duo" class="absolute -right-12 bottom-16 h-[240px] w-auto opacity-20" />
+    <svg class="absolute left-1/2 top-1/2 h-[1100px] w-[1100px] -translate-x-1/2 -translate-y-1/2 opacity-[0.06]" viewBox="0 0 1100 1100" fill="none">
+      {[150, 260, 370, 480].map((r) => <circle cx="550" cy="550" r={r} stroke="#8FE3EA" />)}
+    </svg>
+  </div>
+
+  <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+    <SectionHeading eyebrow={t('process.eyebrow')} title={t('process.title')} description={t('process.desc')} tone="dark" split />
+    <ProcessSteps steps={steps} tone="dark" class="mt-16 lg:mt-20" />
+  </div>
+</section>

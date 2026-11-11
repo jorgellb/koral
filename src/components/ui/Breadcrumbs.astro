@@ -1,0 +1,64 @@
+---
+/**
+ * Visible breadcrumb trail + BreadcrumbList structured data.
+ * The first item (home) is added automatically.
+ */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { pathFor, absoluteUrl } from '../../i18n/routes';
+
+interface Props {
+  items: { label: string; href?: string }[];
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+
+const { items, tone = 'dark', class: className = '' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const trail = [{ label: t('nav.home'), href: pathFor('home', lang) }, ...items];
+const current = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: trail.map((item, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: item.label,
+    item: absoluteUrl(item.href ?? current),
+  })),
+});
+
+const dark = tone === 'dark';
+---
+
+<nav aria-label={t('breadcrumb.label')} class:list={['text-[13px]', className]}>
+  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    {trail.map((item, i) => {
+      const last = i === trail.length - 1;
+      return (
+        <li class="flex items-center gap-2">
+          {last ? (
+            <span aria-current="page" class:list={['font-medium', dark ? 'text-white' : 'text-ocean-900']}>
+              {item.label}
+            </span>
+          ) : (
+            <a
+              href={item.href}
+              class:list={['link-u transition-colors', dark ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-accent']}
+            >
+              {item.label}
+            </a>
+          )}
+          {!last && (
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" class={dark ? 'text-aqua/70' : 'text-coral'}>
+              <path d="M4.5 2.5 8 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+<script type="application/ld+json" set:html={schema} />

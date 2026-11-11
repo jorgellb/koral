@@ -1,0 +1,182 @@
+---
+/**
+ * Stylised map of the Levante Almeriense coast with the towns the clinic serves.
+ * Coordinates are real (lat/lon) projected into the viewBox, simplified for design.
+ */
+interface Props {
+  seaLabel?: string;
+  class?: string;
+}
+
+const { seaLabel = 'Mar Mediterráneo', class: className = '' } = Astro.props;
+
+const W = 420;
+const H = 490;
+const LON_MIN = -1.98;
+const LON_MAX = -1.69;
+const LAT_MIN = 37.06;
+const LAT_MAX = 37.33;
+const px = (lon: number) => Math.round(((lon - LON_MIN) / (LON_MAX - LON_MIN)) * W * 10) / 10;
+const py = (lat: number) => Math.round(((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * H * 10) / 10;
+
+const coast: [number, number][] = [
+  [37.33, -1.7], [37.3, -1.735], [37.27, -1.76], [37.255, -1.772], [37.245, -1.79],
+  [37.232, -1.8], [37.215, -1.808], [37.195, -1.815], [37.18, -1.82], [37.165, -1.825],
+  [37.14, -1.83], [37.12, -1.833], [37.1, -1.845], [37.08, -1.86], [37.06, -1.87],
+];
+const coastPts = coast.map(([lat, lon]) => [px(lon), py(lat)] as const);
+
+// Smooth path through points (Catmull-Rom → cubic Bézier)
+const smooth = (pts: readonly (readonly [number, number])[]) => {
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+};
+
+const coastLine = smooth(coastPts);
+const land = `${coastLine}L0 ${H}L0 0Z`;
+
+// Offshore contour lines (parallel copies of the coast)
+const contours = [14, 32, 56].map((offset) => smooth(coastPts.map(([x, y]) => [x + offset, y] as const)));
+
+const river = smooth(
+  ([[37.322, -1.98], [37.305, -1.93], [37.297, -1.892], [37.28, -1.855], [37.262, -1.81], [37.252, -1.776]] as [number, number][]).map(
+    ([lat, lon]) => [px(lon), py(lat)] as const,
+  ),
+);
+
+const vera = { x: px(-1.859), y: py(37.2437) };
+const towns = [
+  { name: 'Cuevas del Almanzora', lat: 37.2966, lon: -1.8805, anchor: 'start', dx: 9, dy: 4 },
+  { name: 'Antas', lat: 37.2452, lon: -1.917, anchor: 'end', dx: -9, dy: 4 },
+  { name: 'Palomares', lat: 37.2453, lon: -1.7973, anchor: 'start', dx: 9, dy: 15 },
+  { name: 'Garrucha', lat: 37.1806, lon: -1.8222, anchor: 'end', dx: -10, dy: 4 },
+  { name: 'Los Gallardos', lat: 37.168, lon: -1.941, anchor: 'start', dx: 9, dy: 4 },
+  { name: 'Turre', lat: 37.1524, lon: -1.8951, anchor: 'end', dx: -9, dy: 4 },
+  { name: 'Mojácar', lat: 37.1403, lon: -1.8513, anchor: 'start', dx: 9, dy: 4 },
+].map((t) => ({ ...t, x: px(t.lon), y: py(t.lat) }));
+
+const route = (x: number, y: number) => {
+  const mx = (x + vera.x) / 2;
+  const my = (y + vera.y) / 2;
+  const nx = -(vera.y - y) * 0.18;
+  const ny = (vera.x - x) * 0.18;
+  return `M${x} ${y}Q${(mx + nx).toFixed(1)} ${(my + ny).toFixed(1)} ${vera.x} ${vera.y}`;
+};
+
+const uid = `map-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class:list={['coast-map', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>Vera, Garrucha, Mojácar, Cuevas del Almanzora, Turre, Antas, Los Gallardos</title>
+  <defs>
+    <linearGradient id={`${uid}-land`} x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#143B5C" />
+      <stop offset="1" stop-color="#0E2B45" />
+    </linearGradient>
+    <pattern id={`${uid}-dots`} width="9" height="9" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1" fill="#8FE3EA" fill-opacity="0.16" />
+    </pattern>
+    <radialGradient id={`${uid}-glow`}>
+      <stop offset="0" stop-color="#F2617A" stop-opacity="0.45" />
+      <stop offset="1" stop-color="#F2617A" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Sea -->
+  <rect width={W} height={H} fill="#0A1F33" />
+  <g fill="none" stroke="#2CC5D2" stroke-linecap="round">
+    {contours.map((d, i) => <path d={d} stroke-opacity={0.22 - i * 0.05} stroke-width="1" stroke-dasharray={i === 2 ? '2 6' : undefined} />)}
+  </g>
+
+  <!-- Land -->
+  <path d={land} fill={`url(#${uid}-land)`} />
+  <path d={land} fill={`url(#${uid}-dots)`} />
+  <path d={coastLine} fill="none" stroke="#8FE3EA" stroke-opacity="0.7" stroke-width="1.6" />
+
+  <!-- Sierra contours -->
+  <g fill="none" stroke="#8FE3EA" stroke-opacity="0.12">
+    <ellipse cx={px(-1.93)} cy={py(37.11)} rx="46" ry="22" transform={`rotate(-18 ${px(-1.93)} ${py(37.11)})`} />
+    <ellipse cx={px(-1.93)} cy={py(37.11)} rx="30" ry="13" transform={`rotate(-18 ${px(-1.93)} ${py(37.11)})`} />
+    <ellipse cx={px(-1.93)} cy={py(37.11)} rx="14" ry="6" transform={`rotate(-18 ${px(-1.93)} ${py(37.11)})`} />
+  </g>
+
+  <!-- River Almanzora -->
+  <path d={river} fill="none" stroke="#2CC5D2" stroke-opacity="0.55" stroke-width="1.4" stroke-linecap="round" />
+
+  <!-- Routes to Vera (draw on reveal) -->
+  <g class="draw" fill="none" stroke="#FF9AAA" stroke-width="1.3" stroke-linecap="round" stroke-opacity="0.75">
+    {towns.map((t, i) => <path d={route(t.x, t.y)} pathLength="1" style={`--dd:${0.3 + i * 0.12}s`} />)}
+  </g>
+
+  <!-- Towns -->
+  <g font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500" fill="#E2EEF2">
+    {towns.map((t) => (
+      <g>
+        <circle cx={t.x} cy={t.y} r="3.6" fill="#0A1F33" stroke="#8FE3EA" stroke-width="1.6" />
+        <text x={t.x + t.dx} y={t.y + t.dy} text-anchor={t.anchor} fill-opacity="0.85">{t.name}</text>
+      </g>
+    ))}
+  </g>
+
+  <!-- Vera (clinic) -->
+  <g>
+    <circle cx={vera.x} cy={vera.y} r="34" fill={`url(#${uid}-glow)`} />
+    <circle cx={vera.x} cy={vera.y} r="10" fill="none" stroke="#F2617A" stroke-width="1.5" class="map-pulse" />
+    <path
+      d={`M${vera.x} ${vera.y + 2}c-6-7.6-9.6-12.4-9.6-17a9.6 9.6 0 0 1 19.2 0c0 4.6-3.6 9.4-9.6 17Z`}
+      fill="#F2617A"
+      stroke="#fff"
+      stroke-width="1.6"
+    />
+    <circle cx={vera.x} cy={vera.y - 15} r="3.4" fill="#fff" />
+    <text
+      x={vera.x + 15}
+      y={vera.y - 20}
+      font-family="Fraunces, Georgia, serif"
+      font-size="22"
+      font-style="italic"
+      fill="#fff">Vera</text>
+    <text x={vera.x + 15} y={vera.y - 4} font-family="Inter, system-ui, sans-serif" font-size="8.5" letter-spacing="1.6" fill="#FF9AAA">KORAL</text>
+  </g>
+
+  <!-- Sea label -->
+  <text
+    x={px(-1.74)}
+    y={py(37.16)}
+    font-family="Fraunces, Georgia, serif"
+    font-style="italic"
+    font-size="15"
+    fill="#8FE3EA"
+    fill-opacity="0.6"
+    text-anchor="middle"
+    transform={`rotate(-72 ${px(-1.74)} ${py(37.16)})`}>{seaLabel}</text>
+
+  <!-- Compass -->
+  <g transform={`translate(${W - 40} ${H - 44})`} fill="none" stroke="#8FE3EA" stroke-opacity="0.5">
+    <circle r="16" />
+    <path d="M0-22V22M-22 0H22" stroke-opacity="0.25" />
+    <path d="M0-13l4 13-4 13-4-13Z" fill="#8FE3EA" fill-opacity="0.25" />
+    <text y="-26" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#8FE3EA" stroke="none">N</text>
+  </g>
+</svg>
+
+<style is:global>
+  .coast-map { display: block; width: 100%; height: auto; }
+  .map-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pulse-ring 2.6s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .map-pulse { animation: none; }
+  }
+</style>

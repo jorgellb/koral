@@ -3,303 +3,223 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import ProcessSteps from '../components/ui/ProcessSteps.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { ShieldCheck, Award, Zap, Microscope, CheckCircle2, HelpCircle, ChevronRight, Binary, Target, ChevronDown } from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const implementationSteps = [
-  { num: '01', title: t('implantes.steps.1.title'), desc: t('implantes.steps.1.desc') },
-  { num: '02', title: t('implantes.steps.2.title'), desc: t('implantes.steps.2.desc') },
-  { num: '03', title: t('implantes.steps.3.title'), desc: t('implantes.steps.3.desc') },
-  { num: '04', title: t('implantes.steps.4.title'), desc: t('implantes.steps.4.desc') },
-  { num: '05', title: t('implantes.steps.5.title'), desc: t('implantes.steps.5.desc') },
-  { num: '06', title: t('implantes.steps.6.title'), desc: t('implantes.steps.6.desc') },
-  { num: '07', title: t('implantes.steps.7.title'), desc: t('implantes.steps.7.desc') }
+const steps = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+  title: t(`implantes.steps.${n}.title` as any),
+  desc: t(`implantes.steps.${n}.desc` as any),
+}));
+
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`implantes.faq.q${n}.q` as any),
+  answer: t(`implantes.faq.q${n}.a` as any),
+}));
+
+const conditions = [
+  { title: t('implantes.regeneration.diag.title'), desc: t('implantes.regeneration.diag.desc'), icon: 'scan' },
+  { title: t('implantes.regeneration.team.title'), desc: t('implantes.regeneration.team.desc'), icon: 'team' },
+  { title: t('implantes.regeneration.space.title'), desc: t('implantes.regeneration.space.desc'), icon: 'room' },
 ];
 
-const faqs = [
-  {
-    question: t('implantes.faq.q1.q'),
-    answer: t('implantes.faq.q1.a')
-  },
-  {
-    question: t('implantes.faq.q2.q'),
-    answer: t('implantes.faq.q2.a')
-  },
-  {
-    question: t('implantes.faq.q3.q'),
-    answer: t('implantes.faq.q3.a')
-  },
-  {
-    question: t('implantes.faq.q4.q'),
-    answer: t('implantes.faq.q4.a')
-  },
-  {
-    question: t('implantes.faq.q5.q'),
-    answer: t('implantes.faq.q5.a')
-  }
-];
+// Section titles in ui.ts are sometimes written in capitals; show them in sentence case.
+const sentence = (s: string) => (s === s.toUpperCase() ? s.charAt(0) + s.slice(1).toLowerCase() : s);
 
-const slug = lang === 'es' ? '/implantes-dentales' : `/${lang}/implantes-dentales`;
+const url = absoluteUrl(pathFor('implantes', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('implantes.meta.title'),
-      "description": t('implantes.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.implantes'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('implantes.meta.title'),
+  description: t('implantes.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    '@type': 'MedicalProcedure',
+    name: t('nav.treatments.implantes'),
+    procedureType: 'https://schema.org/SurgicalProcedure',
+    bodyLocation: 'Mouth',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('implantes.meta.title')} description={t('implantes.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Premium Hero Section -->
-    <section class="relative min-h-[90vh] flex items-center pt-24 overflow-hidden bg-[#0A1A2F]">
-      <!-- Animated Background elements -->
-      <div class="absolute inset-0 z-0">
-        <div class="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-accent/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px]"></div>
-      </div>
-      
-      <div class="container mx-auto px-6 relative z-10">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-          <div class="fade-up">
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-8 backdrop-blur-md">
-              <Award size={16} class="text-accent" />
-              <span class="text-xs font-black uppercase tracking-widest text-white">{t('implantes.hero.badge')}</span>
-            </div>
-            <h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-[0.95] mb-8">
-              {t('implantes.hero.title')} <br/> <span class="text-accent underline decoration-accent/20 underline-offset-[12px]">{t('implantes.hero.title.italic')}</span>
-            </h1>
-            <p class="text-xl md:text-2xl text-slate-300 leading-relaxed max-w-xl mb-10" set:html={t('implantes.hero.subtitle')}>
-            </p>
-            <div class="flex flex-wrap gap-6">
-               <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-accent ring-1 ring-white/20"><ShieldCheck /></div>
-                  <span class="text-white font-bold text-sm uppercase tracking-wider uppercase">{t('implantes.hero.warranty')}</span>
-               </div>
-               <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-accent ring-1 ring-white/20"><Binary /></div>
-                  <span class="text-white font-bold text-sm uppercase tracking-wider">{t('implantes.hero.planning')}</span>
-               </div>
+
+  <main id="main">
+    <PageHero
+      badge={t('implantes.hero.badge')}
+      title={t('nav.treatments.implantes')}
+      accent={t('hero.in.vera')}
+      subtitle={t('implantes.hero.subtitle')}
+      subtitleHtml
+      breadcrumbs={[{ label: t('nav.treatments.implantes') }]}
+      illustration="implantes"
+      illustrationTitle={t('nav.treatments.implantes')}
+      highlights={[t('implantes.hero.warranty'), t('implantes.hero.planning'), 'Straumann®']}
+    />
+
+    <!-- Experience & philosophy -->
+    <section class="section-y relative overflow-clip bg-white">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-5">
+            <div class="lg:sticky lg:top-32">
+              <SectionHeading eyebrow={t('implantes.excellence.badge')} title={t('implantes.excellence.title')} />
+
+              <figure class="relative mt-10 rounded-[2rem] bg-sand p-8 md:p-10" data-reveal style="--d:.1s">
+                <svg class="absolute -top-5 left-8 h-10 w-12 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+                <blockquote class="font-display text-xl italic leading-relaxed text-ocean-900 md:text-2xl">
+                  {t('implantes.excellence.quote').replace(/^["“]|["”]$/g, '')}
+                </blockquote>
+                <figcaption class="mt-6 flex items-center gap-3 text-sm">
+                  <img src="/equipo/Ana-padilla.jpg" alt="" width="48" height="48" class="h-12 w-12 rounded-full object-cover ring-2 ring-white" loading="lazy" decoding="async" />
+                  <span>
+                    <span class="block font-semibold text-ocean-900">Dra. Ana Padilla</span>
+                    <span class="block text-slate-500">{t('role.director')}</span>
+                  </span>
+                </figcaption>
+              </figure>
+
+              <div class="mt-5 flex gap-4 rounded-[1.5rem] border border-accent/15 bg-aqua-pale/40 p-6" data-reveal style="--d:.15s">
+                <svg class="mt-0.5 shrink-0 text-accent" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>
+                <p class="text-[15px] leading-relaxed text-slate-700">
+                  <strong class="font-semibold text-ocean-900">{t('implantes.excellence.honesty.title')}</strong>
+                  {' '}{t('implantes.excellence.honesty.desc')}
+                </p>
+              </div>
             </div>
           </div>
-          
-          <div class="relative fade-up" style="transition-delay: 0.3s">
-             <div class="absolute -inset-10 bg-accent/20 rounded-full blur-[100px] pointer-events-none opacity-30"></div>
-             <div class="bg-gradient-to-br from-white/10 to-transparent p-1 rounded-[3rem] border border-white/20 backdrop-blur-sm shadow-2xl overflow-hidden group">
-                <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt="Dra. Ana Padilla" class="rounded-[2.8rem] grayscale hover:grayscale-0 transition-all duration-1000 object-cover w-full scale-105 group-hover:scale-100" />
-             </div>
+
+          <div class="lg:col-span-7">
+            <div data-reveal>
+              <h2 class="text-3xl leading-tight md:text-[2.6rem]">{t('implantes.excellence.slow.title')}</h2>
+              <p class="mt-6 text-lg leading-relaxed text-slate-600">{t('implantes.excellence.slow.desc')}</p>
+            </div>
+
+            <div class="mt-12 grid gap-5 sm:grid-cols-2">
+              <div class="surface-card group p-8" data-reveal>
+                <span class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                  <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 8h10l-1.2 26L24 40l-3.8-6L19 8Z" /><path d="M17.5 14l13-2M17.8 20l12.4-2M18.2 26l11.6-2" stroke="#F2617A" /><circle cx="24" cy="24" r="21" stroke-opacity=".25" stroke-dasharray="3 5" /></svg>
+                </span>
+                <h3 class="font-sans text-xl font-semibold tracking-tight">{t('implantes.excellence.materials.title')}</h3>
+                <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{t('implantes.excellence.materials.desc')}</p>
+              </div>
+              <div class="surface-card group p-8" data-reveal style="--d:.08s">
+                <span class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep transition-colors duration-500 group-hover:bg-coral-deep group-hover:text-white">
+                  <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 30c6-8 12-8 18 0s12 8 18 0" /><path d="M6 20c6-8 12-8 18 0s12 8 18 0" stroke-opacity=".4" /><path d="M24 6v6M24 36v6" /></svg>
+                </span>
+                <h3 class="font-sans text-xl font-semibold tracking-tight">{t('implantes.excellence.invasion.title')}</h3>
+                <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{t('implantes.excellence.invasion.desc')}</p>
+              </div>
+            </div>
+
+            <div class="mt-12 border-l-2 border-coral pl-6" data-reveal>
+              <p class="text-lg leading-relaxed text-slate-700">{t('implantes.excellence.definition')}</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Excellence Section -->
-    <section class="py-24 bg-white">
-       <div class="container mx-auto px-6">
-          <div class="grid lg:grid-cols-12 gap-16 items-start">
-             <div class="lg:col-span-12 xl:col-span-5 fade-up xl:sticky xl:top-32">
-                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6">{t('implantes.excellence.badge')}</h2>
-                <h3 class="text-4xl font-black text-primary mb-8 leading-tight">{t('implantes.excellence.title')}</h3>
-                <p class="text-lg text-slate-600 leading-relaxed mb-8 italic">
-                   {t('implantes.excellence.quote')}
-                </p>
-                <div class="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 mb-12 xl:mb-0">
-                   <p class="text-primary font-bold mb-4">{t('implantes.excellence.honesty.title')}</p>
-                   <p class="text-slate-500">
-                     {t('implantes.excellence.honesty.desc')}
-                   </p>
-                </div>
-             </div>
-             
-             <div class="lg:col-span-1 border-l border-slate-100 h-full hidden xl:block"></div>
-             
-             <div class="lg:col-span-12 xl:col-span-6 space-y-12 fade-up" style="transition-delay: 0.2s">
-                <div>
-                   <h4 class="text-2xl font-black text-primary mb-6">{t('implantes.excellence.slow.title')}</h4>
-                   <p class="text-slate-600 leading-relaxed">
-                      {t('implantes.excellence.slow.desc')}
-                   </p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-8">
-                   <div class="p-8 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl transition-all">
-                      <div class="text-accent mb-4"><Microscope size={32} /></div>
-                      <h5 class="font-black text-primary mb-3">{t('implantes.excellence.materials.title')}</h5>
-                      <p class="text-sm text-slate-500">{t('implantes.excellence.materials.desc')}</p>
-                   </div>
-                   <div class="p-8 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl transition-all">
-                      <div class="text-accent mb-4"><Zap size={32} /></div>
-                      <h5 class="font-black text-primary mb-3">{t('implantes.excellence.invasion.title')}</h5>
-                      <p class="text-sm text-slate-500">{t('implantes.excellence.invasion.desc')}</p>
-                   </div>
-                </div>
-
-                <div class="prose prose-slate">
-                   <p class="text-lg text-slate-600">
-                      {t('implantes.excellence.definition')}
-                   </p>
-                </div>
-             </div>
+    <!-- Step by step -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={130} color="teal" class="pointer-events-none absolute -right-10 top-10 h-[280px] w-auto opacity-[0.1]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={t('implantes.steps.badge')} title={t('implantes.steps.title')} align="center" />
+        <ProcessSteps steps={steps} class="mt-16" />
+        <div class="mx-auto mt-16 flex max-w-3xl flex-col items-center gap-4 rounded-[2rem] bg-white p-8 text-center shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 sm:flex-row sm:text-left" data-reveal>
+          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-white">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          </span>
+          <div>
+            <p class="font-display text-2xl text-ocean-900">{t('implantes.steps.final.title')}</p>
+            <p class="mt-1 text-slate-600">{t('implantes.steps.final.desc')}</p>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Steps Section -->
-    <section class="py-24 bg-slate-50 overflow-hidden">
-       <div class="container mx-auto px-6">
-          <div class="text-center mb-20 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('implantes.steps.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('implantes.steps.title')}</h3>
+    <!-- Bone regeneration -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={33} />
+        <svg class="absolute inset-0 h-full w-full opacity-[0.07]"><defs><pattern id="impl-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#8FE3EA" stroke-width=".6" /></pattern></defs><rect width="100%" height="100%" fill="url(#impl-grid)" /></svg>
+        <CoralBranch seed={135} color="duo" class="absolute -right-10 bottom-20 h-[260px] w-auto opacity-20" />
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('implantes.regeneration.badge')} title={t('implantes.regeneration.title')} description={t('implantes.regeneration.desc')} tone="dark" />
+            <ul class="mt-10 space-y-4" data-reveal style="--d:.1s">
+              <li class="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-aqua shadow-[0_0_0_6px_rgba(44,197,210,0.15)]"></span>
+                <p class="text-white/75"><strong class="font-semibold text-white">{t('implantes.regeneration.biomaterials.title')}</strong> {t('implantes.regeneration.biomaterials.desc')}</p>
+              </li>
+              <li class="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-coral shadow-[0_0_0_6px_rgba(242,97,122,0.15)]"></span>
+                <p class="text-white/75"><strong class="font-semibold text-white">{t('implantes.regeneration.autologous.title')}</strong> {t('implantes.regeneration.autologous.desc')}</p>
+              </li>
+            </ul>
+            <p class="mt-8 text-[15px] text-white/60" data-reveal style="--d:.15s">
+              <a href={pathFor('cirugia', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{t('nav.treatments.cirugia')}</a>
+              {' · '}
+              <a href={pathFor('periodoncia', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{t('nav.treatments.periodoncia')}</a>
+            </p>
           </div>
-          
-          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-             {implementationSteps.map((step, idx) => (
-                <div class="fade-up group" style={`transition-delay: ${idx * 0.1}s`}>
-                   <div class="relative p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm h-full transition-all group-hover:border-accent hover:shadow-xl">
-                      <span class="absolute top-6 right-8 text-4xl font-black text-slate-50 group-hover:text-accent/10 transition-colors uppercase">{step.num}</span>
-                      <h4 class="text-xl font-black text-primary mb-4 relative z-10">{step.title}</h4>
-                      <p class="text-slate-500 text-sm leading-relaxed relative z-10">{step.desc}</p>
-                   </div>
-                </div>
-             ))}
-             
-             <!-- Final card aesthetic -->
-             <div class="fade-up" style="transition-delay: 0.7s">
-                <div class="p-8 bg-accent rounded-[2rem] shadow-xl shadow-accent/20 h-full flex flex-col justify-center text-white">
-                   <p class="font-black text-xl mb-2 italic">{t('implantes.steps.final.title')}</p>
-                   <p class="text-white/80 text-sm">{t('implantes.steps.final.desc')}</p>
-                   <div class="mt-6 flex justify-end">
-                      <CheckCircle2 size={32} />
-                   </div>
-                </div>
-             </div>
+
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl md:p-10">
+              <h3 class="text-2xl text-white md:text-3xl">{t('implantes.regeneration.conditions.title')}</h3>
+              <ol class="mt-8 space-y-6">
+                {conditions.map((c, i) => (
+                  <li class="flex items-start gap-5">
+                    <span class="font-display flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-lg italic text-accent">{i + 1}</span>
+                    <div>
+                      <p class="font-semibold text-white">{sentence(c.title)}</p>
+                      <p class="mt-0.5 text-sm text-white/60">{sentence(c.desc)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <figure class="mt-10 border-t border-white/10 pt-8">
+                <blockquote class="font-display text-lg italic leading-relaxed text-white/85">{t('implantes.regeneration.quote').replace(/^["“]|["”]$/g, '')}</blockquote>
+                <figcaption class="mt-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-aqua-soft">{sentence(t('implantes.regeneration.team'))}</figcaption>
+              </figure>
+            </div>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Regeneracion Osea -->
-    <section class="py-32 bg-white relative">
-       <div class="container mx-auto px-6 md:px-12">
-          <div class="max-w-6xl mx-auto rounded-[2.5rem] md:rounded-[4rem] bg-primary overflow-hidden relative shadow-3xl">
-             <!-- Abstract background -->
-             <div class="absolute inset-0 opacity-20">
-                <svg width="100%" height="100%"><pattern id="gridLarge" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M 80 0 L 0 0 0 80" fill="none" stroke="white" stroke-width="0.5"/></pattern><rect width="100%" height="100%" fill="url(#gridLarge)"/></svg>
-             </div>
-             
-             <div class="grid lg:grid-cols-2 gap-0 relative z-10">
-                <div class="p-12 md:p-20 text-white">
-                   <h2 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('implantes.regeneration.badge')}</h2>
-                   <h3 class="text-4xl md:text-5xl font-black mb-8 leading-tight text-white">{t('implantes.regeneration.title')}</h3>
-                   <p class="text-slate-300 text-lg leading-relaxed mb-10">
-                      {t('implantes.regeneration.desc')}
-                   </p>
-                   
-                   <div class="space-y-6">
-                      <div class="flex gap-4">
-                         <div class="w-1.5 h-1.5 bg-accent rounded-full mt-2"></div>
-                         <p><strong class="text-white">{t('implantes.regeneration.biomaterials.title')}</strong> {t('implantes.regeneration.biomaterials.desc')}</p>
-                      </div>
-                      <div class="flex gap-4">
-                         <div class="w-1.5 h-1.5 bg-accent rounded-full mt-2"></div>
-                         <p><strong class="text-white">{t('implantes.regeneration.autologous.title')}</strong> {t('implantes.regeneration.autologous.desc')}</p>
-                      </div>
-                   </div>
-                </div>
-                
-                <div class="bg-white/5 backdrop-blur-sm p-12 md:p-20 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-white/10">
-                   <h4 class="text-2xl font-black text-white mb-10">{t('implantes.regeneration.conditions.title')}</h4>
-                   <div class="space-y-10">
-                      <div class="flex gap-6 items-start group">
-                         <div class="p-3 bg-white text-primary rounded-xl transition-transform group-hover:scale-110"><Microscope /></div>
-                         <div>
-                            <p class="font-black text-white uppercase tracking-widest text-sm mb-1">{t('implantes.regeneration.diag.title')}</p>
-                            <p class="text-slate-400 text-sm uppercase">{t('implantes.regeneration.diag.desc')}</p>
-                         </div>
-                      </div>
-                      <div class="flex gap-6 items-start group">
-                         <div class="p-3 bg-white text-primary rounded-xl transition-transform group-hover:scale-110"><ShieldCheck /></div>
-                         <div>
-                            <p class="font-black text-white uppercase tracking-widest text-sm mb-1">{t('implantes.regeneration.team.title')}</p>
-                            <p class="text-slate-400 text-sm uppercase">{t('implantes.regeneration.team.desc')}</p>
-                         </div>
-                      </div>
-                      <div class="flex gap-6 items-start group">
-                         <div class="p-3 bg-white text-primary rounded-xl transition-transform group-hover:scale-110"><Target /></div>
-                         <div>
-                            <p class="font-black text-white uppercase tracking-widest text-sm mb-1">{t('implantes.regeneration.space.title')}</p>
-                            <p class="text-slate-400 text-sm uppercase">{t('implantes.regeneration.space.desc')}</p>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
+    <div class="bg-white py-10 md:py-14">
+      <CtaBand />
+    </div>
 
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('implantes.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('implantes.faq.title')}</h3>
-          </div>
+    <FaqSection eyebrow={t('implantes.faq.badge')} title={t('implantes.faq.title')} faqs={faqs} />
 
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
+    <RelatedTreatments current="implantes" />
 
-    <!-- Final CTA -->
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

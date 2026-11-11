@@ -1,0 +1,152 @@
+---
+/**
+ * Dark ocean hero for inner pages: breadcrumbs, badge, serif H1 with italic
+ * accent, subtitle, CTAs and an illustration on the right. Ends in waves that
+ * blend into the next section (`waveFill`).
+ *
+ * Slots: default → extra content under the subtitle (chips, notes…)
+ *        visual  → replaces the illustration on the right
+ */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import CoralBranch from '../svg/CoralBranch.astro';
+import Bubbles from '../svg/Bubbles.astro';
+import Waves from '../svg/Waves.astro';
+import TreatmentIllustration from '../svg/TreatmentIllustration.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+
+type Illustration =
+  | 'implantes' | 'ortodoncia' | 'estetica' | 'endodoncia' | 'odontopediatria' | 'periodoncia'
+  | 'rehabilitacion' | 'cirugia' | 'armonia' | 'team' | 'pricing' | 'contact' | 'legal';
+
+interface Props {
+  title: string;
+  accent?: string;
+  subtitle?: string;
+  /** Set when `subtitle` contains trusted HTML from the translation files. */
+  subtitleHtml?: boolean;
+  badge?: string;
+  breadcrumbs: { label: string; href?: string }[];
+  illustration?: Illustration;
+  illustrationTitle?: string;
+  highlights?: string[];
+  primaryCta?: { label: string; href: string } | false;
+  secondaryCta?: { label: string; href: string } | false;
+  waveFill?: string;
+  compact?: boolean;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const {
+  title,
+  accent,
+  subtitle,
+  subtitleHtml = false,
+  badge,
+  breadcrumbs,
+  illustration,
+  illustrationTitle,
+  highlights = [],
+  primaryCta = { label: t('nav.appointment'), href: '#appointment' },
+  secondaryCta = { label: '+34 950 39 53 19', href: 'tel:+34950395319' },
+  waveFill = '#ffffff',
+  compact = false,
+} = Astro.props;
+
+const hasVisual = Astro.slots.has('visual') || Boolean(illustration);
+---
+
+<section
+  class:list={[
+    'page-hero relative isolate overflow-hidden bg-ocean noise-overlay text-white',
+    compact ? 'pt-36 pb-28 md:pt-40 md:pb-32' : 'pt-36 pb-28 md:pt-44 md:pb-36 lg:min-h-[78vh] lg:flex lg:items-center',
+  ]}
+>
+  <!-- Decorative layer -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute -top-40 right-[-10%] h-[620px] w-[620px] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.20)_0%,transparent_65%)]"></div>
+    <div class="absolute -bottom-48 -left-32 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(242,97,122,0.16)_0%,transparent_65%)]"></div>
+    <svg class="absolute right-[-120px] top-1/2 hidden h-[900px] w-[900px] -translate-y-1/2 opacity-[0.10] lg:block" viewBox="0 0 900 900" fill="none">
+      {[120, 200, 280, 360, 440].map((r) => <circle cx="450" cy="450" r={r} stroke="#8FE3EA" stroke-dasharray={r % 160 === 0 ? '2 10' : undefined} />)}
+    </svg>
+    <CoralBranch seed={11} color="white" class="absolute -left-10 bottom-10 h-[300px] w-auto opacity-[0.07] md:h-[420px]" />
+    <CoralBranch seed={23} depth={4} color="duo" sway class="absolute bottom-24 right-[3%] hidden h-[150px] w-auto opacity-30 xl:block" />
+    <Bubbles count={12} seed={5} />
+  </div>
+
+  <div class="container-k relative z-10 w-full">
+    <div class:list={['grid items-center gap-14', hasVisual && 'lg:grid-cols-12']}>
+      <div class:list={[hasVisual ? 'lg:col-span-7' : 'max-w-4xl']}>
+        <div data-reveal><Breadcrumbs items={breadcrumbs} class="mb-8" /></div>
+
+        {badge && (
+          <p class="mb-7 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-2 pl-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-aqua-soft backdrop-blur-md" data-reveal style="--d:.05s">
+            <span class="relative flex h-5 w-5 items-center justify-center rounded-full bg-aqua/20">
+              <span class="absolute inset-0 animate-pulse-ring rounded-full bg-aqua/40"></span>
+              <span class="relative h-1.5 w-1.5 rounded-full bg-aqua"></span>
+            </span>
+            {badge}
+          </p>
+        )}
+
+        <h1 class="text-[2.6rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.4rem] xl:text-[5rem]" data-reveal style="--d:.1s">
+          {title}
+          {accent && <span class="accent-italic block text-coral-soft">{accent}</span>}
+        </h1>
+
+        {subtitle && (
+          subtitleHtml ? (
+            <p class="mt-7 max-w-2xl text-lg leading-relaxed text-white/75 md:text-xl [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.2s" set:html={subtitle} />
+          ) : (
+            <p class="mt-7 max-w-2xl text-lg leading-relaxed text-white/75 md:text-xl" data-reveal style="--d:.2s">{subtitle}</p>
+          )
+        )}
+
+        {highlights.length > 0 && (
+          <ul class="mt-8 flex flex-wrap gap-3" data-reveal style="--d:.28s">
+            {highlights.map((h) => (
+              <li class="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-4 py-2 text-sm text-white/85 backdrop-blur-md">
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="text-aqua">
+                  <circle cx="8" cy="8" r="7" fill="currentColor" fill-opacity="0.18" />
+                  <path d="m5 8.2 2 2 4-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                {h}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <slot />
+
+        {(primaryCta || secondaryCta) && (
+          <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.35s">
+            {primaryCta && (
+              <a href={primaryCta.href} class="btn btn-coral shine-effect">
+                {primaryCta.label}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            )}
+            {secondaryCta && (
+              <a href={secondaryCta.href} class="btn btn-ghost-light">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" /></svg>
+                {secondaryCta.label}
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+
+      {hasVisual && (
+        <div class="relative lg:col-span-5" data-reveal="scale" style="--d:.25s">
+          <div class="relative mx-auto max-w-[460px]">
+            <div class="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.28)_0%,transparent_70%)] blur-2xl" aria-hidden="true"></div>
+            {Astro.slots.has('visual') ? <slot name="visual" /> : illustration && <TreatmentIllustration name={illustration} title={illustrationTitle} class="relative" />}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <Waves fill={waveFill} class="absolute inset-x-0 bottom-[-1px] z-10" />
+</section>

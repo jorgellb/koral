@@ -3,169 +3,611 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import ProcessSteps from '../components/ui/ProcessSteps.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
+import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  CreditCard, 
-  Wallet, 
-  BadgeEuro, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Info,
-  Banknote,
-  PiggyBank
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL, TREATMENTS, type TreatmentKey } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const contactHref = pathFor('contact', lang);
 
-const keywords = t('financiacion.hero.keywords').split('|');
+const copy = ({
+  es: {
+    title: 'Financiación dental',
+    accent: 'sin intereses en Vera',
+    calendarCaption: 'Pagas tu tratamiento en cómodos plazos, directamente con la clínica.',
+    optionsEyebrow: 'Cómo pagar',
+    optionsTitle: 'Opciones de pago',
+    optionsAccent: 'pensadas para ti',
+    optionsDesc: 'Tú eliges cómo pagar. Te explicamos cada opción con calma y sin letra pequeña.',
+    options: [
+      { title: 'Financiación directa al 0 %', desc: 'Sin intereses en la mayoría de tratamientos y sin pasar por bancos ni entidades financieras.' },
+      { title: 'Cuotas a tu medida', desc: 'Ajustamos el plan de pago a tus posibilidades para que empieces tu tratamiento cuanto antes.' },
+      { title: 'Tarjeta o efectivo', desc: 'Si lo prefieres, también puedes pagar con tarjeta o en efectivo en la clínica.' },
+    ],
+    stepsLabel: 'Cómo funciona',
+    steps: [
+      { title: 'Primera visita gratuita', desc: 'Valoramos tu caso y te explicamos las opciones de tratamiento, sin compromiso.' },
+      { title: 'Presupuesto claro', desc: 'Recibes un presupuesto detallado que abarca todo tu tratamiento.' },
+      { title: 'Tu plan de pago', desc: 'Diseñamos contigo las cuotas, directamente con la clínica y sin bancos.' },
+      { title: 'Empiezas tu tratamiento', desc: 'Comienzas cuanto antes y vas pagando poco a poco.' },
+    ],
+    budgetEyebrow: 'Un solo presupuesto',
+    oneQuote: 'Un único presupuesto',
+    allInOne: 'Todo tu tratamiento',
+    qualityEyebrow: 'Calidad que dura',
+    chartLow: 'Soluciones «low-cost»',
+    chartQuality: 'Tratamiento de calidad',
+    chartCost: 'Coste acumulado',
+    chartTime: 'Años',
+    faqEyebrow: 'Preguntas frecuentes',
+    faqTitle: 'Dudas sobre la financiación',
+    faqs: [
+      { q: '¿Tengo que pedir un préstamo al banco?', a: 'No. La financiación se gestiona directamente con la clínica, sin bancos ni entidades financieras. Nuestra asesora dental diseña contigo un plan de pago a tu medida.' },
+      { q: '¿La financiación tiene intereses?', a: 'En la mayoría de tratamientos ofrecemos financiación al 0 %, sin intereses. Te confirmamos las condiciones de tu plan en el presupuesto, antes de empezar.' },
+      { q: '¿Qué formas de pago aceptáis?', a: 'Puedes pagar con tarjeta, en efectivo o mediante un plan de financiación directa con la clínica.' },
+      { q: '¿Cuánto cuesta la primera visita?', a: 'Nada: la primera visita es gratuita y sin compromiso. Valoramos tu caso, te explicamos las opciones y te damos un presupuesto detallado. <a href="{contact}">Pide tu cita aquí</a>.' },
+      { q: '¿Y si mi tratamiento necesita varios especialistas?', a: 'Cada especialista hace su diagnóstico y planifica su parte, y todo queda reflejado en un único presupuesto que abarca el tratamiento completo.' },
+    ],
+    treatEyebrow: 'Tratamientos',
+    treatTitle: 'Financia tu tratamiento',
+    treatAccent: 'sin intereses',
+    treatDesc: 'Implantes, ortodoncia, estética… Pide tu presupuesto sin compromiso y te proponemos un plan de pago a tu medida.',
+  },
+  en: {
+    title: 'Dental financing',
+    accent: 'interest-free in Vera',
+    calendarCaption: 'Pay for your treatment in easy instalments, arranged directly with the clinic.',
+    optionsEyebrow: 'How to pay',
+    optionsTitle: 'Payment options',
+    optionsAccent: 'designed around you',
+    optionsDesc: 'You choose how to pay. We explain every option calmly, with no small print.',
+    options: [
+      { title: 'Direct 0% financing', desc: 'Interest-free for most treatments, with no banks or finance companies involved.' },
+      { title: 'Instalments that suit you', desc: 'We adapt the payment plan to your budget so you can start your treatment as soon as possible.' },
+      { title: 'Card or cash', desc: 'If you prefer, you can also pay by card or in cash at the clinic.' },
+    ],
+    stepsLabel: 'How it works',
+    steps: [
+      { title: 'Free first visit', desc: 'We assess your case and explain your treatment options, with no obligation.' },
+      { title: 'A clear quote', desc: 'You receive a detailed quote covering your whole treatment.' },
+      { title: 'Your payment plan', desc: 'We set your instalments together, directly with the clinic and without banks.' },
+      { title: 'Start your treatment', desc: 'You start as soon as possible and pay little by little.' },
+    ],
+    budgetEyebrow: 'One single quote',
+    oneQuote: 'One single quote',
+    allInOne: 'Your whole treatment',
+    qualityEyebrow: 'Quality that lasts',
+    chartLow: '“Low-cost” solutions',
+    chartQuality: 'Quality treatment',
+    chartCost: 'Total cost',
+    chartTime: 'Years',
+    faqEyebrow: 'FAQ',
+    faqTitle: 'Questions about financing',
+    faqs: [
+      { q: 'Do I need to take out a bank loan?', a: 'No. Financing is arranged directly with the clinic, without banks or finance companies. Our patient advisor will design a payment plan that suits you.' },
+      { q: 'Is there any interest?', a: 'For most treatments we offer 0% financing, with no interest. We confirm the terms of your plan in your quote, before you start.' },
+      { q: 'Which payment methods do you accept?', a: 'You can pay by card, in cash or through a direct financing plan with the clinic.' },
+      { q: 'How much does the first visit cost?', a: 'Nothing: your first visit is free and without obligation. We assess your case, explain your options and give you a detailed quote. <a href="{contact}">Book your visit here</a>.' },
+      { q: 'What if my treatment needs several specialists?', a: 'Each specialist makes their diagnosis and plans their part, and everything is set out in a single quote covering your complete treatment.' },
+    ],
+    treatEyebrow: 'Treatments',
+    treatTitle: 'Finance your treatment',
+    treatAccent: 'interest-free',
+    treatDesc: 'Implants, orthodontics, cosmetic dentistry… Ask for a no-obligation quote and we will suggest a payment plan that suits you.',
+  },
+  de: {
+    title: 'Zahnfinanzierung',
+    accent: 'zinsfrei in Vera',
+    calendarCaption: 'Sie zahlen Ihre Behandlung in bequemen Raten – direkt mit der Klinik.',
+    optionsEyebrow: 'So zahlen Sie',
+    optionsTitle: 'Zahlungsmöglichkeiten',
+    optionsAccent: 'ganz nach Ihnen',
+    optionsDesc: 'Sie entscheiden, wie Sie zahlen. Wir erklären jede Option in Ruhe – ohne Kleingedrucktes.',
+    options: [
+      { title: 'Direkte 0 % Finanzierung', desc: 'Zinsfrei bei den meisten Behandlungen, ohne Banken oder Finanzinstitute.' },
+      { title: 'Raten nach Maß', desc: 'Wir passen den Zahlungsplan an Ihre Möglichkeiten an, damit Sie so bald wie möglich beginnen können.' },
+      { title: 'Karte oder bar', desc: 'Wenn Sie möchten, können Sie in der Klinik auch mit Karte oder bar bezahlen.' },
+    ],
+    stepsLabel: 'So funktioniert es',
+    steps: [
+      { title: 'Kostenloser Ersttermin', desc: 'Wir beurteilen Ihren Fall und erklären Ihnen unverbindlich die Behandlungsmöglichkeiten.' },
+      { title: 'Klarer Kostenvoranschlag', desc: 'Sie erhalten einen detaillierten Kostenvoranschlag für Ihre gesamte Behandlung.' },
+      { title: 'Ihr Zahlungsplan', desc: 'Wir legen die Raten gemeinsam fest – direkt mit der Klinik, ohne Bank.' },
+      { title: 'Behandlungsbeginn', desc: 'Sie beginnen so bald wie möglich und zahlen nach und nach.' },
+    ],
+    budgetEyebrow: 'Ein einziger Kostenvoranschlag',
+    oneQuote: 'Ein Kostenvoranschlag',
+    allInOne: 'Ihre gesamte Behandlung',
+    qualityEyebrow: 'Qualität, die bleibt',
+    chartLow: '„Low-Cost“-Lösungen',
+    chartQuality: 'Qualitätsbehandlung',
+    chartCost: 'Gesamtkosten',
+    chartTime: 'Jahre',
+    faqEyebrow: 'Häufige Fragen',
+    faqTitle: 'Fragen zur Finanzierung',
+    faqs: [
+      { q: 'Muss ich einen Bankkredit aufnehmen?', a: 'Nein. Die Finanzierung erfolgt direkt mit der Klinik, ohne Banken oder Finanzinstitute. Unsere Patientenberaterin erstellt mit Ihnen einen passenden Zahlungsplan.' },
+      { q: 'Fallen Zinsen an?', a: 'Bei den meisten Behandlungen bieten wir eine Finanzierung zu 0 % ohne Zinsen an. Die Bedingungen Ihres Plans bestätigen wir Ihnen vor Behandlungsbeginn im Kostenvoranschlag.' },
+      { q: 'Welche Zahlungsarten akzeptieren Sie?', a: 'Sie können mit Karte, bar oder über einen direkten Finanzierungsplan mit der Klinik bezahlen.' },
+      { q: 'Was kostet der erste Termin?', a: 'Nichts: Der Ersttermin ist kostenlos und unverbindlich. Wir beurteilen Ihren Fall, erklären Ihnen die Möglichkeiten und erstellen einen detaillierten Kostenvoranschlag. <a href="{contact}">Hier Termin anfragen</a>.' },
+      { q: 'Und wenn meine Behandlung mehrere Spezialisten erfordert?', a: 'Jede Spezialistin stellt ihre Diagnose und plant ihren Teil – alles wird in einem einzigen Kostenvoranschlag für die gesamte Behandlung zusammengefasst.' },
+    ],
+    treatEyebrow: 'Behandlungen',
+    treatTitle: 'Finanzieren Sie Ihre Behandlung',
+    treatAccent: 'zinsfrei',
+    treatDesc: 'Implantate, Kieferorthopädie, Ästhetik … Fordern Sie einen unverbindlichen Kostenvoranschlag an – wir schlagen Ihnen einen passenden Zahlungsplan vor.',
+  },
+  nl: {
+    title: 'Tandheelkundige financiering',
+    accent: 'renteloos in Vera',
+    calendarCaption: 'U betaalt uw behandeling in gemakkelijke termijnen, rechtstreeks met de kliniek.',
+    optionsEyebrow: 'Hoe betalen',
+    optionsTitle: 'Betaalmogelijkheden',
+    optionsAccent: 'op maat',
+    optionsDesc: 'U kiest hoe u betaalt. We leggen elke optie rustig uit, zonder kleine lettertjes.',
+    options: [
+      { title: 'Directe 0% financiering', desc: 'Renteloos voor de meeste behandelingen, zonder banken of financiële instellingen.' },
+      { title: 'Termijnen op maat', desc: 'We stemmen het betaalplan af op uw mogelijkheden, zodat u zo snel mogelijk kunt beginnen.' },
+      { title: 'Pin, creditcard of contant', desc: 'Als u dat liever heeft, kunt u in de kliniek ook met kaart of contant betalen.' },
+    ],
+    stepsLabel: 'Zo werkt het',
+    steps: [
+      { title: 'Gratis eerste bezoek', desc: 'We beoordelen uw situatie en leggen vrijblijvend de behandelopties uit.' },
+      { title: 'Een duidelijke offerte', desc: 'U ontvangt een gedetailleerde offerte voor uw volledige behandeling.' },
+      { title: 'Uw betaalplan', desc: 'We spreken samen de termijnen af, rechtstreeks met de kliniek en zonder bank.' },
+      { title: 'Start van uw behandeling', desc: 'U begint zo snel mogelijk en betaalt beetje bij beetje.' },
+    ],
+    budgetEyebrow: 'Eén offerte',
+    oneQuote: 'Eén offerte',
+    allInOne: 'Uw volledige behandeling',
+    qualityEyebrow: 'Kwaliteit die blijft',
+    chartLow: '‘Low-cost’-oplossingen',
+    chartQuality: 'Kwaliteitsbehandeling',
+    chartCost: 'Totale kosten',
+    chartTime: 'Jaren',
+    faqEyebrow: 'Veelgestelde vragen',
+    faqTitle: 'Vragen over financiering',
+    faqs: [
+      { q: 'Moet ik een lening bij de bank afsluiten?', a: 'Nee. De financiering wordt rechtstreeks met de kliniek geregeld, zonder banken of financiële instellingen. Onze patiëntadviseur stelt samen met u een betaalplan op maat op.' },
+      { q: 'Betaal ik rente?', a: 'Voor de meeste behandelingen bieden we 0% financiering, zonder rente. De voorwaarden van uw plan bevestigen we in de offerte, voordat u begint.' },
+      { q: 'Welke betaalmethoden accepteren jullie?', a: 'U kunt betalen met kaart, contant of via een direct financieringsplan met de kliniek.' },
+      { q: 'Wat kost het eerste bezoek?', a: 'Niets: het eerste bezoek is gratis en vrijblijvend. We beoordelen uw situatie, leggen de mogelijkheden uit en geven u een gedetailleerde offerte. <a href="{contact}">Maak hier een afspraak</a>.' },
+      { q: 'En als mijn behandeling meerdere specialisten nodig heeft?', a: 'Elke specialist stelt een diagnose en plant haar deel; alles wordt opgenomen in één offerte voor de volledige behandeling.' },
+    ],
+    treatEyebrow: 'Behandelingen',
+    treatTitle: 'Financier uw behandeling',
+    treatAccent: 'zonder rente',
+    treatDesc: 'Implantaten, orthodontie, esthetiek… Vraag een vrijblijvende offerte aan en wij stellen een betaalplan op maat voor.',
+  },
+  fr: {
+    title: 'Financement dentaire',
+    accent: 'sans intérêts à Vera',
+    calendarCaption: 'Vous réglez votre traitement en plusieurs fois, directement avec la clinique.',
+    optionsEyebrow: 'Comment payer',
+    optionsTitle: 'Modes de paiement',
+    optionsAccent: 'pensés pour vous',
+    optionsDesc: 'Vous choisissez comment payer. Nous vous expliquons chaque option avec calme, sans petits caractères.',
+    options: [
+      { title: 'Financement direct à 0 %', desc: 'Sans intérêts pour la plupart des traitements, sans passer par une banque ni un organisme de crédit.' },
+      { title: 'Mensualités sur mesure', desc: 'Nous adaptons le plan de paiement à vos possibilités pour que vous commenciez votre traitement au plus vite.' },
+      { title: 'Carte ou espèces', desc: 'Si vous le préférez, vous pouvez aussi régler par carte ou en espèces à la clinique.' },
+    ],
+    stepsLabel: 'Comment ça marche',
+    steps: [
+      { title: 'Première visite gratuite', desc: 'Nous évaluons votre cas et vous expliquons les options de traitement, sans engagement.' },
+      { title: 'Un devis clair', desc: 'Vous recevez un devis détaillé couvrant l’ensemble de votre traitement.' },
+      { title: 'Votre plan de paiement', desc: 'Nous fixons ensemble les mensualités, directement avec la clinique et sans banque.' },
+      { title: 'Début du traitement', desc: 'Vous commencez au plus vite et réglez petit à petit.' },
+    ],
+    budgetEyebrow: 'Un seul devis',
+    oneQuote: 'Un devis unique',
+    allInOne: 'Tout votre traitement',
+    qualityEyebrow: 'Une qualité qui dure',
+    chartLow: 'Solutions « low-cost »',
+    chartQuality: 'Traitement de qualité',
+    chartCost: 'Coût cumulé',
+    chartTime: 'Années',
+    faqEyebrow: 'Questions fréquentes',
+    faqTitle: 'Vos questions sur le financement',
+    faqs: [
+      { q: 'Dois-je demander un prêt à ma banque ?', a: 'Non. Le financement se fait directement avec la clinique, sans banque ni organisme de crédit. Notre conseillère dentaire établit avec vous un plan de paiement sur mesure.' },
+      { q: 'Le financement comporte-t-il des intérêts ?', a: 'Pour la plupart des traitements, nous proposons un financement à 0 %, sans intérêts. Nous vous confirmons les conditions de votre plan dans le devis, avant de commencer.' },
+      { q: 'Quels moyens de paiement acceptez-vous ?', a: 'Vous pouvez payer par carte, en espèces ou grâce à un plan de financement direct avec la clinique.' },
+      { q: 'Combien coûte la première visite ?', a: 'Rien : la première visite est gratuite et sans engagement. Nous évaluons votre cas, vous expliquons les options et vous remettons un devis détaillé. <a href="{contact}">Prenez rendez-vous ici</a>.' },
+      { q: 'Et si mon traitement nécessite plusieurs spécialistes ?', a: 'Chaque spécialiste établit son diagnostic et planifie sa partie, et l’ensemble figure dans un devis unique couvrant tout le traitement.' },
+    ],
+    treatEyebrow: 'Traitements',
+    treatTitle: 'Financez votre traitement',
+    treatAccent: 'sans intérêts',
+    treatDesc: 'Implants, orthodontie, esthétique… Demandez un devis sans engagement et nous vous proposerons un plan de paiement adapté.',
+  },
+} as const)[lang];
 
-const slug = lang === 'es' ? '/precio-y-financiacion' : `/${lang}/pricing-and-financing`;
+const keywords = t('financiacion.hero.keywords').split('|').map((k) => k.trim());
+const faqs = copy.faqs.map((f) => ({ question: f.q, answer: f.a.replace('{contact}', contactHref) }));
+const optionIcons = ['calendar', 'sliders', 'card'] as const;
+
+// The specialists that usually share one multidisciplinary quote.
+const specialists: TreatmentKey[] = ['implantes', 'periodoncia', 'ortodoncia'];
+
+// Instalment calendar: 12 months, the first ones already paid.
+const PAID = 7;
+const months = Array.from({ length: 12 }, (_, i) => ({
+  n: i + 1,
+  x: 40 + (i % 4) * 72,
+  y: 112 + Math.floor(i / 4) * 54,
+  paid: i < PAID,
+  current: i === PAID,
+}));
+
+// Cumulative cost over ten years (x: years, y: cost). Low-cost work needs redoing.
+const chartX = (year: number) => 44 + year * 33.6;
+const chartY = (cost: number) => 206 - cost * 1.7;
+const steps = (points: [number, number][]) =>
+  points.reduce((d, [year, cost], i) => d + (i === 0 ? `M${chartX(year)} ${chartY(0)}V${chartY(cost)}` : `H${chartX(year)}V${chartY(cost)}`), '') + `H${chartX(10)}`;
+const lowCostPath = steps([[0, 30], [2.2, 52], [4.4, 74], [6.6, 96], [8.6, 112]]);
+const qualityPath = `M${chartX(0)} ${chartY(0)}V${chartY(58)}C${chartX(3)} ${chartY(59)} ${chartX(7)} ${chartY(61)} ${chartX(10)} ${chartY(62)}`;
+
+// Original strings: some are in capitals, one ends with an emoji and one misspells a name.
+// Capitalised strings are shown in sentence case; German keeps its capitalised nouns.
+const DE_CASE: Record<string, string> = {
+  'EINE KOSTSPIELIGE ZAHNBEHANDLUNG IST KEINE TEURE BEHANDLUNG': 'Eine kostspielige Zahnbehandlung ist keine teure Behandlung',
+};
+const sentence = (s: string) =>
+  s !== s.toUpperCase() ? s : DE_CASE[s] ?? s.toLowerCase().replace(/\p{L}/u, (c) => c.toUpperCase());
+const planTitle = t('financiacion.hero.title').replace(/\s*\p{Extended_Pictographic}/gu, '');
+const allyText = t('financiacion.ally.p1').replace(/Ell[ée]\s*–\s*Louise Warneres/, 'Ellé-Louise Warner');
+
+const url = absoluteUrl(pathFor('pricing', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('financiacion.meta.title'),
-      "description": t('financiacion.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('financiacion.meta.title'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('financiacion.meta.title'),
+  description: t('financiacion.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: { '@id': `${SITE_URL}/#dentist` },
+  significantLink: TREATMENTS.map((tr) => absoluteUrl(pathFor(tr.key, lang))),
 });
 ---
 
 <Layout title={t('financiacion.meta.title')} description={t('financiacion.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-slate-900 overflow-hidden">
-       <!-- Abstract background -->
-       <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
-          <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-             <defs>
-                <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-                   <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
-                </pattern>
-             </defs>
-             <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-          </svg>
-       </div>
-       
-       <div class="container mx-auto px-6 relative z-10 text-white">
-          <div class="grid lg:grid-cols-2 gap-12 items-center">
-             <div class="fade-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-[10px] font-black tracking-widest uppercase mb-8 shadow-lg shadow-accent/20">
-                   {t('financiacion.hero.badge')}
-                </span>
-                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-[1.1] tracking-tighter text-white">
-                   {t('financiacion.hero.title')}
-                </h1>
-                <p class="text-xl text-slate-300 leading-relaxed mb-10 font-light">
-                   {t('financiacion.hero.p1')}
-                </p>
-                <div class="flex flex-wrap gap-2 mb-8">
-                    {keywords.map((keyword) => (
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-xs font-semibold text-slate-300 border border-white/10">{keyword.trim()}</span>
-                    ))}
-                </div>
-             </div>
-             
-             <div class="fade-up relative" style="transition-delay: 0.2s">
-                 <div class="absolute -inset-4 bg-accent/20 rounded-[3rem] blur-2xl"></div>
-                 <img src="/precio-financiacion/precio-financiacion-dental-vera-almeria.jpg" alt={t('financiacion.image.alt')} class="relative rounded-[3rem] shadow-2xl border border-white/10 w-full object-cover h-[500px]" />
-             </div>
+
+  <main id="main">
+    <PageHero
+      badge={t('financiacion.hero.badge')}
+      title={copy.title}
+      accent={copy.accent}
+      subtitle={t('appointment.desc.main')}
+      breadcrumbs={[{ label: t('nav.pricing') }]}
+      illustration="pricing"
+      illustrationTitle={t('financiacion.image.alt')}
+      highlights={[t('trust.5'), t('financiacion.quality.card3.title'), t('trust.7')]}
+    />
+
+    <!-- Your financial plan -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-16 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6" data-reveal>
+            <p class="eyebrow mb-6">{t('nav.pricing')}</p>
+            <h2 class="text-[2.35rem] leading-[1.06] sm:text-5xl lg:text-[3.4rem]">{planTitle}</h2>
+            <p class="mt-8 border-l-2 border-coral pl-6 text-lg leading-relaxed text-slate-700 md:text-xl">{t('financiacion.hero.p1')}</p>
+            <ul class="mt-9 flex flex-wrap gap-2">
+              {keywords.map((k) => (
+                <li class="rounded-full border border-ocean-900/10 bg-sand px-3.5 py-1.5 text-[13px] text-slate-600">{k}</li>
+              ))}
+            </ul>
           </div>
-       </div>
-    </section>
 
-    <!-- Financing Options Section -->
-    <section class="py-24 bg-white relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50 skew-x-12 opacity-50 pointer-events-none"></div>
-        <div class="container mx-auto px-6 relative z-10">
-            <div class="grid md:grid-cols-2 gap-16 items-start">
-                
-                <!-- Multidisciplinary -->
-                <div class="fade-up p-10 bg-white rounded-[3rem] shadow-xl border border-slate-100 hover:border-accent/30 transition-all group">
-                    <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-primary mb-8 group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all">
-                        <Wallet size={32} />
-                    </div>
-                    <h3 class="text-2xl font-black text-primary mb-6">{t('financiacion.multidisciplinary.title')}</h3>
-                    <p class="text-slate-600 leading-relaxed text-lg">
-                        {t('financiacion.multidisciplinary.p1')}
-                    </p>
-                </div>
-
-                <!-- Financial Ally -->
-                <div class="fade-up p-10 bg-slate-900 rounded-[3rem] shadow-xl border border-slate-800 text-white relative overflow-hidden group" style="transition-delay: 0.1s">
-                    <div class="absolute top-0 right-0 p-10 opacity-10">
-                        <BadgeEuro size={120} />
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-accent mb-8 group-hover:scale-110 transition-all">
-                            <PiggyBank size={32} />
-                        </div>
-                        <h3 class="text-2xl font-black text-white mb-6">{t('financiacion.ally.title')}</h3>
-                        <p class="text-slate-300 leading-relaxed text-lg">
-                            {t('financiacion.ally.p1')}
-                        </p>
-                        <div class="mt-8 p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                            <p class="text-sm font-medium text-accent italic">
-                                "{t('financiacion.quote')}"
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+          <!-- Instalment calendar -->
+          <figure class="relative mx-auto w-full max-w-[520px] lg:col-span-6" data-reveal="right">
+            <div class="absolute inset-[6%] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.18)_0%,transparent_70%)] blur-2xl" aria-hidden="true"></div>
+            <svg class="draw relative w-full" viewBox="0 0 380 304" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="cal-head" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#0B7C86" />
+                  <stop offset="1" stop-color="#143B5C" />
+                </linearGradient>
+                <linearGradient id="cal-seal" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FF9AAA" />
+                  <stop offset="1" stop-color="#C9304A" />
+                </linearGradient>
+                <clipPath id="cal-card"><rect x="20" y="40" width="320" height="246" rx="26" /></clipPath>
+              </defs>
+              <rect x="26" y="50" width="320" height="246" rx="26" fill="#0A1F33" fill-opacity=".08" />
+              <rect x="20" y="40" width="320" height="246" rx="26" fill="#fff" stroke="#0A1F33" stroke-opacity=".08" />
+              <g clip-path="url(#cal-card)">
+                <rect x="20" y="40" width="320" height="56" fill="url(#cal-head)" />
+                <rect x="40" y="72" width="200" height="6" rx="3" fill="#fff" fill-opacity=".18" />
+                <rect x="40" y="72" width={(200 * PAID) / 12} height="6" rx="3" fill="#8FE3EA" />
+              </g>
+              {[96, 180, 264].map((x) => (
+                <g>
+                  <rect x={x - 6} y="26" width="12" height="30" rx="6" fill="#143B5C" />
+                  <circle cx={x} cy="51" r="2.5" fill="#fff" fill-opacity=".6" />
+                </g>
+              ))}
+              {months.map(({ paid, current, ...m }) => (
+                  <g>
+                    <rect
+                      x={m.x}
+                      y={m.y}
+                      width="62"
+                      height="44"
+                      rx="11"
+                      fill={paid ? '#D5F6F8' : '#FBF8F4'}
+                      stroke={current ? '#F2617A' : '#0A1F33'}
+                      stroke-opacity={current ? 1 : 0.07}
+                      stroke-width={current ? 1.6 : 1}
+                    />
+                    <text x={m.x + 10} y={m.y + 17} font-family="Inter, sans-serif" font-size="10" font-weight="600" fill={paid ? '#0B7C86' : '#94A3B8'}>{String(m.n).padStart(2, '0')}</text>
+                    {paid && (
+                      <path d={`M${m.x + 33} ${m.y + 27}l5 5 10-11`} stroke="#0B7C86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" pathLength="1" style={`--dd:${0.4 + m.n * 0.12}s`} />
+                    )}
+                    {current && <circle cx={m.x + 46} cy={m.y + 26} r="5" fill="#F2617A" class="animate-pulse" />}
+                    {!paid && !current && <circle cx={m.x + 46} cy={m.y + 26} r="5" stroke="#CBD5E1" stroke-dasharray="2 2" />}
+                  </g>
+              ))}
+              <g class="animate-float">
+                <circle cx="330" cy="62" r="44" fill="#0A1F33" fill-opacity=".12" transform="translate(4 6)" />
+                <circle cx="330" cy="62" r="44" fill="url(#cal-seal)" />
+                <circle cx="330" cy="62" r="36" stroke="#FFE4E8" stroke-opacity=".7" stroke-dasharray="2 3" />
+                <text x="330" y="72" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="30" font-weight="600" fill="#fff">0%</text>
+              </g>
+            </svg>
+            <figcaption class="mx-auto mt-4 max-w-sm text-center text-[15px] text-slate-600">
+              <span class="mr-2 inline-block h-2 w-2 rounded-full bg-coral align-middle" aria-hidden="true"></span>{copy.calendarCaption}
+            </figcaption>
+          </figure>
         </div>
+      </div>
     </section>
 
-    <!-- Quality Philosophy -->
-    <section class="py-24 bg-slate-50">
-        <div class="container mx-auto px-6">
-            <div class="max-w-4xl mx-auto text-center mb-16 fade-up">
-                <span class="inline-block p-3 rounded-2xl bg-accent/10 text-accent mb-6">
-                    <ShieldCheck size={32} />
+    <!-- Payment options + how it works -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={44} color="teal" class="pointer-events-none absolute -right-12 top-12 h-[300px] w-auto opacity-[0.08]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={copy.optionsEyebrow} title={copy.optionsTitle} accent={copy.optionsAccent} description={copy.optionsDesc} split />
+
+        <div class="mt-16 grid gap-5 md:grid-cols-3">
+          {copy.options.map((o, i) => (
+            <article class:list={['group relative overflow-hidden rounded-[2rem] p-8 md:p-9', i === 0 ? 'bg-ocean text-white shadow-[var(--shadow-premium)]' : 'surface-card']} data-reveal style={`--d:${i * 0.08}s`}>
+              {i === 0 && <CoralBranch seed={8} depth={4} color="duo" class="pointer-events-none absolute right-5 top-5 h-24 w-auto opacity-40" />}
+              <span class:list={['relative mb-8 flex h-16 w-16 items-center justify-center rounded-2xl', i === 0 ? 'bg-white/10 text-aqua ring-1 ring-white/15' : 'bg-aqua-pale text-accent']}>
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {optionIcons[i] === 'calendar' && (
+                    <>
+                      <rect x="6" y="9" width="36" height="33" rx="6" />
+                      <path d="M6 18h36M15 5v8M33 5v8" />
+                      <path d="M14 26h.01M21 26h.01M28 26h.01M14 33h.01M21 33h.01" stroke-width="3" />
+                      <path d="m28.5 33.5 2.5 2.5 5-5.5" stroke="#F2617A" stroke-width="2.4" />
+                    </>
+                  )}
+                  {optionIcons[i] === 'sliders' && (
+                    <>
+                      <path d="M12 6v36M24 6v36M36 6v36" stroke-opacity=".35" />
+                      <rect x="7" y="25" width="10" height="7" rx="3.5" fill="currentColor" fill-opacity=".15" />
+                      <rect x="19" y="12" width="10" height="7" rx="3.5" fill="#F2617A" stroke="#F2617A" fill-opacity=".25" />
+                      <rect x="31" y="30" width="10" height="7" rx="3.5" fill="currentColor" fill-opacity=".15" />
+                    </>
+                  )}
+                  {optionIcons[i] === 'card' && (
+                    <>
+                      <rect x="4" y="11" width="32" height="22" rx="4.5" />
+                      <path d="M4 18h32" />
+                      <rect x="9" y="23" width="7" height="5" rx="1.5" />
+                      <circle cx="35" cy="34" r="9" fill="#FFE4E8" stroke="#F2617A" />
+                      <path d="M37.6 31a3.6 3.6 0 1 0 0 6M31.5 33.2h4.2M31.5 35.4h4.2" stroke="#F2617A" stroke-width="1.6" />
+                    </>
+                  )}
+                </svg>
+              </span>
+              <h3 class:list={['relative font-sans text-xl font-semibold tracking-tight', i === 0 ? 'text-white' : 'text-ocean-900']}>{o.title}</h3>
+              <p class:list={['relative mt-3 text-[15px] leading-relaxed', i === 0 ? 'text-white/70' : 'text-slate-600']}>{o.desc}</p>
+            </article>
+          ))}
+        </div>
+
+        <div class="mt-24 border-t border-ocean-900/[0.08] pt-16">
+          <p class="eyebrow mb-12" data-reveal>{copy.stepsLabel}</p>
+          <ProcessSteps steps={copy.steps.map((s) => ({ title: s.title, desc: s.desc }))} />
+        </div>
+      </div>
+    </section>
+
+    <!-- Multidisciplinary quote + financial advisor -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={21} />
+        <svg class="absolute inset-0 h-full w-full opacity-[0.06]"><defs><pattern id="fin-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#8FE3EA" stroke-width=".6" /></pattern></defs><rect width="100%" height="100%" fill="url(#fin-grid)" /></svg>
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid gap-16 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={copy.budgetEyebrow} title={t('financiacion.multidisciplinary.title')} description={t('financiacion.multidisciplinary.p1')} tone="dark" />
+
+            <!-- Several specialists → one quote (stacked on phones, side by side from sm) -->
+            <div class="relative mt-12 flex flex-col items-stretch sm:grid sm:grid-cols-[minmax(0,1fr)_4.5rem_minmax(0,0.9fr)] sm:items-center" data-reveal style="--d:.1s">
+              <ul class="grid gap-2 sm:gap-3">
+                {specialists.map((key) => (
+                  <li>
+                    <a href={pathFor(key, lang)} class="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-2.5 pr-3 transition-colors hover:border-aqua/50 hover:bg-white/10">
+                      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-aqua" style="--icon-accent:#FF9AAA"><TreatmentIcon name={key} size={22} /></span>
+                      <span class="min-w-0 text-sm font-semibold leading-tight text-white/90 [overflow-wrap:anywhere]">{t(`nav.treatments.${key}` as any)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <svg class="draw mx-auto my-1 h-12 w-6 sm:hidden" viewBox="0 0 24 48" fill="none" aria-hidden="true">
+                <path d="M12 2v40" stroke="#2CC5D2" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="1" pathLength="1" />
+                <path d="m6 36 6 7 6-7" stroke="#F2617A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" pathLength="1" style="--dd:.8s" />
+              </svg>
+              <svg class="draw hidden h-full w-full sm:block" viewBox="0 0 80 180" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                {[30, 90, 150].map((y, i) => (
+                  <path d={`M0 ${y}C40 ${y} 40 90 80 90`} stroke={i === 1 ? '#F2617A' : '#2CC5D2'} stroke-opacity=".75" stroke-width="1.4" vector-effect="non-scaling-stroke" pathLength="1" style={`--dd:${0.3 + i * 0.15}s`} />
+                ))}
+              </svg>
+              <div class="relative mx-auto w-full max-w-[18rem] rounded-2xl bg-white p-5 text-ocean-900 shadow-2xl sm:max-w-none">
+                <span class="absolute -right-3 -top-3 flex h-11 w-11 items-center justify-center rounded-full bg-coral-deep text-[13px] font-bold text-white shadow-[var(--shadow-coral)]">0%</span>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B7C86" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z" /><path d="M9 8h6M9 12h6M9 16h3" /></svg>
+                <p class="font-display mt-3 text-lg leading-tight [overflow-wrap:anywhere]">{copy.oneQuote}</p>
+                <p class="mt-1 text-[12px] leading-snug text-slate-500">{copy.allInOne}</p>
+                <div class="mt-3 space-y-1.5" aria-hidden="true">
+                  <span class="block h-1.5 w-full rounded-full bg-aqua-pale"></span>
+                  <span class="block h-1.5 w-4/5 rounded-full bg-aqua-pale"></span>
+                  <span class="block h-1.5 w-3/5 rounded-full bg-coral-pale"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advisor -->
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="relative rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl md:p-10">
+              <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
+                <div class="relative w-40 shrink-0">
+                  <span class="absolute inset-0 translate-x-2 translate-y-2 rounded-[1.5rem] bg-gradient-to-br from-aqua/50 to-coral/50" aria-hidden="true"></span>
+                  <img
+                    src="/precio-financiacion/precio-financiacion-dental-vera-almeria.jpg"
+                    alt={`Ellé-Louise Warner – ${t('role.advisor')} · ${t('financiacion.image.alt')}`}
+                    width="577"
+                    height="456"
+                    class="relative aspect-[4/5] w-full rounded-[1.5rem] object-cover object-[60%_center]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div>
+                  <p class="eyebrow eyebrow-light">{t('role.advisor')}</p>
+                  <h3 class="mt-3 text-3xl text-white md:text-4xl">{t('financiacion.ally.title')}</h3>
+                  <p class="mt-2 font-semibold text-white/85">Ellé-Louise Warner</p>
+                </div>
+              </div>
+              <p class="mt-8 leading-relaxed text-white/70">{allyText}</p>
+              <figure class="mt-8 border-t border-white/10 pt-8">
+                <svg class="h-6 w-8 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+                <blockquote class="font-display mt-4 text-2xl italic leading-snug text-white md:text-[1.75rem]">{t('financiacion.quote')}</blockquote>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quality is an investment -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6" data-reveal>
+            <p class="eyebrow mb-6">{copy.qualityEyebrow}</p>
+            <h2 class="text-[2.35rem] leading-[1.06] sm:text-5xl lg:text-[3.4rem]">{sentence(t('financiacion.quality.title'))}</h2>
+            <p class="mt-8 text-lg leading-relaxed text-slate-600">{t('financiacion.quality.p1')}</p>
+            <p class="mt-5 text-lg leading-relaxed text-slate-600">{t('financiacion.quality.p2')}</p>
+          </div>
+
+          <figure class="rounded-[2rem] bg-sand p-6 ring-1 ring-ocean-900/5 md:p-9 lg:col-span-6" data-reveal="right">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{copy.chartCost} (€)</p>
+            <svg class="draw mt-3 w-full" viewBox="0 0 400 230" fill="none" aria-hidden="true">
+              {[0, 40, 80, 120].map((c) => (
+                <path d={`M${chartX(0)} ${chartY(c)}H${chartX(10)}`} stroke="#0A1F33" stroke-opacity=".07" stroke-dasharray="3 4" />
+              ))}
+              <path d={`M${chartX(0)} ${chartY(0)}H${chartX(10)}`} stroke="#0A1F33" stroke-opacity=".25" />
+              {[0, 2, 4, 6, 8, 10].map((y) => (
+                <text x={chartX(y)} y="224" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#64748B">{y}</text>
+              ))}
+              <path d={`${qualityPath}V${chartY(0)}H${chartX(0)}Z`} fill="#2CC5D2" fill-opacity=".08" />
+              <path d={lowCostPath} stroke="#F2617A" stroke-width="2.6" stroke-linejoin="round" stroke-dasharray="1" pathLength="1" style="--dd:.3s" />
+              <path d={qualityPath} stroke="#0B7C86" stroke-width="3" stroke-linecap="round" pathLength="1" style="--dd:.5s" />
+              {[2.2, 4.4, 6.6, 8.6].map((y, i) => (
+                <circle cx={chartX(y)} cy={chartY([52, 74, 96, 112][i])} r="4" fill="#fff" stroke="#F2617A" stroke-width="2" />
+              ))}
+              <circle cx={chartX(10)} cy={chartY(62)} r="6" fill="#0B7C86" stroke="#fff" stroke-width="2.5" />
+              <circle cx={chartX(10)} cy={chartY(112)} r="6" fill="#F2617A" stroke="#fff" stroke-width="2.5" />
+            </svg>
+            <figcaption class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] text-ocean-900">
+              <span class="inline-flex items-center gap-2"><span class="h-[3px] w-6 rounded-full bg-accent"></span>{copy.chartQuality}</span>
+              <span class="inline-flex items-center gap-2"><span class="h-[3px] w-6 rounded-full bg-coral"></span>{copy.chartLow}</span>
+              <span class="ml-auto text-[12px] uppercase tracking-[0.14em] text-slate-500">{copy.chartTime} →</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="mt-16 grid gap-5 md:grid-cols-3">
+          {[
+            { title: t('financiacion.quality.card1.title'), desc: t('financiacion.quality.card1.desc'), icon: 'lasting' },
+            { title: t('financiacion.quality.card2.title'), desc: t('financiacion.quality.p3'), icon: 'health' },
+            { title: t('financiacion.quality.card3.title'), desc: t('financiacion.quality.card3.desc'), icon: 'nobank' },
+          ].map((card, i) => (
+            <div class="surface-card group p-8" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class:list={['mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-colors duration-500', i === 1 ? 'bg-coral-pale text-coral-deep group-hover:bg-coral-deep group-hover:text-white' : 'bg-aqua-pale text-accent group-hover:bg-accent group-hover:text-white']}>
+                <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {card.icon === 'lasting' && (
+                    <>
+                      <path d="M24 24c-4.5-6-8-9-12-9a9 9 0 0 0 0 18c4 0 7.5-3 12-9Zm0 0c4.5 6 8 9 12 9a9 9 0 0 0 0-18c-4 0-7.5 3-12 9Z" />
+                      <circle cx="12" cy="24" r="2.2" fill="currentColor" stroke="none" />
+                    </>
+                  )}
+                  {card.icon === 'health' && (
+                    <>
+                      <path d="M24 41S6 30.5 6 18.5A9.5 9.5 0 0 1 24 13a9.5 9.5 0 0 1 18 5.5C42 30.5 24 41 24 41Z" />
+                      <path d="M11 24h7l3-6 4 11 3-5h9" />
+                    </>
+                  )}
+                  {card.icon === 'nobank' && (
+                    <>
+                      <path d="M6 18 24 8l18 10H6ZM10 22v12M18 22v12M30 22v12M38 22v12M5 38h38" stroke-opacity=".7" />
+                      <path d="M8 42 40 10" stroke-width="2.6" />
+                    </>
+                  )}
+                </svg>
+              </span>
+              <h3 class="font-sans text-xl font-semibold tracking-tight">{card.title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{card.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow={copy.faqEyebrow} title={copy.faqTitle} faqs={faqs} />
+
+    <!-- Treatments you can finance -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.treatEyebrow} title={copy.treatTitle} accent={copy.treatAccent} description={copy.treatDesc} split />
+        <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {TREATMENTS.map((tr, i) => (
+            <li data-reveal style={`--d:${(i % 3) * 0.06}s`}>
+              <a href={pathFor(tr.key, lang)} class="group glow-border flex items-center gap-5 rounded-[1.5rem] border border-ocean-900/[0.07] bg-white p-5 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white" style="--icon-accent:#F2617A">
+                  <TreatmentIcon name={tr.key} size={30} />
                 </span>
-                <h2 class="text-3xl md:text-5xl font-black text-primary leading-tight mb-8">
-                    {t('financiacion.quality.title')}
-                </h2>
-                <div class="space-y-6 text-lg text-slate-600 leading-relaxed text-left md:text-center">
-                    <p>{t('financiacion.quality.p1')}</p>
-                    <p>{t('financiacion.quality.p2')}</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="fade-up p-8 bg-white rounded-3xl shadow-sm border border-slate-100">
-                    <CheckCircle2 class="text-accent mb-4" size={28} />
-                    <h4 class="font-bold text-primary mb-2 text-lg">{t('financiacion.quality.card1.title')}</h4>
-                    <p class="text-sm text-slate-500">{t('financiacion.quality.card1.desc')}</p>
-                </div>
-                <div class="fade-up p-8 bg-white rounded-3xl shadow-sm border border-slate-100" style="transition-delay: 0.1s">
-                    <CheckCircle2 class="text-accent mb-4" size={28} />
-                    <h4 class="font-bold text-primary mb-2">{t('financiacion.quality.card2.title')}</h4>
-                    <p class="text-sm text-slate-500">{t('financiacion.quality.p3')}</p>
-                </div>
-                <div class="fade-up p-8 bg-white rounded-3xl shadow-sm border border-slate-100" style="transition-delay: 0.2s">
-                    <CheckCircle2 class="text-accent mb-4" size={28} />
-                    <h4 class="font-bold text-primary mb-2">{t('financiacion.quality.card3.title')}</h4>
-                    <p class="text-sm text-slate-500">{t('financiacion.quality.card3.desc')}</p>
-                </div>
-            </div>
-        </div>
+                <span class="flex-1 text-lg font-semibold tracking-tight text-ocean-900">{t(tr.label as any)}</span>
+                <svg class="shrink-0 text-accent transition-transform duration-300 group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
 
     <Contact />
-    <FooterInfo />
   </main>
+
+  <FooterInfo />
 </Layout>

@@ -3,132 +3,536 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
+import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
+import { TEAM, type TeamMember } from '../data/team';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { ChevronRight, Heart } from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL, type TreatmentKey } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const teamMembers = [
-  { name: 'Dra. Ana Padilla', role: 'Cirugía, implantología y estética dental', image: '/equipo/Ana-padilla.jpg' },
-  { name: 'Melina Bernkopf', role: 'Recepcionista', image: '/equipo/Melina-bernkopf.jpg' },
-  { name: 'Dra. Ana Soler', role: 'Ortodoncista, Odontopediatría', image: '/equipo/ana-soler.jpg' },
-  { name: 'Ángela Perez', role: 'Auxiliar de clínica', image: '/equipo/angela-perez-.jpg' },
-  { name: 'Dra. Ángeles Parra', role: 'Odontología general, Endodoncista', image: '/equipo/angeles-parrar.jpg' },
-  { name: 'Ellé – Louise Warner', role: 'Asesora dental', image: '/equipo/elle-louise-warner.jpg' },
-  { name: 'Anda Dorela', role: 'Auxiliar de clínica', image: '/equipo/Anda-dorela.jpg' },
-  { name: 'Blaneirys Peña', role: 'Higienista Dental', image: '/equipo/blaneirys.jpg' },
-  { name: 'Minerva Aznar', role: 'Higienista Dental', image: '/equipo/minerva.jpg' },
-  { name: 'María Luisa Aguacil', role: 'Auxiliar de clínica', image: '/equipo/maria-luisa.jpg' },
-  { name: 'Dra. Lorraynne Barbosa', role: 'Odontología general', image: '/equipo/Lorraynne-Barbosa.jpg' }
+const copy = ({
+  es: {
+    title: 'Nuestro equipo',
+    people: 'profesionales',
+    reg: 'Colegiada nº',
+    aede: 'Miembro de la AEDE (Asociación Española de Endodoncia)',
+    years: 'años cuidando sonrisas en Vera',
+    bio: 'Fundadora y directora médica de Clínica Dental Koral. Dedica su práctica a la cirugía oral, la implantología y la estética dental, y lidera un equipo en el que cada especialista se dedica en exclusiva a su área.',
+    specialties: 'Especialidades',
+    doctors: 'Odontólogas',
+    planDesc: 'Cuando un caso necesita a varios especialistas, lo estudiamos juntos y lo convertimos en un único plan, coordinado y explicado con calma.',
+    yourPlan: 'Tu plan',
+    values: [
+      { title: 'Cercanía', desc: 'Te escuchamos sin prisas y te acompañamos durante todo el tratamiento.' },
+      { title: 'Honestidad', desc: 'Te proponemos solo lo que necesitas, con un diagnóstico y un presupuesto claros.' },
+      { title: 'Comunicación', desc: 'Te explicamos cada paso con calma, en español, inglés, alemán, neerlandés o francés.' },
+    ],
+    staffEyebrow: 'El equipo que te acompaña',
+    staffTitle: 'Las personas que te cuidan',
+    staffAccent: 'en cada visita',
+    staffDesc: 'Higienistas, auxiliares, recepción y asesoría: te reciben con una sonrisa y te acompañan de principio a fin.',
+    langsTitle: 'Hablamos tu idioma',
+    langsDesc: 'Español, inglés, alemán, neerlandés y francés en consulta.',
+    photoAlt: 'en Clínica Dental Koral, Vera',
+  },
+  en: {
+    title: 'Our team',
+    people: 'professionals',
+    reg: 'Registration no.',
+    aede: 'Member of the Spanish Endodontics Association (AEDE)',
+    years: 'years caring for smiles in Vera',
+    bio: 'Founder and clinical director of Koral Dental Clinic. She focuses on oral surgery, implantology and cosmetic dentistry, and leads a team in which every specialist works exclusively in their own field.',
+    specialties: 'Specialities',
+    doctors: 'Our dentists',
+    planDesc: 'When a case needs several specialists, we study it together and turn it into a single plan, coordinated and explained calmly.',
+    yourPlan: 'Your plan',
+    values: [
+      { title: 'Closeness', desc: 'We listen without rushing and stay by your side throughout your treatment.' },
+      { title: 'Honesty', desc: 'We only suggest what you really need, with a clear diagnosis and a clear quote.' },
+      { title: 'Communication', desc: 'We explain every step calmly, in Spanish, English, German, Dutch or French.' },
+    ],
+    staffEyebrow: 'The team by your side',
+    staffTitle: 'The people who look after you',
+    staffAccent: 'at every visit',
+    staffDesc: 'Hygienists, dental assistants, reception and patient advice: they welcome you with a smile and look after you from start to finish.',
+    langsTitle: 'We speak your language',
+    langsDesc: 'Spanish, English, German, Dutch and French in the surgery.',
+    photoAlt: 'at Koral Dental Clinic, Vera',
+  },
+  de: {
+    title: 'Unser Team',
+    people: 'Fachkräfte',
+    reg: 'Kammer-Nr.',
+    aede: 'Mitglied der AEDE (Spanische Gesellschaft für Endodontie)',
+    years: 'Jahre für schöne Zähne in Vera',
+    bio: 'Gründerin und ärztliche Leiterin der Zahnklinik Koral. Ihre Schwerpunkte sind Oralchirurgie, Implantologie und ästhetische Zahnmedizin. Sie leitet ein Team, in dem sich jede Spezialistin ausschließlich ihrem Fachgebiet widmet.',
+    specialties: 'Fachgebiete',
+    doctors: 'Unsere Zahnärztinnen',
+    planDesc: 'Braucht ein Fall mehrere Spezialisten, besprechen wir ihn gemeinsam und machen daraus einen einzigen, abgestimmten Plan – in Ruhe erklärt.',
+    yourPlan: 'Ihr Plan',
+    values: [
+      { title: 'Nähe', desc: 'Wir hören Ihnen ohne Eile zu und begleiten Sie während der gesamten Behandlung.' },
+      { title: 'Ehrlichkeit', desc: 'Wir schlagen nur vor, was Sie wirklich brauchen – mit klarer Diagnose und klarem Kostenvoranschlag.' },
+      { title: 'Kommunikation', desc: 'Wir erklären jeden Schritt in Ruhe, auf Spanisch, Englisch, Deutsch, Niederländisch oder Französisch.' },
+    ],
+    staffEyebrow: 'Das Team an Ihrer Seite',
+    staffTitle: 'Die Menschen, die sich um Sie kümmern',
+    staffAccent: 'bei jedem Besuch',
+    staffDesc: 'Dentalhygiene, Assistenz, Empfang und Patientenberatung: Sie empfangen Sie mit einem Lächeln und begleiten Sie von Anfang bis Ende.',
+    langsTitle: 'Wir sprechen Ihre Sprache',
+    langsDesc: 'Spanisch, Englisch, Deutsch, Niederländisch und Französisch in der Sprechstunde.',
+    photoAlt: 'in der Zahnklinik Koral, Vera',
+  },
+  nl: {
+    title: 'Ons team',
+    people: 'professionals',
+    reg: 'Registratienr.',
+    aede: 'Lid van de AEDE (Spaanse Vereniging voor Endodontie)',
+    years: 'jaar zorg voor mooie glimlachen in Vera',
+    bio: 'Oprichter en medisch directeur van Tandkliniek Koral. Zij richt zich op mondchirurgie, implantologie en esthetische tandheelkunde en leidt een team waarin elke specialist zich uitsluitend aan het eigen vakgebied wijdt.',
+    specialties: 'Specialismen',
+    doctors: 'Onze tandartsen',
+    planDesc: 'Heeft een behandeling meerdere specialisten nodig, dan bekijken we die samen en maken we er één gecoördineerd plan van, rustig uitgelegd.',
+    yourPlan: 'Uw plan',
+    values: [
+      { title: 'Betrokkenheid', desc: 'We luisteren zonder haast en staan de hele behandeling naast u.' },
+      { title: 'Eerlijkheid', desc: 'We stellen alleen voor wat u echt nodig hebt, met een duidelijke diagnose en offerte.' },
+      { title: 'Communicatie', desc: 'We leggen elke stap rustig uit, in het Spaans, Engels, Duits, Nederlands of Frans.' },
+    ],
+    staffEyebrow: 'Het team naast u',
+    staffTitle: 'De mensen die voor u zorgen',
+    staffAccent: 'bij elk bezoek',
+    staffDesc: 'Mondhygiënisten, assistenten, receptie en patiëntadvies: zij ontvangen u met een glimlach en begeleiden u van begin tot eind.',
+    langsTitle: 'Wij spreken uw taal',
+    langsDesc: 'Spaans, Engels, Duits, Nederlands en Frans in de praktijk.',
+    photoAlt: 'bij Tandkliniek Koral, Vera',
+  },
+  fr: {
+    title: 'Notre équipe',
+    people: 'professionnels',
+    reg: 'N° d’inscription',
+    aede: 'Membre de l’AEDE (Association espagnole d’endodontie)',
+    years: 'ans à prendre soin des sourires à Vera',
+    bio: 'Fondatrice et directrice médicale de la Clinique Dentaire Koral. Elle se consacre à la chirurgie orale, à l’implantologie et à l’esthétique dentaire, et dirige une équipe où chaque spécialiste se consacre exclusivement à son domaine.',
+    specialties: 'Spécialités',
+    doctors: 'Nos dentistes',
+    planDesc: 'Lorsqu’un cas demande plusieurs spécialistes, nous l’étudions ensemble pour en faire un plan unique, coordonné et expliqué avec calme.',
+    yourPlan: 'Votre plan',
+    values: [
+      { title: 'Proximité', desc: 'Nous vous écoutons sans hâte et vous accompagnons tout au long du traitement.' },
+      { title: 'Honnêteté', desc: 'Nous ne proposons que ce dont vous avez besoin, avec un diagnostic et un devis clairs.' },
+      { title: 'Communication', desc: 'Nous expliquons chaque étape avec calme, en espagnol, anglais, allemand, néerlandais ou français.' },
+    ],
+    staffEyebrow: 'L’équipe à vos côtés',
+    staffTitle: 'Les personnes qui prennent soin de vous',
+    staffAccent: 'à chaque visite',
+    staffDesc: 'Hygiénistes, assistantes, accueil et conseil patient : elles vous reçoivent avec le sourire et vous accompagnent du début à la fin.',
+    langsTitle: 'Nous parlons votre langue',
+    langsDesc: 'Espagnol, anglais, allemand, néerlandais et français en consultation.',
+    photoAlt: 'à la Clinique Dentaire Koral, Vera',
+  },
+} as const)[lang];
+
+// Public registration details of each dentist (see the legal notice) and the
+// treatments they lead, used for internal links and structured data.
+const DOCTORS: Record<string, { id: string; reg: string; treatments: TreatmentKey[]; aede?: boolean }> = {
+  'Dra. Ana Padilla': { id: 'ana-padilla', reg: '04002307', treatments: ['implantes', 'cirugia', 'estetica'] },
+  'Dra. Ana Soler': { id: 'ana-soler', reg: '04002211', treatments: ['ortodoncia', 'odontopediatria'] },
+  'Dra. Ángeles Parra': { id: 'angeles-parra', reg: '29003028', treatments: ['endodoncia'], aede: true },
+  'Dra. Lorraynne Barbosa': { id: 'lorraynne-barbosa', reg: '30001868', treatments: [] },
+};
+
+const doctors = TEAM.filter((m) => m.doctor).map((m) => ({ ...m, ...DOCTORS[m.name] }));
+const [director, ...otherDoctors] = doctors;
+const staff = TEAM.filter((m) => !m.doctor);
+
+const treatmentLabel = (key: TreatmentKey) => t(`nav.treatments.${key}` as any);
+const alt = (m: TeamMember) => `${m.name} – ${t(m.role)} ${copy.photoAlt}`;
+
+// Hub-and-spoke diagram: the patient's plan in the middle, specialities around it.
+const spokes: TreatmentKey[] = ['implantes', 'ortodoncia', 'endodoncia', 'periodoncia', 'estetica'];
+const hub = spokes.map((key, i) => {
+  const angle = -Math.PI / 2 + (i * 2 * Math.PI) / spokes.length;
+  const y = 50 + 37 * Math.sin(angle);
+  // Labels sit on the outer side of each node so spokes never cross them.
+  return { key, x: 50 + 37 * Math.cos(angle), y, labelAbove: y < 50 };
+});
+const valueIcons = ['closeness', 'honesty', 'communication'] as const;
+const languageBubbles = [
+  { code: 'ES', x: 48, y: 52, r: 34, main: true },
+  { code: 'EN', x: 128, y: 40, r: 27 },
+  { code: 'DE', x: 196, y: 72, r: 27 },
+  { code: 'NL', x: 86, y: 130, r: 27 },
+  { code: 'FR', x: 164, y: 134, r: 27 },
 ];
 
-const slug = lang === 'es' ? '/equipo' : `/${lang}/equipo`;
+// Hero visual: the four dentists, joined like a coral network.
+const heroFaces = [
+  { m: doctors[0], x: 42, y: 47, d: 50, ring: 'ring-white/80' },
+  { m: doctors[1], x: 79, y: 19, d: 26, ring: 'ring-aqua/70' },
+  { m: doctors[2], x: 84, y: 63, d: 24, ring: 'ring-coral-soft/70' },
+  { m: doctors[3], x: 24, y: 85, d: 22, ring: 'ring-aqua/70' },
+];
+
+// Some original strings are wrapped in quotes or written in capitals.
+const unquote = (s: string) => s.replace(/^["“]|["”]$/g, '');
+const sentence = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/\p{L}/u, (c) => c.toUpperCase()) : s);
+
+const url = absoluteUrl(pathFor('team', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
+  '@context': 'https://schema.org',
+  '@graph': [
     {
-      "@type": "AboutPage",
-      "name": t('team.meta.title'),
-      "description": t('team.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
+      '@type': 'AboutPage',
+      '@id': `${url}#webpage`,
+      url,
+      name: t('team.meta.title'),
+      description: t('team.meta.description'),
+      inLanguage: HTML_LANG[lang],
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: { '@id': `${SITE_URL}/#dentist` },
+      mentions: doctors.map((d) => ({ '@id': `${url}#${d.id}` })),
     },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.team'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+    ...doctors.map((d) => ({
+      '@type': 'Person',
+      '@id': `${url}#${d.id}`,
+      name: d.name.replace(/^Dra\.\s*/, ''),
+      honorificPrefix: 'Dra.',
+      jobTitle: t(d.role),
+      image: absoluteUrl(d.image),
+      url: `${url}#${d.id}`,
+      worksFor: { '@id': `${SITE_URL}/#dentist` },
+      identifier: { '@type': 'PropertyValue', propertyID: 'Nº de colegiado', value: d.reg },
+      ...(d.treatments.length ? { knowsAbout: d.treatments.map(treatmentLabel) } : {}),
+      ...(d.aede ? { memberOf: { '@type': 'Organization', name: 'Asociación Española de Endodoncia (AEDE)' } } : {}),
+    })),
+  ],
 });
 ---
 
 <Layout title={t('team.meta.title')} description={t('team.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative min-h-[70vh] flex items-center pt-20 overflow-hidden bg-primary">
-      <div class="absolute inset-0 z-0">
-        <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt="Dra. Ana Padilla" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" />
-        <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent"></div>
+
+  <main id="main">
+    <PageHero
+      badge={t('team.factor')}
+      title={copy.title}
+      accent={t('hero.in.vera')}
+      subtitle={t('team.page.lead')}
+      breadcrumbs={[{ label: t('nav.team') }]}
+      highlights={[`${TEAM.length} ${copy.people}`, t('trust.6'), t('trust.7')]}
+    >
+      <div slot="visual" class="relative mx-auto aspect-square w-full max-w-[440px]" aria-hidden="true">
+        <svg class="draw absolute inset-0 h-full w-full" viewBox="0 0 100 100" fill="none">
+          {heroFaces.slice(1).map((f, i) => (
+            <path
+              d={`M42 47Q${(42 + f.x) / 2 + (i === 1 ? 10 : -6)} ${(47 + f.y) / 2 + (i === 0 ? -8 : 6)} ${f.x} ${f.y}`}
+              stroke={i === 1 ? '#F2617A' : '#2CC5D2'}
+              stroke-opacity=".7"
+              stroke-width=".5"
+              stroke-dasharray=".2 1.6"
+              stroke-linecap="round"
+              pathLength="1"
+              style={`--dd:${0.5 + i * 0.2}s`}
+            />
+          ))}
+          <circle cx="42" cy="47" r="31" stroke="#8FE3EA" stroke-opacity=".3" stroke-width=".3" stroke-dasharray=".6 1.4" />
+          <circle cx="42" cy="47" r="36.5" stroke="#8FE3EA" stroke-opacity=".12" stroke-width=".3" />
+        </svg>
+        {heroFaces.map((f, i) => (
+          <div
+            class="absolute -translate-x-1/2 -translate-y-1/2"
+            style={`left:${f.x}%;top:${f.y}%;width:${f.d}%`}
+          >
+            <img
+              src={f.m.image}
+              alt=""
+              width="600"
+              height="600"
+              class:list={['aspect-square w-full rounded-full object-cover shadow-[0_24px_50px_-18px_rgba(0,0,0,0.6)] ring-[3px]', f.ring]}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : undefined}
+              decoding="async"
+            />
+            {i === 0 && <span class="absolute inset-[-7%] animate-spin-slow rounded-full border border-dashed border-aqua/40"></span>}
+          </div>
+        ))}
+        <CoralBranch seed={27} depth={4} color="duo" sway class="absolute -left-2 top-[4%] h-[26%] w-auto opacity-80" />
+        <div class="absolute bottom-[6%] right-0 flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.08] px-4 py-3 backdrop-blur-xl">
+          <span class="font-display text-3xl leading-none text-white">{TEAM.length}</span>
+          <span class="text-[11px] font-semibold uppercase leading-tight tracking-[0.16em] text-aqua-soft">{copy.people}<br />{t('hero.in.vera')}</span>
+        </div>
       </div>
-      
-      <div class="container mx-auto px-6 relative z-10">
-        <div class="max-w-3xl fade-up">
-          <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-xs font-black tracking-widest uppercase mb-8 shadow-lg shadow-accent/20">
-            <Heart size={14} fill="currentColor" /> #personastratandopersonas
-          </span>
-          <h1 class="text-xs font-black uppercase tracking-[0.4em] text-accent-light mb-4">{t('team.factor')}</h1>
-          <h2 class="text-5xl md:text-7xl text-white mb-8 leading-[1.1] font-black underline-offset-8">
-            {t('team.page.title')}
-          </h2>
-          <div class="grid md:grid-cols-2 gap-12 mt-12">
-            <div class="prose prose-invert">
-              <p class="text-xl text-slate-300 leading-relaxed">
-                {t('team.page.lead')}
-              </p>
+    </PageHero>
+
+    <!-- Director -->
+    <section id={director.id} class="section-y relative overflow-hidden bg-white">
+      <div class="pointer-events-none absolute -right-24 top-6 select-none font-display text-[18vw] italic leading-none text-ocean-900/[0.025]" aria-hidden="true">Koral</div>
+
+      <div class="container-k relative">
+        <div class="grid items-center gap-16 lg:grid-cols-12 lg:gap-20">
+          <div class="relative mx-auto w-full max-w-[440px] lg:col-span-5" data-reveal="left">
+            <div class="draw absolute -left-12 -top-8 h-[240px] w-auto" aria-hidden="true">
+              <CoralBranch seed={21} color="duo" draw class="h-full w-auto opacity-70" />
             </div>
-            <div class="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10">
-               <p class="text-white italic text-lg leading-relaxed mb-6">
-                 {t('team.page.quote')}
-               </p>
-               <div class="flex items-center gap-4">
-                  <div class="h-12 w-12 rounded-full overflow-hidden border-2 border-accent">
-                    <img src="/equipo/Ana-padilla.jpg" alt="Ana Padilla" class="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p class="text-white font-black text-sm uppercase">{t('team.page.quote.author')}</p>
-                    <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('team.page.quote.role')}</p>
-                  </div>
-               </div>
+            <div class="absolute inset-x-6 bottom-0 top-16 rounded-t-[999px] bg-[linear-gradient(180deg,#D5F6F8_0%,#FBF8F4_70%)]" aria-hidden="true"></div>
+            <div class="absolute -inset-3 top-12 rounded-t-[999px] rounded-b-[2.6rem] border border-dashed border-accent/25" aria-hidden="true"></div>
+            <img
+              src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg"
+              alt={alt(director)}
+              width="682"
+              height="948"
+              class="relative w-full rounded-b-[2.25rem] mix-blend-multiply"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="absolute -right-2 bottom-10 rounded-[1.5rem] bg-white p-5 shadow-[var(--shadow-elevated)] ring-1 ring-ocean-900/5 md:-right-10" data-reveal style="--d:.3s">
+              <p class="font-display text-5xl leading-none text-accent"><span data-count="10" data-suffix="+">10+</span></p>
+              <p class="mt-2 max-w-[11rem] text-[12px] font-semibold leading-snug text-ocean-900">{copy.years}</p>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7" data-reveal style="--d:.1s">
+            <p class="eyebrow mb-6">{t('team.page.quote.role')}</p>
+            <h2 class="text-[2.6rem] leading-[1.04] sm:text-6xl lg:text-[4.2rem]">{t('team.page.quote.author')}</h2>
+            <p class="mt-4 text-[13px] font-semibold uppercase tracking-[0.16em] text-accent">{t(director.role)}</p>
+
+            <figure class="relative mt-10 border-l-2 border-coral pl-7">
+              <svg class="absolute -left-[13px] -top-5 h-6 w-6 bg-white p-0.5 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+              <blockquote class="font-display text-2xl italic leading-snug text-ocean-900 md:text-[1.9rem]">{unquote(t('team.page.quote'))}</blockquote>
+            </figure>
+
+            <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-600">{copy.bio}</p>
+
+            <div class="mt-10 rounded-[1.75rem] border border-ocean-900/[0.07] bg-sand p-6 md:p-7">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{copy.specialties}</p>
+              <ul class="mt-4 flex flex-wrap gap-3">
+                {director.treatments.map((key) => (
+                  <li>
+                    <a href={pathFor(key, lang)} class="group inline-flex items-center gap-2.5 rounded-full border border-ocean-900/10 bg-white py-2 pl-2 pr-4 text-[15px] font-semibold text-ocean-900 transition-all hover:-translate-y-0.5 hover:border-accent hover:text-accent">
+                      <span class="flex h-8 w-8 items-center justify-center rounded-full bg-aqua-pale text-accent transition-colors group-hover:bg-accent group-hover:text-white" style="--icon-accent:#F2617A">
+                        <TreatmentIcon name={key} size={20} />
+                      </span>
+                      {treatmentLabel(key)}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p class="mt-5 text-[13px] text-slate-500">{copy.reg} <span class="tabular font-semibold text-ocean-900">{director.reg}</span></p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Intro Text -->
-    <section class="py-24 bg-white relative">
-       <div class="container mx-auto px-6">
-          <div class="max-w-4xl mx-auto text-center fade-up">
-             <h3 class="text-4xl md:text-5xl font-black text-primary mb-8">{t('team.page.intro.title')}</h3>
-             <p class="text-xl text-slate-600 leading-relaxed">
-               {t('team.page.intro.desc')}
-             </p>
-          </div>
-       </div>
-    </section>
+    <!-- Dentists -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={130} color="teal" class="pointer-events-none absolute -left-10 top-10 h-[280px] w-auto opacity-[0.08]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={copy.doctors} title={t('team.page.intro.title')} description={t('team.page.intro.desc')} split />
 
-    <!-- Team Grid -->
-    <section class="pb-32 bg-slate-50/50">
-       <div class="container mx-auto px-6">
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 -mt-20 relative z-20">
-             {teamMembers.map((member, index) => (
-               <div class="fade-up group" style={`transition-delay: ${index * 0.05}s`}>
-                  <div class="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl transition-all duration-500 hover:shadow-2xl hover:shadow-accent/10 hover:-translate-y-4">
-                     <div class="aspect-[4/5] overflow-hidden relative">
-                        <img src={member.image} alt={member.name} class="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                     </div>
-                     <div class="p-8">
-                        <h4 class="text-xl font-black text-primary mb-2 group-hover:text-accent transition-colors">{member.name}</h4>
-                        <p class="text-xs font-black uppercase tracking-widest text-slate-400 leading-loose">
-                           {member.role}
-                        </p>
-                     </div>
+        <div class="mt-16 grid gap-6 md:grid-cols-3">
+          {otherDoctors.map((d, i) => (
+            <article id={d.id} class="group flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5" data-reveal style={`--d:${i * 0.08}s`}>
+              <div class="relative overflow-hidden">
+                <img
+                  src={d.image}
+                  alt={alt(d)}
+                  width="600"
+                  height="600"
+                  class="aspect-square w-full object-cover saturate-[0.9] transition-all duration-[1.2s] ease-[var(--ease-out-expo)] group-hover:scale-[1.04] group-hover:saturate-100"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="font-display absolute left-5 top-5 flex h-11 w-11 items-center justify-center rounded-full bg-white/85 text-lg italic text-coral-deep backdrop-blur-md" aria-hidden="true">{String(i + 2).padStart(2, '0')}</span>
+                <CoralBranch seed={90 + i} depth={4} color="white" class="pointer-events-none absolute -bottom-2 right-4 h-24 w-auto translate-y-4 opacity-0 transition-all duration-700 group-hover:translate-y-0 group-hover:opacity-80" />
+              </div>
+              <div class="flex flex-1 flex-col p-7 md:p-8">
+                <h3 class="text-[1.7rem] text-ocean-900">{d.name}</h3>
+                <p class="mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-accent">{t(d.role)}</p>
+                <p class="mt-3 text-[13px] text-slate-500">{copy.reg} <span class="tabular font-semibold text-ocean-900">{d.reg}</span></p>
+                {d.aede && (
+                  <p class="mt-3 flex gap-2 text-[13px] leading-snug text-ocean-900">
+                    <svg class="shrink-0 text-accent" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6" /><path d="m9.5 9 1.7 1.7L14.5 7.5" /><path d="M8.5 14 7 22l5-2.5 5 2.5-1.5-8" /></svg>
+                    {copy.aede}
+                  </p>
+                )}
+                <div class="mt-auto pt-6">
+                  <div class="flex flex-wrap gap-2 border-t border-ocean-900/[0.07] pt-5">
+                    {d.treatments.length > 0 ? (
+                      d.treatments.map((key) => (
+                        <a href={pathFor(key, lang)} class="group/l inline-flex items-center gap-2 rounded-full bg-sand py-1.5 pl-1.5 pr-3.5 text-sm font-semibold text-ocean-900 ring-1 ring-ocean-900/[0.06] transition-colors hover:bg-accent hover:text-white">
+                          <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-accent" style="--icon-accent:#F2617A"><TreatmentIcon name={key} size={18} /></span>
+                          {treatmentLabel(key)}
+                        </a>
+                      ))
+                    ) : (
+                      <a href={`${pathFor('home', lang)}#tratamientos`} class="link-u text-sm font-semibold text-accent">{t('related.all')} →</a>
+                    )}
                   </div>
-               </div>
-             ))}
-          </div>
-       </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
     </section>
 
-    <!-- Final CTA -->
+    <!-- Values & joint planning -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={41} />
+        <CoralBranch seed={135} color="duo" class="absolute -right-8 bottom-24 hidden h-[220px] w-auto opacity-20 lg:block" />
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-16 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow="#personastratandopersonas" title={sentence(t('team.page.title'))} description={copy.planDesc} tone="dark" />
+            <ul class="mt-10 space-y-4">
+              {copy.values.map((v, i) => (
+                <li class="flex gap-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm" data-reveal style={`--d:${0.1 + i * 0.08}s`}>
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-aqua ring-1 ring-white/10">
+                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      {valueIcons[i] === 'closeness' && (
+                        <>
+                          <circle cx="11" cy="9" r="3.5" />
+                          <circle cx="21" cy="9" r="3.5" />
+                          <path d="M4 26c0-5 3-8.5 7-8.5 2 0 3.7.9 5 2.4 1.3-1.5 3-2.4 5-2.4 4 0 7 3.5 7 8.5" />
+                          <path d="M16 15.5c-.9-1.4-3-1.1-3 .6 0 1.5 3 3.4 3 3.4s3-1.9 3-3.4c0-1.7-2.1-2-3-.6Z" stroke="#FF9AAA" fill="#FF9AAA" fill-opacity=".25" />
+                        </>
+                      )}
+                      {valueIcons[i] === 'honesty' && (
+                        <>
+                          <path d="M16 4v24M9 28h14" />
+                          <path d="M6 9h20" />
+                          <path d="m6 9-3.5 8a3.5 3.5 0 0 0 7 0L6 9ZM26 9l-3.5 8a3.5 3.5 0 0 0 7 0L26 9Z" />
+                          <circle cx="16" cy="5.5" r="1.6" stroke="#FF9AAA" />
+                        </>
+                      )}
+                      {valueIcons[i] === 'communication' && (
+                        <>
+                          <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16h-.5A2.5 2.5 0 0 1 4 13.5Z" />
+                          <path d="M23 11h2.5a2.5 2.5 0 0 1 2.5 2.5v6a2.5 2.5 0 0 1-2.5 2.5H25v3.5L21 22h-5.5a2.5 2.5 0 0 1-2.5-2.5V19" stroke="#FF9AAA" />
+                          <path d="M8.5 10.5h7" />
+                        </>
+                      )}
+                    </svg>
+                  </span>
+                  <div>
+                    <h3 class="font-sans text-lg font-semibold tracking-tight text-white">{v.title}</h3>
+                    <p class="mt-1 text-[15px] leading-relaxed text-white/65">{v.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <!-- Hub diagram: one plan, several specialists -->
+          <div class="lg:col-span-6" data-reveal="scale">
+            <div class="relative mx-auto aspect-square w-full max-w-[520px]">
+              <svg class="draw absolute inset-0 h-full w-full" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                <circle cx="50" cy="50" r="37" stroke="#8FE3EA" stroke-opacity=".18" stroke-width=".3" />
+                <circle cx="50" cy="50" r="27" stroke="#8FE3EA" stroke-opacity=".25" stroke-width=".3" stroke-dasharray=".5 1.5" />
+                <circle cx="50" cy="50" r="46" stroke="#8FE3EA" stroke-opacity=".08" stroke-width=".3" />
+                {hub.map((n, i) => (
+                  <path
+                    d={`M50 50L${n.x.toFixed(2)} ${n.y.toFixed(2)}`}
+                    stroke={i % 2 ? '#F2617A' : '#2CC5D2'}
+                    stroke-opacity=".6"
+                    stroke-width=".4"
+                    stroke-linecap="round"
+                    pathLength="1"
+                    style={`--dd:${0.3 + i * 0.15}s`}
+                  />
+                ))}
+              </svg>
+
+              <div class="absolute left-1/2 top-1/2 flex h-[30%] w-[30%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-gradient-to-br from-aqua to-accent text-center shadow-[var(--shadow-glow)]">
+                <span class="absolute inset-[-10%] animate-spin-slow rounded-full border border-dashed border-aqua/40" aria-hidden="true"></span>
+                <TreatmentIcon name="tooth" size={34} strokeWidth={1.6} class="text-white" />
+                <span class="font-display mt-1 text-base italic leading-tight text-white sm:text-lg">{copy.yourPlan}</span>
+              </div>
+
+              <ul>
+                {hub.map((n) => (
+                  <li class:list={['absolute -translate-x-1/2', n.labelAbove ? '-translate-y-[calc(100%-1.75rem)] sm:-translate-y-[calc(100%-2rem)]' : '-translate-y-7 sm:-translate-y-8']} style={`left:${n.x.toFixed(2)}%;top:${n.y.toFixed(2)}%`}>
+                    <a href={pathFor(n.key, lang)} class:list={['group flex items-center gap-2 text-center', n.labelAbove ? 'flex-col-reverse' : 'flex-col']}>
+                      <span class="flex h-14 w-14 items-center justify-center rounded-full bg-ocean-800 text-aqua ring-1 ring-white/15 transition-all duration-500 group-hover:bg-white group-hover:text-accent sm:h-16 sm:w-16" style="--icon-accent:#FF9AAA">
+                        <TreatmentIcon name={n.key} size={30} />
+                      </span>
+                      <span class="w-max max-w-[7.5rem] text-[12px] font-semibold leading-tight text-white/85 group-hover:text-white sm:text-[13px]">{treatmentLabel(n.key)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rest of the team -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.staffEyebrow} title={copy.staffTitle} accent={copy.staffAccent} description={copy.staffDesc} split />
+
+        <ul class="mt-16 grid grid-cols-2 gap-x-5 gap-y-10 md:gap-x-7 lg:grid-cols-4">
+          {staff.map((m, i) => (
+            <li class="group" data-reveal style={`--d:${(i % 4) * 0.06}s`}>
+              <div class="relative">
+                <span class="absolute inset-0 translate-x-2.5 translate-y-2.5 rounded-[1.75rem] bg-[linear-gradient(135deg,#D5F6F8,#FFE4E8)] transition-transform duration-700 group-hover:translate-x-3.5 group-hover:translate-y-3.5" aria-hidden="true"></span>
+                <div class="relative overflow-hidden rounded-[1.75rem] bg-sand ring-1 ring-ocean-900/5">
+                  <img
+                    src={m.image}
+                    alt={alt(m)}
+                    width="600"
+                    height="600"
+                    class="aspect-[4/5] w-full object-cover saturate-[0.85] transition-all duration-[1.2s] ease-[var(--ease-out-expo)] group-hover:scale-[1.04] group-hover:saturate-100"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+              <h3 class="mt-6 font-sans text-lg font-semibold tracking-tight md:text-xl">{m.name}</h3>
+              <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.14em] text-accent md:text-[13px]">{t(m.role)}</p>
+            </li>
+          ))}
+
+          <li class="relative isolate flex flex-col justify-between gap-6 overflow-hidden rounded-[1.75rem] bg-ocean p-6 text-white md:p-7" data-reveal style="--d:.18s">
+            <svg class="w-full" viewBox="8 8 222 162" fill="none" aria-hidden="true">
+              <path d="M30 128C70 92 96 150 132 112S200 70 222 40" stroke="#8FE3EA" stroke-opacity=".35" stroke-dasharray="2 5" stroke-linecap="round" />
+              {languageBubbles.map((b) => (
+                <g transform={`translate(${b.x} ${b.y})`}>
+                  <path d={`M${-b.r} 0a${b.r} ${b.r} 0 1 1 ${b.r * 0.62} ${b.r * 0.94}l${-b.r * 0.5} ${b.r * 0.34}l${b.r * 0.06} ${-b.r * 0.52}A${b.r} ${b.r} 0 0 1 ${-b.r} 0Z`} fill={b.main ? '#F2617A' : 'rgba(255,255,255,0.06)'} stroke={b.main ? 'none' : '#8FE3EA'} stroke-opacity=".5" />
+                  <text y="6" text-anchor="middle" font-family="Inter, sans-serif" font-size={b.main ? 18 : 15} font-weight="700" letter-spacing="1" fill="#fff">{b.code}</text>
+                </g>
+              ))}
+            </svg>
+            <div>
+              <p class="font-display text-2xl leading-tight text-white">{copy.langsTitle}</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/65">{copy.langsDesc}</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="bg-white pb-6">
+      <CtaBand />
+    </div>
+
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>

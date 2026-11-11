@@ -1,150 +1,88 @@
 ---
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-astro';
+import { pathFor } from '../i18n/routes';
+import { TEAM } from '../data/team';
+import SectionHeading from './ui/SectionHeading.astro';
+import CoralBranch from './svg/CoralBranch.astro';
+import Picture from './ui/Picture.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const team = [
-  { name: 'Dra. Ana Padilla', role: 'Cirugía, implantología y estética dental', image: '/equipo/Ana-padilla.jpg' },
-  { name: 'Melina Bernkopf', role: 'Recepcionista', image: '/equipo/Melina-bernkopf.jpg' },
-  { name: 'Dra. Ana Soler', role: 'Ortodoncista, Odontopediatría', image: '/equipo/ana-soler.jpg' },
-  { name: 'Ángela Perez', role: 'Auxiliar de clínica', image: '/equipo/angela-perez-.jpg' },
-  { name: 'Dra. Ángeles Parra', role: 'Odontología general, Endodoncista', image: '/equipo/angeles-parrar.jpg' },
-  { name: 'Ellé – Louise Warner', role: 'Asesora dental', image: '/equipo/elle-louise-warner.jpg' },
-  { name: 'Anda Dorela', role: 'Auxiliar de clínica', image: '/equipo/Anda-dorela.jpg' },
-  { name: 'Blaneirys Peña', role: 'Higienista Dental', image: '/equipo/blaneirys.jpg' },
-  { name: 'Minerva Aznar', role: 'Higienista Dental', image: '/equipo/minerva.jpg' },
-  { name: 'María Luisa Aguacil', role: 'Auxiliar de clínica', image: '/equipo/maria-luisa.jpg' },
-  { name: 'Dra. Lorraynne Barbosa', role: 'Odontología general', image: '/equipo/Lorraynne-Barbosa.jpg' }
-];
 ---
 
-<section class="section-padding relative overflow-hidden" style="background:linear-gradient(180deg,#ffffff 0%, #faf9f6 100%)">
-  <!-- Decorative background elements -->
-  <div class="absolute top-0 right-0 w-1/3 h-full bg-cream/40 border-l border-slate-100/60 -skew-x-12 translate-x-1/2 pointer-events-none z-0" style="background:rgba(250,247,242,0.5)"></div>
-  <div class="absolute bottom-20 left-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
-  <!-- Subtle gold dot grid -->
-  <div class="absolute top-32 right-32 grid grid-cols-6 gap-3 opacity-20 pointer-events-none">
-    {[...Array(24)].map(() => (
-      <span class="w-1 h-1 rounded-full bg-gold"></span>
-    ))}
-  </div>
-
-  <div class="container mx-auto px-6 relative z-10">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-16 lg:mb-20 gap-8 fade-up">
-       <div class="max-w-3xl">
-          <span class="eyebrow mb-5">
-             <span class="w-6 h-px bg-accent"></span>
-             {t('team.factor')}
-          </span>
-          <h3 class="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-primary leading-[1.05] tracking-[-0.025em] mt-4">
-             {t('team.title')}
-          </h3>
-          <div class="gold-line mt-6 max-w-[80px]"></div>
-       </div>
-
-       <!-- Controls -->
-       <div class="flex items-center gap-5">
-          <div class="hidden md:flex flex-col items-end gap-1.5 pr-5 border-r border-slate-200">
-             <p class="text-[10px] font-bold uppercase text-slate-400 tracking-[0.22em] leading-none">{t('team.slider.scroll')}</p>
-             <p class="text-xs font-semibold text-primary leading-none font-display italic">{t('team.slider.view')}</p>
-          </div>
-          <div class="flex gap-3">
-             <button id="slider-prev" class="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer shadow-soft group">
-               <ChevronLeft size={22} class="group-hover:-translate-x-1 transition-transform" />
-             </button>
-             <button id="slider-next" class="w-14 h-14 rounded-2xl border border-slate-200 bg-white flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer shadow-soft group">
-               <ChevronRight size={22} class="group-hover:translate-x-1 transition-transform" />
-             </button>
-          </div>
-       </div>
+<section class="relative overflow-hidden bg-white">
+  <div class="pb-14 pt-10 md:pb-16 md:pt-14">
+    <div class="container-k">
+      <div class="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+        <SectionHeading eyebrow={t('team.factor')} title={t('team.title')} />
+        <div class="flex items-center gap-3" data-reveal>
+          <button type="button" class="team-prev flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label="←">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6" /></svg>
+          </button>
+          <button type="button" class="team-next flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label="→">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Team Slider Container -->
-    <div class="relative">
-       <div id="team-slider-container" class="overflow-visible">
-          <div id="team-slider" class="flex gap-7 md:gap-8 transition-transform duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform">
-            {team.map((member) => (
-              <div class="flex-none w-[280px] md:w-[340px] fade-up team-member">
-                <div class="relative rounded-[2rem] overflow-hidden aspect-[4/5] group/card border border-slate-100 bg-slate-50 shadow-soft hover:shadow-elevated transition-all duration-700">
-                   <img src={member.image} alt={member.name} class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover/card:grayscale-0 group-hover/card:scale-105" loading="lazy" decoding="async" />
-
-                   <!-- Bottom gradient always present subtly, more on hover -->
-                   <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent opacity-60 group-hover/card:opacity-95 transition-opacity duration-700"></div>
-
-                   <!-- Tag badge top-right -->
-                   <div class="absolute top-5 left-5 px-3 py-1.5 bg-white/15 backdrop-blur-md rounded-full border border-white/25 text-white text-[9px] font-bold uppercase tracking-[0.2em] opacity-0 group-hover/card:opacity-100 -translate-y-2 group-hover/card:translate-y-0 transition-all duration-500">
-                      Koral
-                   </div>
-                </div>
-
-                <!-- Info always visible below card -->
-                <div class="mt-6 px-1">
-                   <h4 class="text-primary text-xl md:text-2xl font-bold tracking-tight mb-1 leading-tight">{member.name}</h4>
-                   <p class="text-accent text-[11px] font-bold uppercase tracking-[0.22em]">{member.role}</p>
-                </div>
-              </div>
-            ))}
+    <div class="team-track mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-6 [scrollbar-width:none] md:gap-7" tabindex="0" aria-label={t('team.title')}>
+      {TEAM.map((m, i) => (
+        <article class="team-card group w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[300px]" data-reveal style={`--d:${Math.min(i, 4) * 0.06}s`}>
+          <div class="relative overflow-hidden rounded-[2rem] bg-sand ring-1 ring-ocean-900/5">
+            <Picture
+              src={m.image}
+              alt={`${m.name} – ${t(m.role)}`}
+              width={600}
+              height={600}
+              class="aspect-[4/5] w-full object-cover saturate-[0.85] transition-all duration-[1.2s] ease-[var(--ease-out-expo)] group-hover:scale-[1.04] group-hover:saturate-100"
+            />
+            <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ocean-900/70 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" aria-hidden="true"></div>
+            <CoralBranch seed={90 + i} depth={4} color="white" class="pointer-events-none absolute -bottom-2 right-3 h-24 w-auto translate-y-4 opacity-0 transition-all duration-700 group-hover:translate-y-0 group-hover:opacity-70" />
           </div>
-       </div>
+          <h3 class="mt-5 font-sans text-xl font-semibold tracking-tight">{m.name}</h3>
+          <p class="mt-1 text-[13px] font-medium uppercase tracking-[0.14em] text-accent">{t(m.role)}</p>
+        </article>
+      ))}
+      <div class="w-px shrink-0" aria-hidden="true"></div>
+    </div>
 
-       <!-- Slider Progress Bar -->
-       <div class="mt-16 lg:mt-20 h-px bg-slate-200/60 relative max-w-xl">
-          <div id="slider-progress" class="absolute top-0 left-0 h-full bg-accent transition-all duration-500 w-0"></div>
-       </div>
+    <div class="container-k mt-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div class="h-[3px] w-full max-w-sm overflow-hidden rounded-full bg-ocean-900/10">
+        <div class="team-progress h-full w-1/4 rounded-full bg-gradient-to-r from-aqua to-coral transition-[width] duration-300"></div>
+      </div>
+      <a href={pathFor('team', lang)} class="link-u text-sm font-semibold text-accent">{t('team.cta')} →</a>
     </div>
   </div>
 </section>
 
+<style is:global>
+  .team-track {
+    padding-inline: max(1.25rem, calc((100vw - 1280px) / 2 + 2rem));
+    scroll-padding-inline: max(1.25rem, calc((100vw - 1280px) / 2 + 2rem));
+  }
+  .team-track::-webkit-scrollbar { display: none; }
+</style>
+
 <script>
-  const slider = document.getElementById('team-slider');
-  const prev = document.getElementById('slider-prev');
-  const next = document.getElementById('slider-next');
-  const progress = document.getElementById('slider-progress');
-  
-  let currentTranslate = 0;
-  
-  const updateProgress = () => {
-    if (!slider || !progress) return;
-    const scrollContainer = slider.parentElement;
-    const maxScroll = slider.scrollWidth - scrollContainer.clientWidth;
-    if (maxScroll <= 0) {
-      progress.style.width = '100%';
-      return;
-    }
-    const percentage = (currentTranslate / maxScroll) * 100;
-    progress.style.width = `${Math.max(0, Math.min(100, percentage))}%`;
-  };
+  document.querySelectorAll<HTMLElement>('.team-track').forEach((track) => {
+    const section = track.closest('section')!;
+    const prev = section.querySelector<HTMLButtonElement>('.team-prev');
+    const next = section.querySelector<HTMLButtonElement>('.team-next');
+    const progress = section.querySelector<HTMLElement>('.team-progress');
+    const step = () => (track.querySelector<HTMLElement>('.team-card')?.offsetWidth ?? 300) + 28;
 
-  const moveSlider = (direction) => {
-    if (!slider) return;
-    const cardWidth = slider.firstElementChild?.offsetWidth || 0;
-    const gap = 40; // gap-10
-    const totalMove = cardWidth + gap;
-    const scrollContainer = slider.parentElement;
-    const maxScroll = slider.scrollWidth - scrollContainer.clientWidth;
-
-    if (direction === 'next') {
-      currentTranslate = Math.min(currentTranslate + totalMove, maxScroll);
-    } else {
-      currentTranslate = Math.max(currentTranslate - totalMove, 0);
-    }
-    
-    slider.style.transform = `translateX(-${currentTranslate}px)`;
-    updateProgress();
-  };
-
-  next?.addEventListener('click', () => moveSlider('next'));
-  prev?.addEventListener('click', () => moveSlider('prev'));
-
-  // Initialize progress
-  window.addEventListener('load', updateProgress);
-
-  // Handle resize
-  window.addEventListener('resize', () => {
-    currentTranslate = 0;
-    if (slider) slider.style.transform = `translateX(0px)`;
-    updateProgress();
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      const ratio = max > 0 ? track.scrollLeft / max : 1;
+      if (progress) progress.style.width = `${Math.max(12, ratio * 100)}%`;
+      if (prev) prev.disabled = track.scrollLeft < 8;
+      if (next) next.disabled = track.scrollLeft > max - 8;
+    };
+    prev?.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next?.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
   });
 </script>

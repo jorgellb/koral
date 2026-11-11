@@ -1,0 +1,38 @@
+---
+/**
+ * <picture> that serves the WebP twin of a JPG in /public (same name, .webp),
+ * falling back to the JPG. `webp` lets you pass several widths for srcset.
+ * The wrapper uses `display: contents` so the <img> keeps its layout classes.
+ */
+interface Props {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  sizes?: string;
+  webp?: { src: string; w: number }[];
+}
+
+const { src, alt, width, height, class: className, loading = 'lazy', fetchpriority, sizes, webp } = Astro.props;
+
+const srcset = webp
+  ? webp.map((c) => `${encodeURI(c.src)} ${c.w}w`).join(', ')
+  : encodeURI(src.replace(/\.jpe?g$/i, '.webp'));
+---
+
+<picture class="contents">
+  <source type="image/webp" srcset={srcset} sizes={webp ? sizes : undefined} />
+  <img
+    src={encodeURI(src)}
+    alt={alt}
+    width={width}
+    height={height}
+    class={className}
+    loading={loading}
+    decoding="async"
+    fetchpriority={fetchpriority}
+  />
+</picture>

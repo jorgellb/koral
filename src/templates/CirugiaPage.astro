@@ -3,336 +3,521 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  ShieldCheck, 
-  Zap, 
-  Search, 
-  CheckCircle2, 
-  HelpCircle, 
-  AlertCircle,
-  Microscope,
-  Stethoscope,
-  Scissors,
-  Syringe,
-  History,
-  Target
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const heroEfficient = t('cirugia.hero.efficient').replace('<br/>', '<br/>');
-const heroPostop = t('cirugia.hero.postop').replace('<br/>', '<br/>');
-const expertiseBioSafetyTitle = t('cirugia.expertise.bio_safety.title').replace('<br/>', '<br/>');
-const expertiseAnesthesiaTitle = t('cirugia.expertise.anesthesia.title').replace('<br/>', '<br/>');
-const wisdomTitle = t('cirugia.wisdom.title').replace('<br/>', '<br/>');
+// Page-only UI strings (diagram labels, link sentences).
+const copy = ({
+  es: {
+    implantLink: ['La Dra. Ana Padilla también es la responsable de nuestros ', ': cirugía e implante, en las mismas manos expertas.'],
+    tray: 'Instrumental quirúrgico esterilizado',
+    tools: ['Bisturí', 'Periostótomo', 'Fórceps', 'Sutura'],
+    links: ['Muchas de estas cirugías preparan el terreno para otros tratamientos, como los ', ', la ', ' o la ', '.'],
+    xray: 'Muela del juicio retenida, vista en radiografía',
+    xrayParts: ['Muela del juicio retenida', 'Segundo molar', 'Nervio dentario inferior'],
+    age: 'años: la edad a la que suelen aparecer',
+  },
+  en: {
+    implantLink: ['Dr. Ana Padilla is also in charge of ', ' at the clinic, so surgery and implant stay in the same expert hands.'],
+    tray: 'Sterilised surgical instruments',
+    tools: ['Scalpel', 'Periosteal elevator', 'Forceps', 'Suture'],
+    links: ['Many of these procedures prepare the ground for other treatments, such as ', ', ', ' or ', '.'],
+    xray: 'Impacted wisdom tooth on an X-ray',
+    xrayParts: ['Impacted wisdom tooth', 'Second molar', 'Inferior alveolar nerve'],
+    age: 'years: the age at which they usually appear',
+  },
+  de: {
+    implantLink: ['Dr. Ana Padilla ist bei uns auch für ', ' verantwortlich – Chirurgie und Implantat bleiben so in denselben erfahrenen Händen.'],
+    tray: 'Steriles chirurgisches Instrumentarium',
+    tools: ['Skalpell', 'Raspatorium', 'Extraktionszange', 'Nahtmaterial'],
+    links: ['Viele dieser Eingriffe bereiten weitere Behandlungen vor, etwa ', ', ', ' oder ', '.'],
+    xray: 'Retinierter Weisheitszahn im Röntgenbild',
+    xrayParts: ['Retinierter Weisheitszahn', 'Zweiter Backenzahn', 'Unterkiefernerv'],
+    age: 'Jahre: in diesem Alter brechen sie meist durch',
+  },
+  nl: {
+    implantLink: ['Dr. Ana Padilla is bij ons ook verantwoordelijk voor ', ', zodat chirurgie en implantaat in dezelfde ervaren handen blijven.'],
+    tray: 'Gesteriliseerd chirurgisch instrumentarium',
+    tools: ['Scalpel', 'Raspatorium', 'Extractietang', 'Hechtdraad'],
+    links: ['Veel van deze ingrepen bereiden andere behandelingen voor, zoals ', ', ', ' of ', '.'],
+    xray: 'Ingesloten verstandskies op een röntgenfoto',
+    xrayParts: ['Ingesloten verstandskies', 'Tweede kies', 'Onderkaakzenuw'],
+    age: 'jaar: de leeftijd waarop ze meestal doorkomen',
+  },
+  fr: {
+    implantLink: ['Le Dr. Ana Padilla est aussi responsable des ', ' à la clinique : chirurgie et implant restent entre les mêmes mains expertes.'],
+    tray: 'Instruments chirurgicaux stérilisés',
+    tools: ['Bistouri', 'Décolleur', 'Davier', 'Fil de suture'],
+    links: ['Beaucoup de ces interventions préparent d’autres traitements, comme les ', ', la ', ' ou l’', '.'],
+    xray: 'Dent de sagesse incluse à la radiographie',
+    xrayParts: ['Dent de sagesse incluse', 'Deuxième molaire', 'Nerf alvéolaire inférieur'],
+    age: 'ans : l’âge auquel elles apparaissent en général',
+  },
+} as const)[lang];
 
-const procedures = [
-  {
-    title: t('cirugia.procedures.1.title'),
-    desc: t('cirugia.procedures.1.desc'),
-    icon: Scissors
-  },
-  {
-    title: t('cirugia.procedures.2.title'),
-    desc: t('cirugia.procedures.2.desc'),
-    icon: Target
-  },
-  {
-    title: t('cirugia.procedures.3.title'),
-    desc: t('cirugia.procedures.3.desc'),
-    icon: Microscope
-  },
-  {
-    title: t('cirugia.procedures.4.title'),
-    desc: t('cirugia.procedures.4.desc'),
-    icon: Stethoscope
-  }
+/** Treatment names used mid-sentence (German nouns keep their capital). */
+const inline = (s: string) => (lang === 'de' ? s : s.charAt(0).toLowerCase() + s.slice(1));
+const plain = (html: string) => html.replace(/\s*<br\s*\/?>\s*/g, ' ');
+const unquote = (s: string) => s.replace(/^["“]|["”]$/g, '');
+const noColon = (s: string) => s.replace(/\s*:\s*$/, '');
+
+const [wisdomTitle, wisdomAccent] = t('cirugia.wisdom.title').split(/\s*<br\s*\/?>\s*/);
+
+// ---------------------------------------------------------------------------
+// Line icons (48×48 grid). `coral` strokes carry the accent, `fill` paints it
+// (`soft` = translucent), `tf` rotates/scales without thickening the stroke.
+// ---------------------------------------------------------------------------
+type Glyph = { d: string; coral?: boolean; fill?: boolean; soft?: boolean; faint?: boolean; dash?: boolean; tf?: string };
+const CORAL = '#F2617A';
+const glyph = (g: Glyph) => ({
+  stroke: g.coral ? CORAL : undefined,
+  fill: g.fill ? (g.coral ? CORAL : 'currentColor') : undefined,
+  'fill-opacity': g.soft ? 0.22 : undefined,
+  'stroke-opacity': g.faint ? 0.35 : undefined,
+  'stroke-dasharray': g.dash ? '2 2.6' : undefined,
+  transform: g.tf,
+  'vector-effect': g.tf ? 'non-scaling-stroke' : undefined,
+});
+const TOOTH =
+  'M16 7c-4.4 0-8 3.4-8 8.6 0 5 2.6 7.9 3.6 13.4.9 5 1.5 11 5 11 3.2 0 3.3-5.6 4.6-9.6.6-1.9 1.6-2.9 2.8-2.9s2.2 1 2.8 2.9c1.3 4 1.4 9.6 4.6 9.6 3.5 0 4.1-6 5-11 1-5.5 3.6-8.4 3.6-13.4C40 10.4 36.4 7 32 7c-3.4 0-5 1.8-8 1.8S19.4 7 16 7Z';
+const ROOT_TOOTH = 'M17 6c0-2 2-3 7-3s7 1 7 3l-1 12c-.6 8-2.4 15-4 20-.6 2-1.4 2.4-2 2.4s-1.4-.4-2-2.4c-1.6-5-3.4-12-4-20Z';
+const SMALL_MOLAR = 'M0 7c0-3 2-5 5-5h4c3 0 5 2 5 5v8c0 6-2 14-4 14H4C2 29 0 21 0 15Z';
+
+const procedureIcons: Glyph[][] = [
+  [
+    { d: TOOTH, tf: 'translate(7 0) scale(.71)' },
+    { d: 'M4 38h12M32 38h12' },
+    { d: 'M16 38c0 4 2 7 4 7h8c2 0 4-3 4-7', faint: true, dash: true },
+    { d: 'M42 27V8M38 12l4-4 4 4', coral: true },
+  ],
+  [
+    { d: 'M10 5h28', faint: true },
+    { d: 'M24 21v-4M24 14v-3M24 8V5', coral: true },
+    { d: 'M4 20c5-3 10-3 14 0M30 20c5-3 10-3 14 0' },
+    { d: 'M18 20c2 3 4 4 6 4s4-1 6-4', coral: true },
+    { d: 'M18 32c0-4 3-6 6-6s6 2 6 6l-1 9-5 4-5-4Z', faint: true, dash: true },
+    { d: 'M21.5 24.5h5v4h-5Z', coral: true, fill: true },
+  ],
+  [
+    { d: ROOT_TOOTH },
+    { d: 'M18 40a6 6 0 1 0 12 0 6 6 0 1 0-12 0', coral: true, fill: true, soft: true },
+    { d: 'M18 40a6 6 0 1 0 12 0 6 6 0 1 0-12 0', coral: true, dash: true },
+    { d: 'M44 18 33 31', faint: true },
+  ],
+  [
+    { d: 'M6 35h36v8H6Z' },
+    { d: 'M17 39c2-1.6 4-1.6 6 0s4 1.6 6 0', coral: true },
+    { d: 'M15 17a9 9 0 1 0 18 0 9 9 0 1 0-18 0' },
+    { d: 'M30.5 23.5 37 30' },
+    { d: 'M21 16a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0M25 20a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0', coral: true, fill: true },
+  ],
+];
+const procedures = [1, 2, 3, 4].map((n, i) => ({
+  title: t(`cirugia.procedures.${n}.title` as any),
+  desc: t(`cirugia.procedures.${n}.desc` as any),
+  icon: procedureIcons[i],
+}));
+
+const reasonIcons: Glyph[][] = [
+  [
+    { d: SMALL_MOLAR, tf: 'translate(7 11) scale(1.1)' },
+    { d: SMALL_MOLAR, tf: 'translate(25.6 11) scale(1.1)' },
+    { d: 'M4 6h10M11 3l3 3-3 3M44 6H34M37 3l-3 3 3 3', coral: true },
+    { d: 'M5 46h38', faint: true },
+  ],
+  [
+    { d: 'M24 5l14 5v11c0 9.5-6 16.5-14 21-8-4.5-14-11.5-14-21V10Z' },
+    { d: 'M19 22a5 4 0 1 0 10 0 5 4 0 1 0-10 0M21 18l-2-3M27 18l2-3', coral: true },
+    { d: 'M16 30 32 14', coral: true },
+  ],
+  [
+    { d: SMALL_MOLAR, tf: 'translate(4 11) scale(1.1)' },
+    { d: SMALL_MOLAR, tf: 'translate(25 13) rotate(-38 7.7 16) scale(1.1)' },
+    { d: 'M21.4 13.2l1 3.2M26.4 14.6l-1.8 2.8M16.8 15.2l2 2.6', coral: true },
+    { d: 'M4 46h40', faint: true },
+  ],
+  [
+    { d: 'M8 12c0-2.8 2.2-5 5-5h4c2.8 0 5 2.2 5 5v12c0 6-1.6 15-4.5 15h-5C9.6 39 8 30 8 24Z' },
+    { d: 'M26 12c0-2.8 2.2-5 5-5h4c2.8 0 5 2.2 5 5v12c0 6-1.6 15-4.5 15h-5C27.6 39 26 30 26 24Z' },
+    { d: 'M3 20h42', coral: true },
+    { d: 'M12 17h6v6h-6ZM30 17h6v6h-6Z', coral: true, fill: true },
+  ],
+];
+const reasons = [1, 2, 3, 4].map((n, i) => ({ text: t(`cirugia.wisdom.reasons.${n}` as any), icon: reasonIcons[i] }));
+
+// Wisdom-tooth radiograph: molar section on a 120×172 grid, placed and rotated.
+const MOLAR =
+  'M30 18C18 18 10 28 10 42c0 14 6 22 10 34 4 14 4 36 8 56 2 12 6 18 12 18 7 0 9-10 11-22s4-24 9-24 7 12 9 24 4 22 11 22c6 0 10-6 12-18 4-20 4-42 8-56 4-12 10-20 10-34 0-14-8-24-20-24-10 0-18 5-30 5S40 18 30 18Z';
+const PULP =
+  'M42 52c0-6 8-8 18-6 10-2 18 0 18 6v16c0 6-2 9-3 14-2 12-1 36 5 64h-3c-6-26-9-46-9-56 0-8-3-12-8-12s-8 4-8 12c0 10-3 30-9 56h-3c6-28 7-52 5-64-1-5-3-8-3-14Z';
+const xrayTeeth = [
+  { tf: 'translate(52 58) scale(.78)', wisdom: false },
+  { tf: 'translate(160 58) scale(.78)', wisdom: false },
+  { tf: 'translate(284 196) rotate(-50) scale(.74) translate(-60 -84)', wisdom: true },
+];
+// [marker x, marker y, target x, target y]
+const xrayCallouts: [number, number, number, number][] = [
+  [300, 34, 272, 164],
+  [206, 34, 206, 74],
+  [110, 208, 110, 252],
 ];
 
-const faqs = [
-  {
-    question: t('cirugia.faq.q1.q'),
-    answer: t('cirugia.faq.q1.a')
-  },
-  {
-    question: t('cirugia.faq.q2.q'),
-    answer: t('cirugia.faq.q2.a')
-  },
-  {
-    question: t('cirugia.faq.q3.q'),
-    answer: t('cirugia.faq.q3.a')
-  },
-  {
-    question: t('cirugia.faq.q4.q'),
-    answer: t('cirugia.faq.q4.a')
-  },
-  {
-    question: t('cirugia.faq.q5.q'),
-    answer: t('cirugia.faq.q5.a')
-  }
-];
+// Instrument tray rows (marker y) for the numbered legend.
+const trayRows = [92, 156, 228, 300];
 
-const slug = lang === 'es' ? '/cirugia-oral' : `/${lang}/cirugia-oral`;
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`cirugia.faq.q${n}.q` as any),
+  answer: t(`cirugia.faq.q${n}.a` as any),
+}));
+
+const url = absoluteUrl(pathFor('cirugia', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('cirugia.meta.title'),
-      "description": t('cirugia.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.cirugia'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('cirugia.meta.title'),
+  description: t('cirugia.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    '@type': 'MedicalProcedure',
+    name: t('nav.treatments.cirugia'),
+    procedureType: 'https://schema.org/SurgicalProcedure',
+    bodyLocation: 'Mouth and jaw',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('cirugia.meta.title')} description={t('cirugia.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-slate-50 overflow-hidden">
-       <!-- Geometric aesthetic background -->
-       <div class="absolute top-0 right-0 w-1/2 h-full bg-primary/5 -skew-x-12 translate-x-20 pointer-events-none"></div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full mb-8 shadow-sm">
-                   <ShieldCheck size={16} class="text-accent" />
-                   <span class="text-xs font-black uppercase tracking-widest text-primary">{t('cirugia.hero.badge')}</span>
+
+  <main id="main">
+    <PageHero
+      badge={t('cirugia.hero.badge')}
+      title={t('nav.treatments.cirugia')}
+      accent={t('hero.in.vera')}
+      subtitle={t('cirugia.hero.desc')}
+      breadcrumbs={[{ label: t('nav.treatments.cirugia') }]}
+      illustration="cirugia"
+      illustrationTitle={`${t('cirugia.hero.title')} ${t('cirugia.hero.title.span')}`}
+      highlights={[plain(t('cirugia.hero.efficient')), plain(t('cirugia.hero.postop')), plain(t('cirugia.expertise.anesthesia.title'))]}
+    />
+
+    <!-- Expert hands: Dra. Ana Padilla -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-5" data-reveal="left">
+            <div class="relative isolate mx-auto max-w-[440px]">
+              <div class="absolute -bottom-3 -right-3 -z-10 h-2/3 w-2/3 rounded-[2.25rem] bg-aqua-pale sm:-bottom-5 sm:-right-5" aria-hidden="true"></div>
+              <div class="relative overflow-hidden rounded-[2.25rem] shadow-[var(--shadow-elevated)]">
+                <img src="/equipo/Ana-padilla.jpg" alt={t('cirugia.hero.image.alt')} width="600" height="600" class="aspect-[4/5] w-full object-cover" loading="lazy" decoding="async" />
+                <div class="absolute inset-x-4 bottom-4 rounded-2xl bg-white/90 px-5 py-4 backdrop-blur-md">
+                  <p class="font-display text-xl text-ocean-900">{t('cirugia.hero.doctor')}</p>
+                  <p class="mt-0.5 text-sm font-semibold text-accent">{t('cirugia.hero.specialist')}</p>
                 </div>
-                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
-                   {t('cirugia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('cirugia.hero.title.span')}</span>
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-10">
-                   {t('cirugia.hero.desc')}
-                </p>
-                <div class="flex items-center gap-6">
-                   <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-accent shadow-sm border border-slate-100"><Zap /></div>
-                      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary" set:html={heroEfficient}></p>
-                   </div>
-                   <div class="flex items-center gap-3">
-                      <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-xl"><History /></div>
-                      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary" set:html={heroPostop}></p>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="relative fade-up" style="transition-delay: 0.2s">
-                <div class="aspect-video lg:aspect-square bg-white rounded-[3.5rem] border border-slate-100 shadow-2xl overflow-hidden relative group">
-                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt={t('cirugia.hero.image.alt')} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                   <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
-                   <!-- Experience Badge -->
-                   <div class="absolute bottom-8 left-8 right-8 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
-                      <p class="text-primary font-black text-lg mb-1 italic">{t('cirugia.hero.doctor')}</p>
-                      <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('cirugia.hero.specialist')}</p>
-                   </div>
-                </div>
-             </div>
+              </div>
+              <div class="absolute right-3 top-6 rounded-2xl bg-ocean px-5 py-4 text-white shadow-[var(--shadow-premium)] sm:-right-7">
+                <p class="font-display tabular text-4xl leading-none" data-count="10" data-prefix="+">+10</p>
+                <p class="mt-1.5 max-w-[7.5rem] text-xs leading-snug text-white/70">{t('home.stat.years')}</p>
+              </div>
+            </div>
           </div>
-       </div>
+
+          <div class="lg:col-span-7">
+            <SectionHeading eyebrow={t('cirugia.excellence.badge')} title={t('cirugia.excellence.title')} />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-ocean-900" data-reveal style="--d:.1s">
+              <p>{t('cirugia.excellence.p1')}</p>
+              <p set:html={t('cirugia.excellence.p2')} />
+            </div>
+            <figure class="relative mt-10 rounded-[1.75rem] bg-sand p-7 pl-16 md:p-8 md:pl-20" data-reveal style="--d:.15s">
+              <svg class="absolute left-6 top-8 h-7 w-8 text-coral md:left-8" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+              <blockquote class="font-display text-xl italic leading-relaxed text-ocean-900 md:text-2xl">{unquote(t('cirugia.excellence.quote'))}</blockquote>
+            </figure>
+            <p class="mt-8 leading-relaxed text-slate-600" data-reveal style="--d:.2s">
+              {copy.implantLink[0]}<a href={pathFor('implantes', lang)} class="prose-link">{inline(t('nav.treatments.implantes'))}</a>{copy.implantLink[1]}
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Expertise & Facilities -->
-    <section class="py-24 bg-white relative">
-       <div class="container mx-auto px-6">
-          <div class="grid lg:grid-cols-2 gap-20 items-center">
-             <div class="order-2 lg:order-1 fade-up">
-                <div class="grid grid-cols-2 gap-6 md:gap-8">
-                   <!-- Seguridad Biológica -->
-                   <div class="relative group">
-                      <div class="absolute -inset-2 bg-gradient-to-r from-accent to-blue-400 rounded-[2.5rem] opacity-0 group-hover:opacity-10 transition-opacity blur-xl"></div>
-                      <div class="relative h-full bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 hover:border-accent/30 transition-all duration-500 shadow-sm hover:shadow-xl">
-                         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-accent shadow-sm mb-6 group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-500">
-                            <ShieldCheck size={32} />
-                         </div>
-                         <h4 class="font-black text-primary text-base uppercase tracking-tight mb-3" set:html={expertiseBioSafetyTitle}></h4>
-                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{t('cirugia.expertise.bio_safety.desc')}</p>
-                      </div>
-                   </div>
-
-                   <!-- Anestesia Local -->
-                   <div class="relative group lg:mt-12">
-                      <div class="absolute -inset-2 bg-gradient-to-r from-primary to-slate-800 rounded-[2.5rem] opacity-0 group-hover:opacity-10 transition-opacity blur-xl"></div>
-                      <div class="relative h-full bg-primary rounded-[2.5rem] p-8 text-white shadow-2xl hover:-translate-y-2 transition-all duration-500">
-                         <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-accent mb-6">
-                            <Syringe size={32} />
-                         </div>
-                         <h4 class="font-black text-white text-base uppercase tracking-tight mb-3" set:html={expertiseAnesthesiaTitle}></h4>
-                         <p class="text-[10px] text-white/60 font-medium uppercase tracking-widest leading-relaxed">{t('cirugia.expertise.anesthesia.desc')}</p>
-                      </div>
-                   </div>
-
-                   <!-- Cabinet Info (Full Width) -->
-                   <div class="col-span-2 p-10 bg-white rounded-[3.5rem] border border-slate-100 flex flex-col md:flex-row items-center gap-10 shadow-sm hover:shadow-md transition-shadow">
-                      <div class="w-24 h-24 bg-accent/10 text-accent rounded-3xl flex items-center justify-center flex-none relative overflow-hidden group">
-                         <div class="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                         <Microscope size={48} class="relative z-10 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                         <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest mb-4">{t('cirugia.expertise.cabinet.badge')}</div>
-                         <h5 class="text-2xl font-black text-primary mb-3 italic">{t('cirugia.expertise.cabinet.title')}</h5>
-                         <p class="text-sm text-slate-500 leading-relaxed font-medium capitalize">{t('cirugia.expertise.cabinet.desc')}</p>
-                      </div>
-                   </div>
+    <!-- Surgical environment -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={112} color="teal" class="pointer-events-none absolute -right-10 bottom-0 h-[240px] w-auto opacity-[0.1]" />
+      <div class="container-k relative">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <SectionHeading eyebrow={t('cirugia.expertise.cabinet.badge')} title={t('cirugia.expertise.cabinet.title')} description={t('cirugia.expertise.cabinet.desc')} />
+            <div class="mt-10 space-y-4">
+              <div class="flex gap-5 rounded-[1.5rem] bg-white p-6 shadow-[var(--shadow-soft)] ring-1 ring-ocean-900/5" data-reveal style="--d:.1s">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale text-accent">
+                  <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="5" y="14" width="38" height="28" rx="5" />
+                    <circle cx="20" cy="28" r="8" />
+                    <path d="M20 23v5l3 2" />
+                    <path d="M34 22v.01M34 28h3M34 34h3" />
+                    <path d="M14 10c-1.6-1.6-1.6-3.4 0-5M22 10c-1.6-1.6-1.6-3.4 0-5M30 10c-1.6-1.6-1.6-3.4 0-5" stroke="#F2617A" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 class="font-sans text-lg font-semibold tracking-tight">{plain(t('cirugia.expertise.bio_safety.title'))}</h3>
+                  <p class="mt-1 text-[15px] leading-relaxed text-slate-600">{t('cirugia.expertise.bio_safety.desc')}</p>
                 </div>
-             </div>
-             
-             <div class="order-1 lg:order-2 fade-up" style="transition-delay: 0.2s">
-                <h2 class="text-sm font-black uppercase tracking-[0.4em] text-accent mb-6">{t('cirugia.excellence.badge')}</h2>
-                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight">{t('cirugia.excellence.title')}</h3>
-                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
-                   <p>
-                      {t('cirugia.excellence.p1')}
-                   </p>
-                   <p set:html={t('cirugia.excellence.p2')}>
-                   </p>
-                   <div class="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 border-l-4 border-l-accent">
-                      <p class="text-sm font-bold text-primary italic">{t('cirugia.excellence.quote')}</p>
-                   </div>
+              </div>
+              <div class="flex gap-5 rounded-[1.5rem] bg-white p-6 shadow-[var(--shadow-soft)] ring-1 ring-ocean-900/5" data-reveal style="--d:.15s">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep">
+                  <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M33 6l9 9M37.5 10.5l-5 5" />
+                    <path d="M32.5 15.5 16 32l-4-4 16.5-16.5Z" />
+                    <path d="M21 23l2 2M24.5 19.5l2 2" stroke-opacity=".5" />
+                    <path d="M14 30l-8 8M6 42l2-2" />
+                    <path d="M5.5 33.5c1.6 2.2 2.4 3.6 2.4 4.7a2.4 2.4 0 0 1-4.8 0c0-1.1.8-2.5 2.4-4.7Z" stroke="#0B7C86" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 class="font-sans text-lg font-semibold tracking-tight">{plain(t('cirugia.expertise.anesthesia.title'))}</h3>
+                  <p class="mt-1 text-[15px] leading-relaxed text-slate-600">{t('cirugia.expertise.anesthesia.desc')}</p>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
-       </div>
+
+          <figure class="lg:col-span-7" data-reveal="right">
+            <div class="rounded-[2rem] bg-white p-5 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 sm:p-8">
+              <figcaption class="mb-5 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>
+                {copy.tray}
+              </figcaption>
+              <svg viewBox="0 0 560 360" class="block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <defs>
+                  <linearGradient id="cir-steel" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ffffff" />
+                    <stop offset="1" stop-color="#D6E4EA" />
+                  </linearGradient>
+                  <pattern id="cir-dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#0B7C86" fill-opacity=".14" /></pattern>
+                </defs>
+                <!-- tray -->
+                <rect x="10" y="10" width="540" height="340" rx="30" fill="#EEF4F6" stroke="#0A1F33" stroke-opacity=".1" stroke-width="1.5" />
+                <rect x="30" y="30" width="500" height="300" rx="20" fill="url(#cir-dots)" stroke="#0A1F33" stroke-opacity=".06" />
+                <!-- sterilisation indicator -->
+                <g transform="translate(430 46)">
+                  <rect width="82" height="28" rx="8" fill="#D5F6F8" stroke="#0B7C86" stroke-opacity=".4" />
+                  <path d="M12 7v14M19 7v14M26 7v14M33 7v14" stroke="#0B7C86" stroke-opacity=".35" stroke-width="3" />
+                  <path d="M50 14.5l5 5 10-10" stroke="#0B7C86" stroke-width="2.4" />
+                </g>
+
+                <!-- 1 scalpel -->
+                <path d="M84 87h196c4 0 7 2.4 7 5s-3 5-7 5H84c-4 0-6-2.4-6-5s2-5 6-5Z" fill="url(#cir-steel)" stroke="#0A1F33" stroke-width="1.8" />
+                <path d="M100 87v10M108 87v10M116 87v10M124 87v10M132 87v10" stroke="#0A1F33" stroke-opacity=".25" stroke-width="1.4" />
+                <path d="M287 88h22c18 0 40-6 58-16-6 18-30 26-58 26h-22Z" fill="#ffffff" stroke="#0A1F33" stroke-width="1.8" />
+                <path d="M309 98c28 0 52-8 58-26" stroke="#F2617A" stroke-width="2.4" />
+
+                <!-- 2 periosteal elevator -->
+                <path d="M120 151h250c3 0 5 2.2 5 5s-2 5-5 5H120c-3 0-5-2.2-5-5s2-5 5-5Z" fill="url(#cir-steel)" stroke="#0A1F33" stroke-width="1.8" />
+                <path d="M200 151v10M208 151v10M216 151v10M224 151v10M232 151v10M240 151v10M248 151v10M256 151v10M264 151v10M272 151v10M280 151v10M288 151v10" stroke="#0A1F33" stroke-opacity=".2" stroke-width="1.4" />
+                <path d="M115 156c-10-9-26-10-36-4-3 2-3 6 0 8 10 6 26 5 36-4Z" fill="#ffffff" stroke="#0A1F33" stroke-width="1.8" />
+                <path d="M375 156c6-6 18-9 30-7 4 .8 4 13.2 0 14-12 2-24-1-30-7Z" fill="#ffffff" stroke="#0A1F33" stroke-width="1.8" />
+                <path d="M405.5 151c1.6 2.6 1.6 7.4 0 10" stroke="#F2617A" stroke-width="2.2" />
+
+                <!-- 3 extraction forceps -->
+                <path d="M84 214c70-2 160 2 238 12M84 244c70 2 160-2 238-12" stroke="#0A1F33" stroke-width="10" />
+                <path d="M84 214c70-2 160 2 238 12M84 244c70 2 160-2 238-12" stroke="url(#cir-steel)" stroke-width="6.4" />
+                <path d="M332 223c18-6 40-8 64-4 6 1 8 6 4 9M332 233c18 6 40 8 64 4 6-1 8-6 4-9" stroke="#0A1F33" stroke-width="8" />
+                <path d="M332 223c18-6 40-8 64-4 6 1 8 6 4 9M332 233c18 6 40 8 64 4 6-1 8-6 4-9" stroke="#ffffff" stroke-width="4.4" />
+                <path d="M399 221.5c3 2 3.6 4.4 2 6.5M399 234.5c3-2 3.6-4.4 2-6.5" stroke="#F2617A" stroke-width="2" />
+                <circle cx="328" cy="228" r="10" fill="#ffffff" stroke="#0A1F33" stroke-width="1.8" />
+                <circle cx="328" cy="228" r="3" fill="#0A1F33" />
+
+                <!-- 4 suture -->
+                <path d="M110 300a26 26 0 0 1 52 0" stroke="#0A1F33" stroke-width="2.8" />
+                <path d="M110 300l-3 6" stroke="#0A1F33" stroke-width="2.4" />
+                <path d="M162 300c10 18 30 24 50 14s36-26 60-18 34 28 58 26 40-16 60-10" stroke="#F2617A" stroke-width="2.2" />
+
+                <!-- markers -->
+                {trayRows.map((y, i) => (
+                  <g>
+                    <circle cx="52" cy={y} r="12" fill="#ffffff" stroke="#0B7C86" stroke-width="1.5" />
+                    <text x="52" y={y + 4.6} text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="14" fill="#0B7C86">{i + 1}</text>
+                  </g>
+                ))}
+              </svg>
+              <ol class="mt-6 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm text-slate-700 md:grid-cols-4">
+                {copy.tools.map((tool, i) => (
+                  <li class="flex items-center gap-2.5">
+                    <span class="font-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sand text-[13px] italic text-accent ring-1 ring-accent/25">{i + 1}</span>
+                    {tool}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </figure>
+        </div>
+      </div>
     </section>
 
-    <!-- Surgical Procedures -->
-    <section class="py-24 bg-primary text-white overflow-hidden relative">
-       <!-- Grid decorative background -->
-       <div class="absolute inset-0 opacity-10">
-          <svg width="100%" height="100%"><pattern id="gridSurgery" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="white" stroke-width="0.5"/></pattern><rect width="100%" height="100%" fill="url(#gridSurgery)"/></svg>
-       </div>
+    <!-- Specialised procedures -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={83} />
+        <svg class="absolute inset-0 h-full w-full opacity-[0.07]"><defs><pattern id="cir-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#8FE3EA" stroke-width=".6" /></pattern></defs><rect width="100%" height="100%" fill="url(#cir-grid)" /></svg>
+        <CoralBranch seed={121} color="duo" class="absolute -left-10 bottom-16 hidden h-[230px] w-auto opacity-20 lg:block" />
+        <CoralBranch seed={126} depth={4} color="aqua" class="absolute -right-6 top-24 hidden h-[170px] w-auto opacity-15 lg:block" />
+      </div>
 
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
-             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('cirugia.procedures.badge')}</h4>
-             <h3 class="text-4xl md:text-6xl font-black mb-10 text-white">{t('cirugia.procedures.title')}</h3>
-          </div>
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <SectionHeading eyebrow={t('cirugia.procedures.badge')} title={t('cirugia.procedures.title')} align="center" tone="dark" />
 
-          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-             {procedures.map((proc, idx) => (
-                <div class="fade-up group" style={`transition-delay: ${idx * 0.1}s`}>
-                   <div class="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[3rem] h-full hover:bg-white/10 transition-all flex flex-col items-center text-center">
-                      <div class="w-16 h-16 bg-accent/20 text-accent rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-xl shadow-accent/5">
-                         <proc.icon size={32} />
-                      </div>
-                      <h5 class="text-xl font-black mb-4 italic text-white">{proc.title}</h5>
-                      <p class="text-slate-400 text-sm leading-relaxed">{proc.desc}</p>
-                   </div>
-                </div>
-             ))}
-          </div>
-       </div>
+        <div class="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {procedures.map((p, i) => (
+            <div class="group flex flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-md transition-colors duration-500 hover:border-aqua/40 hover:bg-white/[0.08]" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class="mb-7 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-accent shadow-[0_18px_40px_-18px_rgba(44,197,210,0.7)] transition-transform duration-500 group-hover:-translate-y-1">
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {p.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                </svg>
+              </span>
+              <span class="font-display text-sm italic text-coral-soft">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="mt-1 font-sans text-xl font-semibold tracking-tight text-white">{p.title}</h3>
+              <p class="mt-3 text-[15px] leading-relaxed text-white/65">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <p class="mx-auto mt-14 max-w-3xl text-center text-[15px] leading-relaxed text-white/65" data-reveal>
+          {copy.links[0]}<a href={pathFor('implantes', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{inline(t('nav.treatments.implantes'))}</a>{copy.links[1]}<a href={pathFor('periodoncia', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{inline(t('nav.treatments.periodoncia'))}</a>{copy.links[2]}<a href={pathFor('ortodoncia', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{inline(t('nav.treatments.ortodoncia'))}</a>{copy.links[3]}
+        </p>
+      </div>
     </section>
 
-    <!-- Wisdom Teeth Focus -->
-    <section class="py-24 bg-white relative">
-       <div class="container mx-auto px-6">
-          <div class="max-w-6xl mx-auto rounded-[4rem] border-2 border-slate-100 p-12 md:p-20 relative overflow-hidden bg-slate-50 group">
-             <!-- Interactive corner -->
-             <div class="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-bl-[4rem] flex items-center justify-center text-accent">
-                <AlertCircle size={40} />
-             </div>
-             
-             <div class="lg:flex gap-16 items-center">
-                <div class="lg:w-1/2 mb-12 lg:mb-0">
-                   <h2 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('cirugia.wisdom.badge')}</h2>
-                   <h3 class="text-4xl font-black text-primary mb-8 leading-tight italic" set:html={wisdomTitle}></h3>
-                   <div class="space-y-6 text-slate-600 leading-relaxed text-lg">
-                      <p>
-                         {t('cirugia.wisdom.p1')}
-                      </p>
-                      <p set:html={t('cirugia.wisdom.p2')}>
-                      </p>
-                   </div>
-                </div>
-                
-                <div class="lg:w-1/2">
-                   <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-                      <h4 class="text-primary font-black text-xl mb-6">{t('cirugia.wisdom.reasons.title')}</h4>
-                      <ul class="space-y-4">
-                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.1')}</span>
-                         </li>
-                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.2')}</span>
-                         </li>
-                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.3')}</span>
-                         </li>
-                         <li class="flex gap-4 items-center p-4 bg-slate-50 rounded-2xl">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-700 font-bold text-sm">{t('cirugia.wisdom.reasons.4')}</span>
-                         </li>
-                      </ul>
-                   </div>
-                </div>
-             </div>
+    <!-- Wisdom teeth -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('cirugia.wisdom.badge')} title={wisdomTitle} accent={wisdomAccent} />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-ocean-900" data-reveal style="--d:.1s">
+              <p>{t('cirugia.wisdom.p1')}</p>
+              <p set:html={t('cirugia.wisdom.p2')} />
+            </div>
+            <div class="mt-10 flex items-center gap-5 border-t border-ocean-900/[0.08] pt-8" data-reveal style="--d:.15s">
+              <p class="font-display tabular shrink-0 text-5xl text-ocean-900 md:text-6xl">18<span class="text-coral">–</span>25</p>
+              <p class="max-w-[15rem] text-[15px] leading-snug text-slate-600">{copy.age}</p>
+            </div>
           </div>
-       </div>
+
+          <figure class="lg:col-span-6" data-reveal="right">
+            <div class="relative isolate overflow-hidden rounded-[2rem] bg-ocean p-5 text-white shadow-[var(--shadow-premium)] sm:p-8">
+              <figcaption class="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-aqua-soft">
+                <span class="font-display text-base normal-case italic tracking-normal text-coral-soft">Rx</span>
+                {copy.xray}
+              </figcaption>
+              <svg viewBox="0 0 480 300" class="block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <defs>
+                  <linearGradient id="cir-bone" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#8FE3EA" stop-opacity=".16" />
+                    <stop offset="1" stop-color="#8FE3EA" stop-opacity=".05" />
+                  </linearGradient>
+                  <linearGradient id="cir-fade-x" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#fff" stop-opacity="0" />
+                    <stop offset=".18" stop-color="#fff" />
+                  </linearGradient>
+                  <mask id="cir-fade" maskUnits="userSpaceOnUse" x="0" y="0" width="480" height="300">
+                    <rect width="480" height="300" fill="url(#cir-fade-x)" />
+                  </mask>
+                  <linearGradient id="cir-enamel" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ffffff" stop-opacity=".95" />
+                    <stop offset="1" stop-color="#D5F6F8" stop-opacity=".55" />
+                  </linearGradient>
+                </defs>
+                <g mask="url(#cir-fade)">
+                <!-- mandible -->
+                <path d="M10 142C80 138 160 136 230 140S340 148 380 136C404 128 420 98 430 58L442 10H476V214C476 254 452 280 410 284L10 290Z" fill="url(#cir-bone)" stroke="#8FE3EA" stroke-opacity=".35" stroke-width="1.4" />
+                <path d="M10 126C80 120 150 116 230 120S350 130 384 122" stroke="#8FE3EA" stroke-opacity=".25" stroke-dasharray="3 5" />
+                {[[90, 210, 7], [150, 226, 5], [210, 210, 6], [260, 270, 5], [380, 200, 6], [430, 160, 5], [120, 272, 4]].map(([x, y, r]) => (
+                  <ellipse cx={x} cy={y} rx={r} ry={r * 0.7} stroke="#8FE3EA" stroke-opacity=".14" />
+                ))}
+                <!-- inferior alveolar nerve canal -->
+                <path d="M452 110C430 190 380 246 300 252C220 258 120 254 10 250" stroke="#2CC5D2" stroke-opacity=".5" stroke-width="9" />
+                <path d="M452 110C430 190 380 246 300 252C220 258 120 254 10 250" stroke="#0A1F33" stroke-width="5" />
+                <path d="M452 110C430 190 380 246 300 252C220 258 120 254 10 250" stroke="#8FE3EA" stroke-width="1.2" stroke-dasharray="4 5" />
+                </g>
+                <!-- teeth -->
+                {xrayTeeth.map((tooth) => (
+                  <g transform={tooth.tf}>
+                    <path d={MOLAR} fill="url(#cir-enamel)" />
+                    <path d={PULP} fill="#0A1F33" fill-opacity=".55" />
+                    <path d={MOLAR} stroke={tooth.wisdom ? '#FF9AAA' : '#ffffff'} stroke-opacity={tooth.wisdom ? 1 : 0.6} stroke-width="1.6" vector-effect="non-scaling-stroke" />
+                  </g>
+                ))}
+                <!-- pressure on the neighbouring molar -->
+                <circle cx="242" cy="170" r="13" fill="#F2617A" fill-opacity=".22" />
+                <path d="M234 154l-5-6M228 170h-7M234 186l-5 6" stroke="#F2617A" stroke-width="2" />
+                <!-- call-outs -->
+                {xrayCallouts.map(([mx, my, tx, ty], i) => (
+                  <g>
+                    <path d={`M${mx} ${my + (my < ty ? 12 : -12)}L${tx} ${ty}`} stroke="#8FE3EA" stroke-opacity=".55" />
+                    <circle cx={tx} cy={ty} r="3" fill={i === 0 ? '#F2617A' : '#8FE3EA'} />
+                    <circle cx={mx} cy={my} r="12" fill="#0A1F33" stroke={i === 0 ? '#F2617A' : '#8FE3EA'} stroke-width="1.5" />
+                    <text x={mx} y={my + 4.6} text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="14" fill={i === 0 ? '#FF9AAA' : '#8FE3EA'}>{i + 1}</text>
+                  </g>
+                ))}
+              </svg>
+              <ol class="mt-5 grid gap-x-6 gap-y-2 text-sm text-white/80 sm:grid-cols-3">
+                {copy.xrayParts.map((part, i) => (
+                  <li class="flex items-center gap-2.5">
+                    <span class:list={['font-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[13px] italic ring-1', i === 0 ? 'text-coral-soft ring-coral/50' : 'text-aqua-soft ring-aqua/40']}>{i + 1}</span>
+                    {part}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </figure>
+        </div>
+
+        <div class="mt-16 rounded-[2rem] border border-ocean-900/[0.07] bg-sand p-7 md:mt-20 md:p-10" data-reveal>
+          <h3 class="text-2xl md:text-3xl">{noColon(t('cirugia.wisdom.reasons.title'))}</h3>
+          <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {reasons.map((r) => (
+              <li class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-ocean-900/5 lg:flex-col lg:items-start lg:p-6">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-aqua-pale text-accent">
+                  <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    {r.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                  </svg>
+                </span>
+                <span class="font-semibold leading-snug text-ocean-900">{r.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </section>
 
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('cirugia.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('cirugia.faq.title')}</h3>
-          </div>
+    <div class="bg-white pb-10 md:pb-14">
+      <CtaBand />
+    </div>
 
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
+    <FaqSection eyebrow={t('cirugia.faq.badge')} title={t('cirugia.faq.title')} faqs={faqs} />
 
-    <!-- Final CTA -->
+    <RelatedTreatments current="cirugia" />
+
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

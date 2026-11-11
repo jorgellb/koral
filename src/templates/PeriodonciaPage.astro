@@ -3,256 +3,469 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  Droplet, 
-  ShieldCheck, 
-  Zap, 
-  Search, 
-  CheckCircle2, 
-  HelpCircle, 
-  AlertCircle,
-  Microscope,
-  Stethoscope,
-  Waves,
-  Activity
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const symptoms = [
-  { text: t('periodoncia.symptoms.1'), icon: Droplet },
-  { text: t('periodoncia.symptoms.2'), icon: Activity },
-  { text: t('periodoncia.symptoms.3'), icon: Waves },
-  { text: t('periodoncia.symptoms.4'), icon: AlertCircle }
+// Page-only UI strings (diagram labels, link sentence).
+const copy = ({
+  es: {
+    eyebrow: 'Encías y hueso',
+    lead: 'Así evoluciona la enfermedad de las encías cuando no se trata a tiempo: de una encía sana a la pérdida del hueso que sostiene el diente.',
+    healthy: 'Encía sana',
+    notes: ['Firme, rosada y sin sangrado', 'Inflamada, pero reversible', 'Bolsa profunda y pérdida de hueso'],
+    legend: ['Encía', 'Hueso', 'Sarro', 'Sonda periodontal'],
+    stat: 'de la población sufre gingivitis',
+    links: ['Unas encías sanas son imprescindibles antes de colocar ', ' o de cualquier ', '.'],
+  },
+  en: {
+    eyebrow: 'Gums and bone',
+    lead: 'This is how gum disease progresses when it is not treated in time: from healthy gums to the loss of the bone that holds the tooth.',
+    healthy: 'Healthy gums',
+    notes: ['Firm, pink and no bleeding', 'Inflamed, but reversible', 'Deep pocket and bone loss'],
+    legend: ['Gum', 'Bone', 'Tartar', 'Periodontal probe'],
+    stat: 'of people are affected by gingivitis',
+    links: ['Healthy gums are essential before placing ', ' or undergoing any ', '.'],
+  },
+  de: {
+    eyebrow: 'Zahnfleisch und Knochen',
+    lead: 'So entwickelt sich eine Zahnfleischerkrankung, wenn sie nicht rechtzeitig behandelt wird: vom gesunden Zahnfleisch bis zum Verlust des Knochens, der den Zahn hält.',
+    healthy: 'Gesundes Zahnfleisch',
+    notes: ['Fest, rosa und ohne Bluten', 'Entzündet, aber umkehrbar', 'Tiefe Tasche und Knochenabbau'],
+    legend: ['Zahnfleisch', 'Knochen', 'Zahnstein', 'Parodontalsonde'],
+    stat: 'der Bevölkerung sind von Gingivitis betroffen',
+    links: ['Gesundes Zahnfleisch ist die Voraussetzung für ', ' und für jeden Eingriff der ', '.'],
+  },
+  nl: {
+    eyebrow: 'Tandvlees en bot',
+    lead: 'Zo verloopt een tandvleesaandoening als die niet op tijd wordt behandeld: van gezond tandvlees tot het verlies van het bot dat de tand draagt.',
+    healthy: 'Gezond tandvlees',
+    notes: ['Stevig, roze en bloedt niet', 'Ontstoken, maar omkeerbaar', 'Diepe pocket en botverlies'],
+    legend: ['Tandvlees', 'Bot', 'Tandsteen', 'Parodontale sonde'],
+    stat: 'van de bevolking heeft last van gingivitis',
+    links: ['Gezond tandvlees is onmisbaar voordat we ', ' plaatsen of ', ' uitvoeren.'],
+  },
+  fr: {
+    eyebrow: 'Gencives et os',
+    lead: 'Voici comment évolue la maladie des gencives lorsqu’elle n’est pas traitée à temps : d’une gencive saine à la perte de l’os qui soutient la dent.',
+    healthy: 'Gencive saine',
+    notes: ['Ferme, rose et sans saignement', 'Enflammée, mais réversible', 'Poche profonde et perte osseuse'],
+    legend: ['Gencive', 'Os', 'Tartre', 'Sonde parodontale'],
+    stat: 'de la population est touchée par la gingivite',
+    links: ['Des gencives saines sont indispensables avant de poser des ', ' ou de réaliser toute ', '.'],
+  },
+} as const)[lang];
+
+/** Treatment names used mid-sentence (German nouns keep their capital). */
+const inline = (s: string) => (lang === 'de' ? s : s.charAt(0).toLowerCase() + s.slice(1));
+const plain = (html: string) => html.replace(/\s*<br\s*\/?>\s*/g, ' ');
+const unquote = (s: string) => s.replace(/^["“]|["”]$/g, '');
+
+const [gingivitisTitle, gingivitisAccent] = t('periodoncia.gingivitis.title').split(/\s*<br\s*\/?>\s*/);
+
+// ---------------------------------------------------------------------------
+// Line icons (48×48 grid). `coral` strokes carry the accent, `fill` paints it,
+// `tf` scales a shape without thickening its stroke.
+// ---------------------------------------------------------------------------
+type Glyph = { d: string; coral?: boolean; fill?: boolean; faint?: boolean; tf?: string };
+const CORAL = '#F2617A';
+const glyph = (g: Glyph, accent = CORAL) => ({
+  stroke: g.coral ? accent : undefined,
+  fill: g.fill ? (g.coral ? accent : 'currentColor') : undefined,
+  'stroke-opacity': g.faint ? 0.35 : undefined,
+  transform: g.tf,
+  'vector-effect': g.tf ? 'non-scaling-stroke' : undefined,
+});
+const TOOTH =
+  'M16 7c-4.4 0-8 3.4-8 8.6 0 5 2.6 7.9 3.6 13.4.9 5 1.5 11 5 11 3.2 0 3.3-5.6 4.6-9.6.6-1.9 1.6-2.9 2.8-2.9s2.2 1 2.8 2.9c1.3 4 1.4 9.6 4.6 9.6 3.5 0 4.1-6 5-11 1-5.5 3.6-8.4 3.6-13.4C40 10.4 36.4 7 32 7c-3.4 0-5 1.8-8 1.8S19.4 7 16 7Z';
+const CROWN = 'M16 24c-2-6-2.4-11-.6-14.2C17 7 19.6 6 22 6.8c.8.3 1.4.5 2 .5s1.2-.2 2-.5c2.4-.8 5 .2 6.6 3 1.8 3.2 1.4 8.2-.6 14.2';
+const DROP = 'M24 31c2.6 3.4 4 5.6 4 7.6a4 4 0 0 1-8 0c0-2 1.4-4.2 4-7.6Z';
+
+const ICON = {
+  bleeding: [{ d: CROWN }, { d: 'M5 25c3.6-2.6 7-3 11-1 2.6 1.3 5.3 2 8 2s5.4-.7 8-2c4-2 7.4-1.6 11 1' }, { d: DROP, coral: true, fill: true }],
+  mobility: [
+    { d: TOOTH, tf: 'translate(6 5) scale(.75)' },
+    { d: 'M7 14c-2.4 4-2.4 9 0 13M41 14c2.4 4 2.4 9 0 13', coral: true },
+    { d: 'M3 11c-3.4 6-3.4 13 0 19M45 11c3.4 6 3.4 13 0 19', coral: true, faint: true },
+    { d: 'M12 43h24', faint: true },
+  ],
+  breath: [
+    { d: 'M8 35c4-3 8-4 16-4s12 1 16 4c-4 4-9 6-16 6s-12-2-16-6Z' },
+    { d: 'M8 35h32', faint: true },
+    { d: 'M17 25c-2-2-2-4 0-6s2-4 0-6M31 25c-2-2-2-4 0-6s2-4 0-6' },
+    { d: 'M24 25c-2-2-2-4 0-6s2-4 0-6s-2-4 0-6', coral: true },
+  ],
+  swelling: [
+    { d: CROWN },
+    { d: 'M5 26c3-4 7-5 10-2 1.6 1.6 1.6 4.6 4 5.4 1.6.6 3.4.6 5 .6s3.4 0 5-.6c2.4-.8 2.4-3.8 4-5.4 3-3 7-2 10 2', coral: true },
+    { d: 'M14 36v3M24 37v4M34 36v3', coral: true, faint: true },
+  ],
+  brushing: [
+    { d: 'M7 41 27 21' },
+    { d: 'M24.5 18.5l5-5a3 3 0 0 1 4.2 0l1.8 1.8a3 3 0 0 1 0 4.2l-5 5Z' },
+    { d: 'M28 12.5l-3-3M32 9l-3-3M35.5 5.5l-3-3', faint: true },
+    { d: 'M14 9c2.2 2.9 3.4 4.8 3.4 6.5a3.4 3.4 0 0 1-6.8 0c0-1.7 1.2-3.6 3.4-6.5Z', coral: true, fill: true },
+  ],
+  hardFood: [
+    { d: 'M22 15c-6-4-14-1-14 8 0 8 5 17 10 17 2 0 2.6-1 4-1s2 1 4 1c5 0 10-9 10-17 0-9-8-12-14-8Z' },
+    { d: 'M22 15c0-3 1-6 4-8' },
+    { d: 'M40 6l-4 7h5l-4 7', coral: true },
+  ],
+  cleaning: [
+    { d: 'M8 41 27 22' },
+    { d: 'M11.5 34.5l2 2M15 31l2 2M18.5 27.5l2 2', faint: true },
+    { d: 'M27 22c2.6-3 6.4-4.6 8.4-2.6s.6 5.4-2.4 6' },
+    { d: 'M38 26v8M34 30h8M41 9v5M38.5 11.5h5', coral: true },
+  ],
+  scaling: [
+    { d: 'M17 2v14c0 10 2.4 18 4.6 24 .6 1.6 1.4 2 2.4 2s1.8-.4 2.4-2c2.2-6 4.6-14 4.6-24V2' },
+    { d: 'M3 15c5-2 10-2 14 0M31 15c4-2 9-2 14 0' },
+    { d: 'M15.6 22.6a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0M16 28.6a1.3 1.3 0 1 0 2.6 0 1.3 1.3 0 1 0-2.6 0', coral: true, fill: true },
+    { d: 'M5 45 11.6 25c.6-1.8 2.4-2.4 3.6-1.2', coral: true },
+  ],
+  care: [
+    { d: 'M24 41S7 31 7 18.5C7 12.7 11.3 9 16 9c3.4 0 6.4 2 8 5 1.6-3 4.6-5 8-5 4.7 0 9 3.7 9 9.5C41 31 24 41 24 41Z' },
+    { d: 'M11 24h7l3-5 4 10 3-5h9', coral: true },
+  ],
+} satisfies Record<string, Glyph[]>;
+
+const symptoms = [ICON.bleeding, ICON.mobility, ICON.breath, ICON.swelling].map((icon, i) => ({
+  text: t(`periodoncia.symptoms.${i + 1}` as any),
+  icon,
+}));
+const gingivitisSigns = [ICON.swelling, ICON.brushing, ICON.hardFood].map((icon, i) => ({
+  text: t(`periodoncia.gingivitis.symptoms.list.${i + 1}` as any),
+  icon,
+}));
+
+// ---------------------------------------------------------------------------
+// Three-stage cross-section (healthy → gingivitis → periodontitis), 160×220.
+// ---------------------------------------------------------------------------
+const PREMOLAR =
+  'M54 28C54 16 66 10 80 10s26 6 26 18c0 24-2 46-6 64-2 38-10 86-16 110-1.2 4-2.8 6-4 6s-2.8-2-4-6c-6-24-14-72-16-110-4-18-6-40-6-64Z';
+const PULP_P = 'M76 40c0-5 8-5 8 0v40c0 40-2 76-4 104-2-28-4-64-4-104Z';
+const TARTAR = '#A88A5C';
+const bone = (c: number) => `M0 ${c + 12}C30 ${c + 7} 50 ${c} 80 ${c}S130 ${c + 7} 160 ${c + 12}V220H0Z`;
+
+const stages = [
+  {
+    label: copy.healthy,
+    note: copy.notes[0],
+    gum: 'M0 104C22 102 40 92 52 88C55 87 57 86 60 86H100C103 86 105 87 108 88C120 92 138 102 160 104V170H0Z',
+    gumFill: '#FFE4E8',
+    crest: 106,
+    from: [58.6, 86],
+    tip: [59.4, 92],
+    tartar: [] as number[][],
+    pockets: [] as string[],
+    bleed: false,
+  },
+  {
+    label: t('periodoncia.gingivitis.badge'),
+    note: copy.notes[1],
+    gum: 'M0 96C18 92 30 70 46 72C54 73 58 76 60 80H100C102 76 106 73 114 72C130 70 142 92 160 96V170H0Z',
+    gumFill: '#FFC2CC',
+    crest: 106,
+    from: [56, 80],
+    tip: [59.4, 96],
+    tartar: [[57.4, 75, 2.4], [102.6, 75, 2.2]],
+    pockets: [],
+    bleed: true,
+  },
+  {
+    label: t('periodoncia.periodontitis.badge'),
+    note: copy.notes[2],
+    gum: 'M0 120C22 118 40 108 52 104C56 102 58 101 61 100H99C102 101 104 102 108 104C120 108 138 118 160 120V200H0Z',
+    gumFill: '#FFD3DA',
+    crest: 156,
+    from: [55.9, 100],
+    tip: [64.5, 150],
+    tartar: [[62.6, 118, 2.6], [63.6, 131, 2.2], [97.6, 122, 2.4], [96.4, 137, 2]],
+    pockets: ['M61 100C62 116 63.5 134 66 150H61C58.5 134 57 116 56 100Z', 'M99 100C98 116 96.5 134 94 150H99C101.5 134 103 116 104 100Z'],
+    bleed: false,
+  },
+];
+const legend = [
+  { label: copy.legend[0], swatch: 'bg-[#FFC2CC]' },
+  { label: copy.legend[1], swatch: 'bg-[#E6D8C6]' },
+  { label: copy.legend[2], swatch: 'bg-[#A88A5C]' },
 ];
 
-const faqs = [
-  {
-    question: t('periodoncia.faq.q1.q'),
-    answer: t('periodoncia.faq.q1.a')
-  },
-  {
-    question: t('periodoncia.faq.q2.q'),
-    answer: t('periodoncia.faq.q2.a')
-  },
-  {
-    question: t('periodoncia.faq.q3.q'),
-    answer: t('periodoncia.faq.q3.a')
-  },
-  {
-    question: t('periodoncia.faq.q4.q'),
-    answer: t('periodoncia.faq.q4.a')
-  },
-  {
-    question: t('periodoncia.faq.q5.q'),
-    answer: t('periodoncia.faq.q5.a')
-  }
+const hygienists = [
+  { name: 'Blaneirys Peña', image: '/equipo/blaneirys.jpg' },
+  { name: 'Minerva Aznar', image: '/equipo/minerva.jpg' },
 ];
 
-const slug = lang === 'es' ? '/periodoncia' : `/${lang}/periodoncia`;
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`periodoncia.faq.q${n}.q` as any),
+  answer: t(`periodoncia.faq.q${n}.a` as any),
+}));
+
+const url = absoluteUrl(pathFor('periodoncia', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('periodoncia.meta.title'),
-      "description": t('periodoncia.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.periodoncia'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('periodoncia.meta.title'),
+  description: t('periodoncia.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    // Scaling and root planing is non-surgical periodontal therapy: no MedicalProcedureType value fits.
+    '@type': 'TherapeuticProcedure',
+    name: t('nav.treatments.periodoncia'),
+    bodyLocation: 'Gums and alveolar bone',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('periodoncia.meta.title')} description={t('periodoncia.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-white overflow-hidden">
-       <!-- Subtle wave background -->
-       <div class="absolute inset-0 z-0 opacity-5 pointer-events-none">
-          <svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-             <path d="M0,500 C250,400 250,600 500,500 C750,400 750,600 1000,500" stroke="#00C4CC" stroke-width="2" fill="none" />
-             <path d="M0,550 C250,450 250,650 500,550 C750,450 750,650 1000,550" stroke="#00C4CC" stroke-width="1" fill="none" />
-          </svg>
-       </div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-accent rounded-full text-[10px] font-black tracking-widest uppercase mb-8 border border-blue-100">
-                   {t('periodoncia.hero.badge')}
+
+  <main id="main">
+    <PageHero
+      badge={t('periodoncia.hero.badge')}
+      title={t('nav.treatments.periodoncia')}
+      accent={t('hero.in.vera')}
+      subtitle={t('periodoncia.hero.desc')}
+      breadcrumbs={[{ label: t('nav.treatments.periodoncia') }]}
+      illustration="periodoncia"
+      illustrationTitle={t('periodoncia.hero.image.alt')}
+      highlights={[plain(t('periodoncia.hero.analysis')), plain(t('periodoncia.hero.methods')), t('periodoncia.hero.image.badge')]}
+    />
+
+    <!-- Healthy gums, stable smile: stages of gum disease -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <div class="lg:sticky lg:top-32">
+              <SectionHeading eyebrow={copy.eyebrow} title={t('periodoncia.hero.title')} accent={t('periodoncia.hero.title.span')} description={copy.lead} />
+
+              <figure class="relative mt-10 rounded-[2rem] bg-sand p-8 md:p-9" data-reveal style="--d:.1s">
+                <svg class="absolute -top-5 left-8 h-10 w-12 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+                <blockquote class="font-display text-xl italic leading-relaxed text-ocean-900 md:text-[1.4rem]">
+                  {unquote(t('periodoncia.hero.image.quote'))}
+                </blockquote>
+                <figcaption class="mt-6 flex items-center gap-4 text-sm">
+                  <span class="flex -space-x-3">
+                    {hygienists.map((h) => (
+                      <img src={h.image} alt={`${h.name}, ${t('role.hygienist')}`} width="52" height="52" class="h-13 w-13 rounded-full object-cover ring-[3px] ring-sand" loading="lazy" decoding="async" />
+                    ))}
+                  </span>
+                  <span>
+                    <span class="block font-semibold text-ocean-900">{hygienists.map((h) => h.name).join(' · ')}</span>
+                    <span class="block text-slate-500">{t('periodoncia.hero.image.badge')}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7" data-reveal="right">
+            <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-aqua-pale/50 to-sand p-5 ring-1 ring-ocean-900/5 sm:p-8 md:p-10">
+              <ol class="relative grid grid-cols-3 gap-3 sm:gap-6">
+                {stages.map((s, i) => (
+                  <li class="relative text-center">
+                    <div class="overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-soft)] ring-1 ring-ocean-900/5">
+                      <svg viewBox="0 0 160 220" class="block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d={s.gum} fill={s.gumFill} />
+                        <path d={bone(s.crest)} fill="#E6D8C6" />
+                        {[[18, 32, 4], [42, 54, 3], [120, 36, 3.5], [142, 60, 4], [24, 76, 2.6]].map(([x, dy, r]) => (
+                          <ellipse cx={x} cy={s.crest + dy} rx={r} ry={r * 0.72} fill="#F3ECE3" />
+                        ))}
+                        <path d={PREMOLAR} fill="#ffffff" />
+                        <path d={PULP_P} fill="#FFE4E8" />
+                        <path d={PREMOLAR} stroke="#0A1F33" stroke-width="2.2" />
+                        <path d="M60 92c12 4 28 4 40 0" stroke="#0A1F33" stroke-opacity=".18" stroke-width="1.4" stroke-dasharray="2 3" />
+                        {s.pockets.map((d) => <path d={d} fill="#0A1F33" fill-opacity=".55" />)}
+                        {s.tartar.map(([x, y, r]) => <circle cx={x} cy={y} r={r} fill={TARTAR} />)}
+                        {s.bleed && (
+                          <>
+                            <path d="M44 56c2.4 3 3.6 5 3.6 6.6a3.6 3.6 0 0 1-7.2 0c0-1.6 1.2-3.6 3.6-6.6Z" fill="#F2617A" />
+                            <circle cx="52" cy="72" r="2" fill="#F2617A" />
+                            <circle cx="110" cy="68" r="2.4" fill="#F2617A" />
+                          </>
+                        )}
+                        <path d={`M36 0L${s.tip[0]} ${s.tip[1]}`} stroke="#143B5C" stroke-width="2.4" />
+                        <path d={`M${s.from[0]} ${s.from[1]}L${s.tip[0]} ${s.tip[1]}`} stroke="#F2617A" stroke-width="3.2" />
+                      </svg>
+                    </div>
+                    <p class="mt-4 text-[13px] font-semibold leading-snug text-ocean-900 sm:text-[15px]">{s.label}</p>
+                    <p class="mt-1 text-xs leading-snug text-slate-500 sm:text-sm">{s.note}</p>
+                    {i < stages.length - 1 && (
+                      <span class="absolute right-[-22px] top-[38%] z-10 hidden h-8 w-8 items-center justify-center rounded-full bg-white text-accent shadow-[var(--shadow-soft)] ring-1 ring-accent/20 sm:flex" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+              <ul class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-ocean-900/[0.07] pt-6 text-[13px] text-slate-600">
+                {legend.map((l) => (
+                  <li class="flex items-center gap-2"><span class:list={['h-3 w-3 rounded-full ring-1 ring-ocean-900/10', l.swatch]}></span>{l.label}</li>
+                ))}
+                <li class="flex items-center gap-2">
+                  <svg width="22" height="8" viewBox="0 0 22 8" aria-hidden="true"><path d="M1 4h12" stroke="#143B5C" stroke-width="2.2" stroke-linecap="round" /><path d="M13 4h8" stroke="#F2617A" stroke-width="2.8" stroke-linecap="round" /></svg>
+                  {copy.legend[3]}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phase 1: gingivitis -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={92} color="coral" class="pointer-events-none absolute -left-16 -bottom-4 h-[190px] w-auto opacity-[0.09]" />
+      <div class="container-k relative">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('periodoncia.gingivitis.badge')} title={gingivitisTitle} accent={gingivitisAccent} />
+            <p class="mt-6 text-lg leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-ocean-900" data-reveal style="--d:.1s" set:html={t('periodoncia.gingivitis.desc')} />
+
+            <div class="mt-10 flex items-center gap-6" data-reveal style="--d:.15s">
+              <div class="relative h-32 w-32 shrink-0">
+                <svg viewBox="0 0 120 120" class="draw h-full w-full" fill="none" aria-hidden="true">
+                  <circle cx="60" cy="60" r="50" stroke="#0A1F33" stroke-opacity=".08" stroke-width="10" />
+                  <path pathLength="1" d="M60 10A50 50 0 1 1 30.61 100.45" stroke="#F2617A" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <span class="font-display tabular absolute inset-0 flex items-center justify-center text-[2rem] text-ocean-900" data-count="60" data-suffix="%">60%</span>
+              </div>
+              <p class="max-w-[16rem] text-[15px] leading-relaxed text-slate-600">{copy.stat}</p>
+            </div>
+          </div>
+
+          <div class="space-y-5 lg:col-span-6">
+            <div class="rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-card)] md:p-9" data-reveal>
+              <h3 class="font-sans text-xl font-semibold tracking-tight">{t('periodoncia.gingivitis.symptoms.title')}</h3>
+              <ul class="mt-6 space-y-4">
+                {gingivitisSigns.map((s) => (
+                  <li class="flex items-center gap-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-coral-pale text-ocean-900">
+                      <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        {s.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                      </svg>
+                    </span>
+                    <span class="text-slate-700">{s.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div class="relative isolate flex flex-col gap-5 overflow-hidden rounded-[1.75rem] bg-accent p-7 sm:flex-row text-white shadow-[0_24px_50px_-20px_rgba(11,124,134,0.6)] md:p-9" data-reveal style="--d:.1s">
+              <CoralBranch seed={97} depth={4} color="white" class="pointer-events-none absolute -bottom-4 right-2 -z-10 h-[140px] w-auto opacity-[0.12]" />
+              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {ICON.cleaning.map((g) => <path d={g.d} {...glyph(g, '#FFE4E8')} />)}
+                </svg>
+              </span>
+              <div>
+                <h3 class="font-display text-2xl text-white">{t('periodoncia.gingivitis.solution.title')}</h3>
+                <p class="mt-2 leading-relaxed text-white/85">{t('periodoncia.gingivitis.solution.desc')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Phase 2: periodontitis -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={71} />
+        <svg class="absolute inset-0 h-full w-full opacity-[0.07]"><defs><pattern id="perio-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#8FE3EA" stroke-width=".6" /></pattern></defs><rect width="100%" height="100%" fill="url(#perio-grid)" /></svg>
+        <CoralBranch seed={88} color="duo" class="absolute -left-10 bottom-24 h-[230px] w-auto opacity-20" />
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('periodoncia.periodontitis.badge')} title={t('periodoncia.periodontitis.title')} tone="dark" />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-white/70 [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.1s">
+              <p set:html={t('periodoncia.periodontitis.desc.1')} />
+              <p>{t('periodoncia.periodontitis.desc.2')}</p>
+            </div>
+
+            <div class="mt-10 flex gap-5 rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-md md:p-7" data-reveal style="--d:.15s">
+              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-accent">
+                <svg width="32" height="32" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {ICON.scaling.map((g) => <path d={g.d} {...glyph(g)} />)}
+                </svg>
+              </span>
+              <div>
+                <h3 class="font-sans text-lg font-semibold tracking-tight text-white">{t('periodoncia.periodontitis.treatment.title').replace(/\s*:\s*$/, '')}</h3>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-white/70 [&_strong]:font-semibold [&_strong]:text-white" set:html={t('periodoncia.periodontitis.treatment.desc')} />
+              </div>
+            </div>
+
+            <p class="mt-8 text-[15px] leading-relaxed text-white/65" data-reveal style="--d:.2s">
+              {copy.links[0]}<a href={pathFor('implantes', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{inline(t('nav.treatments.implantes'))}</a>{copy.links[1]}<a href={pathFor('cirugia', lang)} class="font-semibold text-aqua-soft underline decoration-aqua/30 underline-offset-4 hover:decoration-aqua">{inline(t('nav.treatments.cirugia'))}</a>{copy.links[2]}
+            </p>
+          </div>
+
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="relative rounded-[2rem] bg-white p-8 pt-14 text-ocean-900 shadow-[var(--shadow-premium)] md:p-10 md:pt-16">
+              <span class="absolute -top-8 left-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-white shadow-[0_18px_40px_-14px_rgba(11,124,134,0.7)] md:left-10">
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d={CROWN} />
+                  <path d="M5 25c3.6-2.6 7-3 11-1 2.6 1.3 5.3 2 8 2s5.4-.7 8-2c4-2 7.4-1.6 11 1" />
+                  <path d="M40 4 30.4 30" stroke="#FFC2CC" stroke-width="2.4" />
+                  <path d="M33.6 21.4l2.4.9M35.4 16.6l2.4.9" stroke="#FFC2CC" />
+                </svg>
+              </span>
+              <h3 class="text-2xl md:text-3xl">{t('periodoncia.periodontitis.special_attention.title')}</h3>
+              <ul class="mt-8 grid gap-4 sm:grid-cols-2">
+                {symptoms.map((s) => (
+                  <li class="flex items-center gap-4 rounded-2xl bg-sand p-4">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-accent ring-1 ring-ocean-900/5">
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        {s.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                      </svg>
+                    </span>
+                    <span class="font-semibold leading-snug text-ocean-900">{s.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <div class="mt-8 flex items-center gap-4 border-t border-ocean-900/[0.07] pt-7">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-coral-pale text-coral-deep">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    {ICON.care.map((g) => <path d={g.d} {...glyph(g, '#0B7C86')} />)}
+                  </svg>
                 </span>
-                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
-                   {t('periodoncia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('periodoncia.hero.title.span')}</span>
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-10">
-                   {t('periodoncia.hero.desc')}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-6">
-                   <div class="flex items-center gap-3">
-                      <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-accent border border-slate-100"><Microscope size={24} /></div>
-                      <p class="text-[10px] font-black uppercase tracking-widest leading-tight text-primary" set:html={t('periodoncia.hero.analysis')}></p>
-                   </div>
-                   <div class="flex items-center gap-3">
-                      <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-accent border border-slate-100"><ShieldCheck size={24} /></div>
-                      <p class="text-[10px] font-black uppercase tracking-widest leading-tight text-primary" set:html={t('periodoncia.hero.methods')}></p>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="relative fade-up" style="transition-delay: 0.2s">
-                <div class="aspect-square bg-slate-50 rounded-[4rem] border border-slate-100 shadow-2xl overflow-hidden relative group">
-                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt={t('periodoncia.hero.image.alt')} class="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-105" />
-                   <!-- Floating Badge -->
-                   <div class="absolute top-10 right-10 bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl max-w-xs">
-                      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">{t('periodoncia.hero.image.badge')}</p>
-                      <p class="text-primary font-black italic">{t('periodoncia.hero.image.quote')}</p>
-                   </div>
-                </div>
-             </div>
+                <p class="font-semibold text-ocean-900">{t('periodoncia.periodontitis.special_attention.note')}</p>
+              </div>
+            </div>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Gingivitis Section -->
-    <section class="py-24 bg-slate-50 overflow-hidden relative">
-       <div class="container mx-auto px-6">
-          <div class="max-w-4xl mx-auto rounded-[3.5rem] bg-white border border-slate-100 p-12 md:p-20 shadow-xl relative text-center">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-6">{t('periodoncia.gingivitis.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight" set:html={t('periodoncia.gingivitis.title')}></h3>
-             <p class="text-lg text-slate-500 max-w-2xl mx-auto mb-12" set:html={t('periodoncia.gingivitis.desc')}>
-             </p>
-             
-             <div class="grid md:grid-cols-2 gap-8 text-left">
-                <div class="p-8 bg-blue-50/50 rounded-3xl border border-blue-100">
-                   <h4 class="font-black text-primary mb-4 flex items-center gap-2">
-                      <AlertCircle size={20} class="text-red-500" /> {t('periodoncia.gingivitis.symptoms.title')}
-                   </h4>
-                   <ul class="space-y-2 text-sm text-slate-600">
-                      <li>• {t('periodoncia.gingivitis.symptoms.list.1')}</li>
-                      <li>• {t('periodoncia.gingivitis.symptoms.list.2')}</li>
-                      <li>• {t('periodoncia.gingivitis.symptoms.list.3')}</li>
-                   </ul>
-                </div>
-                <div class="p-8 bg-accent/5 rounded-3xl border border-accent/10">
-                   <h4 class="font-black text-primary mb-4 flex items-center gap-2">
-                      <Zap size={20} class="text-accent" /> {t('periodoncia.gingivitis.solution.title')}
-                   </h4>
-                   <p class="text-sm text-slate-600 leading-relaxed">
-                      {t('periodoncia.gingivitis.solution.desc')}
-                   </p>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
+    <div class="bg-white py-10 md:py-14">
+      <CtaBand />
+    </div>
 
-    <!-- Periodontitis Section -->
-    <section class="py-24 bg-primary text-white overflow-hidden relative">
-       <div class="absolute inset-0 opacity-10 pointer-events-none">
-          <svg width="100%" height="100%"><pattern id="gridLarge" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M 80 0 L 0 0 0 80" fill="none" stroke="white" stroke-width="0.5"/></pattern><rect width="100%" height="100%" fill="url(#gridLarge)"/></svg>
-       </div>
+    <FaqSection eyebrow={t('periodoncia.faq.badge')} title={t('periodoncia.faq.title')} faqs={faqs} />
 
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-20 items-center">
-             <div class="fade-up">
-                <h2 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('periodoncia.periodontitis.badge')}</h2>
-                <h3 class="text-4xl md:text-6xl font-black mb-10 leading-tight text-white">{t('periodoncia.periodontitis.title')}</h3>
-                <div class="space-y-6 text-slate-300 text-lg leading-relaxed">
-                   <p set:html={t('periodoncia.periodontitis.desc.1')}>
-                   </p>
-                   <p>
-                      {t('periodoncia.periodontitis.desc.2')}
-                   </p>
-                   <div class="bg-white/5 p-8 rounded-3xl border border-white/10 mt-12">
-                      <h4 class="text-white font-black text-xl mb-4 italic">{t('periodoncia.periodontitis.treatment.title')}</h4>
-                      <p class="text-sm" set:html={t('periodoncia.periodontitis.treatment.desc')}></p>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="fade-up" style="transition-delay: 0.2s">
-                <div class="bg-white p-12 md:p-16 rounded-[4rem] shadow-3xl text-primary relative">
-                   <div class="absolute -top-10 left-12 w-20 h-20 bg-accent rounded-3xl flex items-center justify-center text-white shadow-xl shadow-accent/20">
-                      <Stethoscope size={40} />
-                   </div>
-                   <h4 class="text-3xl font-black mb-8 italic">{t('periodoncia.periodontitis.special_attention.title')}</h4>
-                   <div class="space-y-8">
-                      {symptoms.map(symptom => (
-                         <div class="flex items-center gap-6 group">
-                            <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
-                               <symptom.icon size={24} />
-                            </div>
-                            <span class="font-bold text-lg text-slate-700">{symptom.text}</span>
-                         </div>
-                      ))}
-                   </div>
-                   <p class="mt-12 text-xs text-slate-400 font-bold uppercase tracking-widest border-t border-slate-100 pt-8">
-                      {t('periodoncia.periodontitis.special_attention.note')}
-                   </p>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
+    <RelatedTreatments current="periodoncia" />
 
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('periodoncia.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('periodoncia.faq.title')}</h3>
-          </div>
-
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
-
-    <!-- Final CTA -->
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

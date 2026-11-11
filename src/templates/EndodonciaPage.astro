@@ -3,302 +3,574 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  Microscope, 
-  Activity, 
-  ShieldCheck, 
-  Zap, 
-  Search, 
-  CheckCircle2, 
-  HelpCircle, 
-  AlertTriangle,
-  FileText,
-  MousePointer2
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const steps = [
+// Page-only UI strings (diagram labels, link sentences).
+const copy = ({
+  es: {
+    painless: 'Sin dolor',
+    tech: ['Microscopio dental', 'Tomografía 3D (CBCT)'],
+    figure: 'Anatomía de un diente con la pulpa infectada',
+    parts: ['Esmalte', 'Dentina', 'Pulpa (nervio)', 'Conductos radiculares', 'Infección en la punta de la raíz'],
+    causes: '¿Cuándo hace falta una endodoncia?',
+    afterTitle: 'Después: un diente que vuelve a ser fuerte',
+    after: [
+      'Tras la endodoncia reforzamos el diente con una reconstrucción o una corona, dentro de nuestra ',
+      '. Y si una pieza ya no puede salvarse, te explicamos con honestidad las alternativas, como los ',
+      '.',
+    ],
+  },
+  en: {
+    painless: 'Pain-free',
+    tech: ['Dental microscope', '3D CBCT scan'],
+    figure: 'Anatomy of a tooth with an infected pulp',
+    parts: ['Enamel', 'Dentine', 'Pulp (nerve)', 'Root canals', 'Infection at the root tip'],
+    causes: 'When is a root canal needed?',
+    afterTitle: 'Afterwards: a strong tooth again',
+    after: [
+      'After the root canal we strengthen the tooth with a build-up or a crown, as part of ',
+      '. And if a tooth can no longer be saved, we will honestly explain the alternatives, such as ',
+      '.',
+    ],
+  },
+  de: {
+    painless: 'Schmerzfrei',
+    tech: ['Dentalmikroskop', '3D-Röntgen (DVT)'],
+    figure: 'Anatomie eines Zahns mit entzündeter Pulpa',
+    parts: ['Zahnschmelz', 'Dentin', 'Pulpa (Nerv)', 'Wurzelkanäle', 'Entzündung an der Wurzelspitze'],
+    causes: 'Wann ist eine Wurzelbehandlung nötig?',
+    afterTitle: 'Danach: ein wieder belastbarer Zahn',
+    after: [
+      'Nach der Wurzelbehandlung stärken wir den Zahn mit einem Aufbau oder einer Krone (siehe ',
+      '). Lässt sich ein Zahn nicht mehr retten, erklären wir Ihnen ehrlich die Alternativen, zum Beispiel ',
+      '.',
+    ],
+  },
+  nl: {
+    painless: 'Pijnloos',
+    tech: ['Tandheelkundige microscoop', '3D-CBCT-scan'],
+    figure: 'Anatomie van een tand met een ontstoken pulpa',
+    parts: ['Glazuur', 'Dentine', 'Pulpa (zenuw)', 'Wortelkanalen', 'Ontsteking aan de wortelpunt'],
+    causes: 'Wanneer is een wortelkanaalbehandeling nodig?',
+    afterTitle: 'Daarna: een tand die weer sterk is',
+    after: [
+      'Na de wortelkanaalbehandeling versterken we de tand met een opbouw of een kroon, als onderdeel van ',
+      '. En kan een tand niet meer worden gered, dan leggen we u eerlijk de alternatieven uit, zoals ',
+      '.',
+    ],
+  },
+  fr: {
+    painless: 'Sans douleur',
+    tech: ['Microscope dentaire', 'Scanner 3D (CBCT)'],
+    figure: 'Anatomie d’une dent dont la pulpe est infectée',
+    parts: ['Émail', 'Dentine', 'Pulpe (nerf)', 'Canaux radiculaires', 'Infection à la pointe de la racine'],
+    causes: 'Quand faut-il un traitement de canal ?',
+    afterTitle: 'Ensuite : une dent à nouveau solide',
+    after: [
+      'Après le traitement de canal, nous renforçons la dent par une reconstruction ou une couronne, dans le cadre de la ',
+      '. Et si une dent ne peut plus être sauvée, nous vous expliquons honnêtement les alternatives, comme les ',
+      '.',
+    ],
+  },
+} as const)[lang];
+
+/** Treatment names used mid-sentence (German nouns keep their capital). */
+const inline = (s: string) => (lang === 'de' ? s : s.charAt(0).toLowerCase() + s.slice(1));
+
+// ---------------------------------------------------------------------------
+// Line icons (48×48 grid). `coral` strokes carry the accent, `fill` paints it.
+// ---------------------------------------------------------------------------
+type Glyph = { d: string; coral?: boolean; fill?: boolean; faint?: boolean; dash?: boolean; tf?: string };
+const CORAL = '#F2617A';
+const glyph = (g: Glyph) => ({
+  stroke: g.coral ? CORAL : undefined,
+  fill: g.fill ? (g.coral ? CORAL : 'currentColor') : undefined,
+  'stroke-opacity': g.faint ? 0.35 : undefined,
+  'stroke-dasharray': g.dash ? '2 2.6' : undefined,
+  transform: g.tf,
+  'vector-effect': g.tf ? 'non-scaling-stroke' : undefined,
+});
+const TOOTH =
+  'M16 7c-4.4 0-8 3.4-8 8.6 0 5 2.6 7.9 3.6 13.4.9 5 1.5 11 5 11 3.2 0 3.3-5.6 4.6-9.6.6-1.9 1.6-2.9 2.8-2.9s2.2 1 2.8 2.9c1.3 4 1.4 9.6 4.6 9.6 3.5 0 4.1-6 5-11 1-5.5 3.6-8.4 3.6-13.4C40 10.4 36.4 7 32 7c-3.4 0-5 1.8-8 1.8S19.4 7 16 7Z';
+const CHAMBER = 'M18.5 15.6c3-2 8-2 11 0';
+const CANALS = 'M20.4 18.5c1 5.6 1 11.4-.8 18.6M27.6 18.5c-1 5.6-1 11.4.8 18.6';
+
+const causes: { title: string; desc: string; icon: Glyph[]; link?: { href: string; label: string } }[] = [
   {
-    num: '01',
-    title: t('endodoncia.step1.title'),
-    desc: t('endodoncia.step1.desc'),
-    icon: Search
+    title: t('endodoncia.why.c1.title'),
+    desc: t('endodoncia.why.c1.desc'),
+    icon: [
+      { d: TOOTH },
+      { d: `${CHAMBER}${CANALS}`, faint: true },
+      { d: 'M27.2 8.9c2.5-.7 4.9.7 5.1 2.9.2 2-1.5 3.5-3.5 3.4-2-.2-3.2-1.8-2.9-3.5.2-1.3.5-2.5 1.3-2.8Z', coral: true, fill: true },
+      { d: 'M27.4 15.6 25.6 18', coral: true },
+    ],
   },
   {
-    num: '02',
-    title: t('endodoncia.step2.title'),
-    desc: t('endodoncia.step2.desc'),
-    icon: Zap
+    title: t('endodoncia.why.c2.title'),
+    desc: t('endodoncia.why.c2.desc'),
+    icon: [
+      { d: TOOTH },
+      { d: 'M14.5 9.5l4.6 4.8-3.2 3.4 4.6 4.4', coral: true },
+      { d: 'M5.5 4.5 8 7M3 10.5h3.5M11 1.8v3.4', coral: true },
+    ],
   },
   {
-    num: '03',
-    title: t('endodoncia.step3.title'),
-    desc: t('endodoncia.step3.desc'),
-    icon: Activity
+    title: t('endodoncia.why.c3.title'),
+    desc: t('endodoncia.why.c3.desc'),
+    icon: [
+      { d: TOOTH },
+      { d: CANALS, faint: true },
+      { d: 'M12.6 41.6a4 4 0 1 0 8 0 4 4 0 1 0-8 0', coral: true, fill: true },
+      { d: 'M9.6 41.6a7 7 0 1 0 14 0 7 7 0 1 0-14 0', coral: true, dash: true },
+    ],
+    link: { href: pathFor('periodoncia', lang), label: t('nav.treatments.periodoncia') },
   },
-  {
-    num: '04',
-    title: t('endodoncia.step4.title'),
-    desc: t('endodoncia.step4.desc'),
-    icon: Microscope
-  },
-  {
-    num: '05',
-    title: t('endodoncia.step5.title'),
-    desc: t('endodoncia.step5.desc'),
-    icon: CheckCircle2
-  }
 ];
 
-const faqs = [
-  {
-    question: t('endodoncia.faq.q1.q'),
-    answer: t('endodoncia.faq.q1.a')
-  },
-  {
-    question: t('endodoncia.faq.q2.q'),
-    answer: t('endodoncia.faq.q2.a')
-  },
-  {
-    question: t('endodoncia.faq.q3.q'),
-    answer: t('endodoncia.faq.q3.a')
-  },
-  {
-    question: t('endodoncia.faq.q4.q'),
-    answer: t('endodoncia.faq.q4.a')
-  },
-  {
-    question: t('endodoncia.faq.q5.q'),
-    answer: t('endodoncia.faq.q5.a')
-  }
+const failIcons: Glyph[][] = [
+  [{ d: TOOTH }, { d: CHAMBER }, { d: 'M20.4 18.5c1 5.6 1 11.4-.8 18.6' }, { d: 'M27.6 18.5c-1 5.6-1 11.4.8 18.6', coral: true, dash: true }],
+  [
+    { d: TOOTH },
+    { d: 'M17.5 13.2h13', faint: true },
+    { d: 'M34 6.6 27.4 14', coral: true, dash: true },
+    { d: 'M32.2 4.4a1.7 1.7 0 1 0 3.4 0 1.7 1.7 0 1 0-3.4 0M37 8.6a1.3 1.3 0 1 0 2.6 0 1.3 1.3 0 1 0-2.6 0M39.4 3.2a1 1 0 1 0 2 0 1 1 0 1 0-2 0', coral: true, fill: true },
+  ],
+  [
+    { d: 'M24 5 40 14v20L24 43 8 34V14Z' },
+    { d: 'M8 14l16 9 16-9M24 23v20', faint: true },
+    { d: 'M19 17c4 4 1 9 4 13s1 7 1 9', coral: true },
+  ],
+];
+const techIcons: Glyph[][] = [
+  [
+    { d: 'M34 43V8M26 43h16M34 10H24' },
+    { d: 'M14 10h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z' },
+    { d: 'M13 11 8.5 5.5M17 10l-3.6-6' },
+    { d: 'M16 20v4h4v-4' },
+    { d: 'M16.5 26 13 36M19.5 26 23 36', coral: true, faint: true },
+    { d: 'M16.4 38.6a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0', coral: true, fill: true },
+  ],
+  [
+    { d: TOOTH, tf: 'translate(9.6 9.4) scale(.6)' },
+    { d: 'M4 24c0-4 9-7 20-7s20 3 20 7-9 7-20 7c-6 0-11.4-.9-15-2.4', coral: true },
+    { d: 'M7.6 25.6 9 28.6l-3.4 1', coral: true },
+  ],
+];
+const tech = techIcons.map((icon, i) => ({ label: copy.tech[i], icon }));
+const fails = [1, 2, 3].map((n, i) => ({ text: t(`endodoncia.reendo.fail.${n}` as any), icon: failIcons[i] }));
+
+// ---------------------------------------------------------------------------
+// Large tooth (molar section) on a 120×172 grid for the diagram and the steps.
+// ---------------------------------------------------------------------------
+const MOLAR =
+  'M30 18C18 18 10 28 10 42c0 14 6 22 10 34 4 14 4 36 8 56 2 12 6 18 12 18 7 0 9-10 11-22s4-24 9-24 7 12 9 24 4 22 11 22c6 0 10-6 12-18 4-20 4-42 8-56 4-12 10-20 10-34 0-14-8-24-20-24-10 0-18 5-30 5S40 18 30 18Z';
+const ENAMEL =
+  'M20 76C16 64 10 56 10 42 10 28 18 18 30 18c10 0 18 5 30 5s20-5 30-5c12 0 20 10 20 24 0 14-6 22-10 34l-2-2c3-10 5-18 5-30 0-11-7-18-15-18-10 0-18 4-28 4s-18-4-28-4c-8 0-15 7-15 18 0 12 2 20 5 30Z';
+const DEJ = 'M22 74C19 64 17 56 17 44c0-11 7-18 15-18 10 0 18 4 28 4s18-4 28-4c8 0 15 7 15 18 0 12-2 20-5 30';
+const PULP =
+  'M42 52c0-6 8-8 18-6 10-2 18 0 18 6v16c0 6-2 9-3 14-2 12-1 36 5 64h-3c-6-26-9-46-9-56 0-8-3-12-8-12s-8 4-8 12c0 10-3 30-9 56h-3c6-28 7-52 5-64-1-5-3-8-3-14Z';
+const CANAL_L = 'M47 74C46 96 45 120 41.5 146';
+const CANAL_R = 'M73 74C74 96 75 120 78.5 146';
+const ACCESS = 'M46 20 50 48h20l4-28Z';
+const DROP = 'M0-6c2.4 3 3.6 5 3.6 6.6a3.6 3.6 0 0 1-7.2 0C-3.6-1-2.4-3 0-6Z';
+
+const steps = (['scan', 'numb', 'access', 'files', 'seal'] as const).map((key, i) => ({
+  key,
+  title: t(`endodoncia.step${i + 1}.title` as any),
+  desc: t(`endodoncia.step${i + 1}.desc` as any),
+}));
+
+// Diagram call-outs: [marker x, marker y, target x, target y] in the 360×400 figure.
+const callouts: [number, number, number, number][] = [
+  [30, 62, 126, 62],
+  [330, 112, 238, 112],
+  [30, 126, 165, 126],
+  [330, 220, 206, 220],
+  [30, 300, 128, 300],
 ];
 
-const slug = lang === 'es' ? '/endodoncia' : `/${lang}/endodoncia`;
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`endodoncia.faq.q${n}.q` as any),
+  answer: t(`endodoncia.faq.q${n}.a` as any),
+}));
+
+const url = absoluteUrl(pathFor('endodoncia', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('endodoncia.meta.title'),
-      "description": t('endodoncia.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.endodoncia'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('endodoncia.meta.title'),
+  description: t('endodoncia.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    // Root canal therapy is non-surgical: none of the MedicalProcedureType values fits.
+    '@type': 'TherapeuticProcedure',
+    name: t('nav.treatments.endodoncia'),
+    bodyLocation: 'Tooth pulp and root canals',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('endodoncia.meta.title')} description={t('endodoncia.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-[#F8FAFC] overflow-hidden">
-       <div class="absolute top-0 right-0 w-1/3 h-full bg-accent/5 -skew-x-12 translate-x-20 pointer-events-none"></div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full mb-8 shadow-sm">
-                   <Microscope size={16} class="text-accent" />
-                   <span class="text-xs font-black uppercase tracking-widest text-primary">{t('endodoncia.hero.badge')}</span>
-                </div>
-                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
-                   {t('endodoncia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('endodoncia.hero.title.italic')}</span>
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed max-w-xl">
-                   {t('endodoncia.hero.subtitle')}
-                </p>
-             </div>
-             
-             <div class="fade-up" style="transition-delay: 0.2s">
-                <div class="relative group">
-                   <div class="absolute -inset-4 bg-accent/10 rounded-[3rem] -rotate-2"></div>
-                   <div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl skew-y-1">
-                      <img src="/equipo/angeles-parrar.jpg" alt={t('endodoncia.hero.image.alt')} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                      <div class="absolute bottom-6 left-6 right-6 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20">
-                         <p class="text-primary font-black text-lg">{t('endodoncia.hero.doctor.name')}</p>
-                         <p class="text-accent text-xs font-bold uppercase tracking-widest">{t('endodoncia.hero.doctor.role')}</p>
-                      </div>
-                   </div>
-                </div>
-             </div>
+
+  <main id="main">
+    <PageHero
+      badge={t('endodoncia.hero.badge')}
+      title={t('nav.treatments.endodoncia')}
+      accent={t('hero.in.vera')}
+      subtitle={t('endodoncia.hero.subtitle')}
+      breadcrumbs={[{ label: t('nav.treatments.endodoncia') }]}
+      illustration="endodoncia"
+      illustrationTitle={`${t('endodoncia.hero.title')} ${t('endodoncia.hero.title.italic')}`}
+      highlights={[t('trust.4'), t('trust.3'), copy.painless]}
+    />
+
+    <!-- The key symptom: anatomy + when it is needed -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('endodoncia.symptom.badge')} title={t('endodoncia.symptom.title')} />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-ocean-900" data-reveal style="--d:.1s">
+              <p set:html={t('endodoncia.symptom.p1')} />
+              <p set:html={t('endodoncia.symptom.p2')} />
+            </div>
+            <ul class="mt-10 grid gap-4 sm:grid-cols-2" data-reveal style="--d:.15s">
+              {tech.map((item) => (
+                <li class="flex items-center gap-4 rounded-2xl border border-ocean-900/[0.07] bg-white p-4 shadow-[var(--shadow-soft)]">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-aqua-pale text-accent">
+                    <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      {item.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                    </svg>
+                  </span>
+                  <span class="text-[15px] font-semibold leading-snug text-ocean-900">{item.label}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-       </div>
+
+          <figure class="relative lg:col-span-6" data-reveal="right">
+            <div class="relative overflow-hidden rounded-[2rem] bg-sand px-5 pb-8 pt-7 ring-1 ring-ocean-900/5 sm:px-8 md:px-10">
+              <figcaption class="mb-2 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                <span class="font-display text-base normal-case italic tracking-normal text-coral-deep">Fig. 1</span>
+                {copy.figure}
+              </figcaption>
+              <svg viewBox="0 0 360 400" class="mx-auto block w-full max-w-[380px]" fill="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="endo-fade-x" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#fff" stop-opacity="0" />
+                    <stop offset=".2" stop-color="#fff" />
+                    <stop offset=".8" stop-color="#fff" />
+                    <stop offset="1" stop-color="#fff" stop-opacity="0" />
+                  </linearGradient>
+                  <linearGradient id="endo-fade-y" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#000" stop-opacity="0" />
+                    <stop offset="1" stop-color="#000" />
+                  </linearGradient>
+                  <mask id="endo-fade" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="400">
+                    <rect width="360" height="400" fill="url(#endo-fade-x)" />
+                    <rect y="320" width="360" height="80" fill="url(#endo-fade-y)" />
+                  </mask>
+                </defs>
+                <!-- gum and bone -->
+                <g mask="url(#endo-fade)">
+                <path d="M0 176C44 172 84 158 110 150H250C276 158 316 172 360 176V240H0Z" fill="#FFE4E8" />
+                <path d="M0 176C44 172 84 158 110 150M250 150C276 158 316 172 360 176" stroke="#F2617A" stroke-opacity=".45" stroke-width="1.5" />
+                <path d="M0 198C50 194 90 186 120 184H240C270 186 310 194 360 198V400H0Z" fill="#E6D8C6" fill-opacity=".55" />
+                {[[34, 236, 6], [70, 270, 4], [40, 350, 5], [92, 372, 3.5], [300, 240, 5], [326, 300, 4], [282, 352, 6], [250, 384, 3], [180, 360, 4.5], [214, 386, 3]].map(([x, y, r]) => (
+                  <ellipse cx={x} cy={y} rx={r} ry={r * 0.72} fill="#F3ECE3" />
+                ))}
+                </g>
+
+                <!-- infected tooth -->
+                <g transform="translate(72 22) scale(1.8)">
+                  <path d={MOLAR} fill="#F3ECE3" />
+                  <path d={ENAMEL} fill="#ffffff" />
+                  <path d={PULP} fill="#FFC6D0" />
+                  <path d={PULP} stroke="#F2617A" stroke-width="1.6" vector-effect="non-scaling-stroke" />
+                  <path d={DEJ} stroke="#0B7C86" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 4" vector-effect="non-scaling-stroke" />
+                  <path d={MOLAR} stroke="#0A1F33" stroke-width="2" vector-effect="non-scaling-stroke" />
+                </g>
+                <circle cx="144" cy="300" r="15" fill="#F2617A" fill-opacity=".16" stroke="#F2617A" stroke-width="1.5" stroke-dasharray="3 3" />
+                <circle cx="144" cy="300" r="5" fill="#F2617A" fill-opacity=".55" />
+                <!-- pain signal -->
+                <path d="M280 46c7 7 9 18 3 27M292 38c11 10 14 27 6 41" stroke="#F2617A" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M304 30c15 13 19 36 8 55" stroke="#F2617A" stroke-opacity=".4" stroke-width="1.8" stroke-linecap="round" />
+
+                <!-- call-outs -->
+                {callouts.map(([mx, my, tx, ty], i) => (
+                  <g>
+                    <path d={`M${mx + (mx < 180 ? 12 : -12)} ${my}L${tx} ${ty}`} stroke="#0A1F33" stroke-opacity=".35" />
+                    <circle cx={tx} cy={ty} r="3" fill={i === 4 ? '#C9304A' : '#0A1F33'} />
+                    <circle cx={mx} cy={my} r="12" fill="#ffffff" stroke={i === 4 ? '#F2617A' : '#0B7C86'} stroke-width="1.5" />
+                    <text x={mx} y={my + 4.6} text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="14" fill={i === 4 ? '#C9304A' : '#0B7C86'}>{i + 1}</text>
+                  </g>
+                ))}
+              </svg>
+              <ol class="mt-6 grid gap-x-6 gap-y-2.5 text-sm text-slate-700 sm:grid-cols-2">
+                {copy.parts.map((part, i) => (
+                  <li class="flex items-center gap-3">
+                    <span class:list={['font-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[13px] italic ring-1', i === 4 ? 'text-coral-deep ring-coral/40' : 'text-accent ring-accent/25']}>{i + 1}</span>
+                    {part}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </figure>
+        </div>
+
+        <!-- When it is needed -->
+        <div class="mt-20 md:mt-24">
+          <p class="eyebrow" data-reveal>{copy.causes}</p>
+          <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {causes.map((c, i) => (
+              <div class="surface-card group flex flex-col p-7" data-reveal style={`--d:${i * 0.08}s`}>
+                <span class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                  <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    {c.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                  </svg>
+                </span>
+                <h3 class="font-sans text-xl font-semibold tracking-tight">{c.title}</h3>
+                <p class="mt-2 flex-1 text-[15px] leading-relaxed text-slate-600">{c.desc}</p>
+                {c.link && (
+                  <a href={c.link.href} class="link-u mt-5 inline-flex self-start text-sm font-semibold text-accent">{c.link.label} →</a>
+                )}
+              </div>
+            ))}
+            <div class="relative isolate flex flex-col overflow-hidden rounded-[1.75rem] bg-ocean p-7 text-white shadow-[var(--shadow-elevated)]" data-reveal style="--d:.24s">
+              <CoralBranch seed={61} depth={4} color="duo" sway class="pointer-events-none absolute right-4 top-4 -z-10 h-[92px] w-auto opacity-40" />
+              <span class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-aqua-soft ring-1 ring-white/15">
+                <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M24 5l14 5v11c0 9.5-6 16.5-14 21-8-4.5-14-11.5-14-21V10Z" />
+                  <path d="M24 14.5c3.2 4.2 5 7 5 9.6a5 5 0 0 1-10 0c0-2.6 1.8-5.4 5-9.6Z" stroke="#FF9AAA" />
+                </svg>
+              </span>
+              <h3 class="font-display text-2xl italic text-white">{t('endodoncia.why.c4.title')}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-white/70">{t('endodoncia.why.c4.desc')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Why Endodontics -->
-    <section class="py-24 bg-white">
-       <div class="container mx-auto px-6">
-          <div class="grid lg:grid-cols-2 gap-20 items-center">
-             <div class="fade-up order-2 lg:order-1">
-                <div class="grid sm:grid-cols-2 gap-6">
-                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
-                      <div class="text-accent mb-4"><AlertTriangle size={32} /></div>
-                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c1.title')}</h4>
-                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c1.desc')}</p>
-                   </div>
-                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
-                      <div class="text-accent mb-4"><Activity size={32} /></div>
-                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c2.title')}</h4>
-                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c2.desc')}</p>
-                   </div>
-                   <div class="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:border-accent transition-colors shadow-sm">
-                      <div class="text-accent mb-4"><ShieldCheck size={32} /></div>
-                      <h4 class="font-black text-primary mb-2 uppercase tracking-tighter">{t('endodoncia.why.c3.title')}</h4>
-                      <p class="text-sm text-slate-500 leading-relaxed">{t('endodoncia.why.c3.desc')}</p>
-                   </div>
-                   <div class="p-8 bg-white border-2 border-accent/20 rounded-[2.5rem] shadow-xl shadow-accent/5">
-                      <p class="text-primary font-black text-lg mb-2 italic">{t('endodoncia.why.c4.title')}</p>
-                      <p class="text-sm text-slate-500">{t('endodoncia.why.c4.desc')}</p>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="fade-up order-1 lg:order-2">
-                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6 text-white bg-accent inline-block px-4 py-1 rounded-full">{t('endodoncia.symptom.badge')}</h2>
-                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight">{t('endodoncia.symptom.title')}</h3>
-                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
-                   <p set:html={t('endodoncia.symptom.p1')}></p>
-                   <p set:html={t('endodoncia.symptom.p2')}></p>
-                </div>
-             </div>
+    <!-- Step by step -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={74} color="teal" class="pointer-events-none absolute -right-10 top-10 h-[260px] w-auto opacity-[0.1]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={t('endodoncia.steps.badge')} title={t('endodoncia.steps.title')} align="center" />
+
+        <ol class="mt-16 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+          {steps.map((step, i) => (
+            <li class="relative grid grid-cols-[104px_1fr] items-start gap-5 sm:block" data-reveal style={`--d:${i * 0.1}s`}>
+              <div class="relative flex aspect-[5/6] items-center justify-center rounded-[1.5rem] bg-white shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 sm:aspect-auto sm:h-48">
+                <span class="font-display absolute -top-3.5 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full bg-white text-[15px] italic text-accent shadow-[var(--shadow-soft)] ring-1 ring-accent/20 sm:left-5 sm:translate-x-0">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <svg viewBox="0 0 120 172" class="h-[78%] w-auto sm:h-36" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  {step.key === 'numb' && <ellipse cx="60" cy="98" rx="56" ry="44" fill="#D5F6F8" fill-opacity=".7" />}
+                  <path d={MOLAR} fill="#ffffff" />
+                  <path d={DEJ} stroke="#0A1F33" stroke-opacity=".16" stroke-width="1.6" />
+                  {(step.key === 'scan' || step.key === 'numb') && <path d={PULP} fill="#FFD3DA" stroke="#F2617A" stroke-width="1.8" />}
+                  {step.key === 'access' && (
+                    <>
+                      <path d={PULP} fill="#FFD3DA" stroke="#F2617A" stroke-width="1.8" />
+                      <path d="M42 52c0-6 8-8 18-6 10-2 18 0 18 6v16c0 5-2 8-3 10H45c-1-2-3-5-3-10Z" fill="#ffffff" stroke="#F2617A" stroke-width="1.6" stroke-dasharray="3 3" />
+                    </>
+                  )}
+                  {step.key === 'files' && <path d={PULP} fill="#D5F6F8" stroke="#0B7C86" stroke-width="1.5" stroke-dasharray="3 3" />}
+                  {step.key === 'seal' && (
+                    <>
+                      <path d="M47 22.6 50 48h20l3-25.4C68 23 64 23 60 23s-8 0-13-.4Z" fill="#D5F6F8" stroke="#0B7C86" stroke-width="1.4" />
+                      <path d={PULP} fill="#F3ECE3" stroke="#0A1F33" stroke-opacity=".2" stroke-width="1.4" />
+                      <path d={`${CANAL_L}${CANAL_R}`} stroke="#F2617A" stroke-width="4.5" />
+                    </>
+                  )}
+                  <path d={MOLAR} stroke="#0A1F33" stroke-width="2.4" />
+
+                  {step.key === 'scan' && (
+                    <>
+                      <path d="M4 24V8h16M100 8h16v16M116 150v16h-16M20 166H4v-16" stroke="#0B7C86" stroke-width="2.2" />
+                      <path d="M8 62h104" stroke="#2CC5D2" stroke-opacity=".22" stroke-width="10" />
+                      <path d="M8 62h104" stroke="#2CC5D2" stroke-width="1.8" />
+                      <circle cx="40" cy="156" r="7" fill="#F2617A" fill-opacity=".15" stroke="#F2617A" stroke-width="1.5" stroke-dasharray="2 3" />
+                    </>
+                  )}
+                  {step.key === 'numb' && (
+                    <>
+                      <g transform="translate(20 92) rotate(119)">
+                        <path d="M0 0h16" stroke="#0A1F33" stroke-width="1.6" />
+                        <rect x="16" y="-3.5" width="5" height="7" rx="1" fill="#0B7C86" />
+                        <rect x="21" y="-6.5" width="46" height="13" rx="3" fill="#ffffff" stroke="#0A1F33" stroke-width="2" />
+                        <path d="M30-6.5v13M44-6.5v13" stroke="#F2617A" stroke-width="1.6" />
+                      </g>
+                      <circle cx="20" cy="92" r="2.6" fill="#F2617A" />
+                    </>
+                  )}
+                  {(step.key === 'access' || step.key === 'files') && (
+                    <>
+                      <path d={ACCESS} fill="#ffffff" />
+                      <path d="M46.5 22 50 48M73.5 22 70 48" stroke="#0A1F33" stroke-width="2.4" />
+                    </>
+                  )}
+                  {step.key === 'access' && (
+                    <>
+                      <path d="M0 64c10 2 16 7 20 12M120 64c-10 2-16 7-20 12" stroke="#0B7C86" stroke-width="2.2" />
+                      <path d="M60 0v34" stroke="#0A1F33" stroke-width="3" />
+                      <circle cx="60" cy="38" r="4" fill="#F2617A" />
+                    </>
+                  )}
+                  {step.key === 'files' && (
+                    <>
+                      <path d="M54 0 43 140M66 0l11 140" stroke="#0A1F33" stroke-width="2" />
+                      <path d="M43.6 98.5l5 3M42.8 108.5l5 3M42 118.5l5 3M41.3 128.5l5 3M71.4 101.5l5-3M72.2 111.5l5-3M73 121.5l5-3M73.7 131.5l5-3" stroke="#0A1F33" stroke-width="1.4" />
+                      <rect x="49.5" y="-4" width="9" height="10" rx="2.5" fill="#F2617A" />
+                      <rect x="61.5" y="-4" width="9" height="10" rx="2.5" fill="#2CC5D2" />
+                      <path d={DROP} transform="translate(90 14)" fill="#2CC5D2" />
+                      <path d={DROP} transform="translate(99 30) scale(.7)" fill="#2CC5D2" fill-opacity=".7" />
+                      <path d={DROP} transform="translate(28 12) scale(.8)" fill="#2CC5D2" fill-opacity=".8" />
+                    </>
+                  )}
+                  {step.key === 'seal' && (
+                    <>
+                      <circle cx="104" cy="154" r="11" fill="#0B7C86" />
+                      <path d="M99 154.5l3.6 3.6 6.4-7" stroke="#ffffff" stroke-width="2.4" />
+                    </>
+                  )}
+                </svg>
+                {i < steps.length - 1 && (
+                  <span class="absolute right-[-28px] top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-sand text-accent ring-1 ring-accent/20 lg:flex" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </span>
+                )}
+              </div>
+              <div>
+                <h3 class="font-sans text-lg font-semibold leading-snug tracking-tight sm:mt-7 sm:text-xl">{step.title}</h3>
+                <p class="mt-2.5 text-[15px] leading-relaxed text-slate-600">{step.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div class="mx-auto mt-16 flex max-w-4xl flex-col gap-6 rounded-[2rem] bg-white p-8 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 sm:flex-row sm:items-center md:p-10" data-reveal>
+          <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-accent text-white">
+            <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d={TOOTH} />
+              <path d="M20.4 18.5c1 5.6 1 11.4-.8 18.6M27.6 18.5c-1 5.6-1 11.4.8 18.6" stroke="#FF9AAA" stroke-width="2.6" />
+            </svg>
+          </span>
+          <div>
+            <p class="font-display text-2xl text-ocean-900">{copy.afterTitle}</p>
+            <p class="mt-2 leading-relaxed text-slate-600">
+              {copy.after[0]}<a href={pathFor('rehabilitacion', lang)} class="prose-link">{inline(t('nav.treatments.rehabilitacion'))}</a>{copy.after[1]}<a href={pathFor('implantes', lang)} class="prose-link">{inline(t('nav.treatments.implantes'))}</a>{copy.after[2]}
+            </p>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Step by Step -->
-    <section class="py-24 bg-primary text-white overflow-hidden relative">
-       <div class="absolute inset-0 opacity-5">
-          <svg width="100%" height="100%"><pattern id="dotsGrid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="white"/></pattern><rect width="100%" height="100%" fill="url(#dotsGrid)"/></svg>
-       </div>
+    <!-- Retreatment -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={47} />
+        <svg class="absolute inset-0 h-full w-full opacity-[0.07]"><defs><pattern id="endo-grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#8FE3EA" stroke-width=".6" /></pattern></defs><rect width="100%" height="100%" fill="url(#endo-grid)" /></svg>
+        <CoralBranch seed={58} color="duo" class="absolute -right-10 bottom-20 h-[240px] w-auto opacity-20" />
+      </div>
 
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="text-center mb-20 fade-up">
-             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('endodoncia.steps.badge')}</h4>
-             <h3 class="text-4xl md:text-6xl font-black mb-6 text-white">{t('endodoncia.steps.title')}</h3>
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('endodoncia.reendo.badge')} title={t('endodoncia.reendo.title')} tone="dark" />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-white/70 [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.1s">
+              <p set:html={t('endodoncia.reendo.p1')} />
+              <p set:html={t('endodoncia.reendo.p2')} />
+            </div>
+
+            <figure class="mt-10 flex items-center gap-5 rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-4 pr-6 backdrop-blur-md sm:p-5 sm:pr-8" data-reveal style="--d:.15s">
+              <img src="/equipo/angeles-parrar.jpg" alt={t('endodoncia.hero.image.alt')} width="112" height="112" class="h-24 w-24 shrink-0 rounded-2xl object-cover ring-1 ring-white/20 sm:h-28 sm:w-28" loading="lazy" decoding="async" />
+              <figcaption>
+                <p class="font-display text-lg italic leading-snug text-white/85">{t('endodoncia.reendo.doctor')}</p>
+                <p class="mt-3 text-sm font-semibold text-white">{t('endodoncia.hero.doctor.name')}</p>
+                <p class="text-[13px] text-aqua-soft">{t('endodoncia.hero.doctor.role')}</p>
+              </figcaption>
+            </figure>
           </div>
 
-          <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-8">
-             {steps.map((step, idx) => (
-                <div class="fade-up group" style={`transition-delay: ${idx * 0.1}s`}>
-                   <div class="h-full bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-[2rem] hover:bg-white/10 transition-all flex flex-col">
-                      <div class="flex justify-between items-start mb-8">
-                         <span class="text-4xl font-black text-accent group-hover:scale-110 transition-transform">{step.num}</span>
-                         <div class="p-3 bg-white text-primary rounded-xl"><step.icon size={24} /></div>
-                      </div>
-                      <h5 class="text-xl font-black mb-4 leading-tight text-white">{step.title}</h5>
-                      <p class="text-slate-100/80 text-sm leading-relaxed mt-auto font-medium">{step.desc}</p>
-                   </div>
-                </div>
-             ))}
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-xl md:p-10">
+              <p class="eyebrow eyebrow-light">{t('endodoncia.hero.title')} {t('endodoncia.hero.title.italic')}</p>
+              <!-- dental microscope -->
+              <svg viewBox="0 0 420 200" class="draw -mx-2 block h-auto w-[calc(100%+1rem)]" fill="none" stroke="#8FE3EA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <defs>
+                  <linearGradient id="endo-light" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#2CC5D2" stop-opacity=".45" />
+                    <stop offset="1" stop-color="#2CC5D2" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d="M200 110h12l26 70h-64Z" fill="url(#endo-light)" stroke="none" />
+                <path pathLength="1" d="M338 192h68M372 192V32M372 40H262M262 40l-36 28" />
+                <circle class="draw-me" pathLength="1" cx="372" cy="40" r="6" />
+                <circle class="draw-me" pathLength="1" cx="262" cy="40" r="5" />
+                <path pathLength="1" d="M184 62h44a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8h-44a8 8 0 0 1-8-8V70a8 8 0 0 1 8-8Z" />
+                <path pathLength="1" d="M186 62l-26-28M198 62l-26-28" stroke-width="2.6" />
+                <path pathLength="1" d="M155.6 38.1l8.8-8.2M167.6 38.1l8.8-8.2" stroke-width="2.6" />
+                <path pathLength="1" d="M198 96v14h16V96M176 79h-10M236 79h10" />
+                <g transform="translate(190 168) scale(.7)">
+                  <path pathLength="1" d={TOOTH} stroke="#ffffff" stroke-width="1.8" vector-effect="non-scaling-stroke" />
+                </g>
+                <circle cx="206.8" cy="180" r="3" fill="#F2617A" stroke="none" />
+                <circle cx="207" cy="183" r="24" stroke-opacity=".45" stroke-dasharray="2 4" />
+                <path pathLength="1" d="M176 183h-10M238 183h10" stroke="#F2617A" />
+              </svg>
+
+              <h3 class="mt-6 text-2xl text-white md:text-3xl">{t('endodoncia.reendo.fail.title')}</h3>
+              <ol class="mt-8 space-y-5">
+                {fails.map((f) => (
+                  <li class="flex items-center gap-5">
+                    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-accent">
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        {f.icon.map((g) => <path d={g.d} {...glyph(g)} />)}
+                      </svg>
+                    </span>
+                    <p class="font-medium text-white/85">{f.text}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Reendodoncia Section -->
-    <section class="py-32 bg-white">
-       <div class="container mx-auto px-6">
-          <div class="max-w-6xl mx-auto rounded-[4rem] border-2 border-slate-100 p-12 md:p-20 relative overflow-hidden">
-             <!-- Abstract background element -->
-             <div class="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-slate-50 rounded-full blur-3xl pointer-events-none"></div>
-             
-             <div class="lg:flex gap-16 items-center relative z-10">
-                <div class="lg:w-1/2 mb-12 lg:mb-0">
-                   <h4 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('endodoncia.reendo.badge')}</h4>
-                   <h3 class="text-4xl font-black text-primary mb-8 leading-tight">{t('endodoncia.reendo.title')}</h3>
-                   <div class="space-y-6 text-slate-500 leading-relaxed text-lg">
-                      <p set:html={t('endodoncia.reendo.p1')}></p>
-                      <p set:html={t('endodoncia.reendo.p2')}></p>
-                      <div class="flex items-center gap-4 p-4 bg-primary text-white rounded-2xl shadow-xl">
-                         <div class="p-2 bg-accent rounded-lg"><Microscope size={20} /></div>
-                         <p class="font-bold text-sm">{t('endodoncia.reendo.doctor')}</p>
-                      </div>
-                   </div>
-                </div>
-                
-                <div class="lg:w-1/2">
-                   <div class="bg-indigo-50 p-12 rounded-[3.5rem] border border-indigo-100">
-                      <h5 class="text-xl font-black text-primary mb-6 flex items-center gap-3 italic">
-                         <Zap class="text-accent" /> {t('endodoncia.reendo.fail.title')}
-                      </h5>
-                      <ul class="space-y-4">
-                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.1')}</span>
-                         </li>
-                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.2')}</span>
-                         </li>
-                         <li class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm">
-                            <CheckCircle2 class="text-accent flex-none" size={20} />
-                            <span class="text-slate-600 font-medium">{t('endodoncia.reendo.fail.3')}</span>
-                         </li>
-                      </ul>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
+    <div class="bg-white py-10 md:py-14">
+      <CtaBand />
+    </div>
 
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('endodoncia.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('endodoncia.faq.title')}</h3>
-          </div>
+    <FaqSection eyebrow={t('endodoncia.faq.badge')} title={t('endodoncia.faq.title')} faqs={faqs} />
 
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
+    <RelatedTreatments current="endodoncia" />
 
-    <!-- Final CTA -->
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

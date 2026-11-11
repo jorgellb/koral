@@ -1,0 +1,55 @@
+---
+/**
+ * Internal-linking block shown near the end of every treatment page:
+ * three related treatments + links to pricing, team and the full list.
+ */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { RELATED, TREATMENTS, pathFor, type TreatmentKey } from '../../i18n/routes';
+import SectionHeading from './SectionHeading.astro';
+import TreatmentIcon from '../svg/TreatmentIcon.astro';
+
+interface Props {
+  current: TreatmentKey;
+}
+
+const { current } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const related = RELATED[current].map((key) => TREATMENTS.find((tr) => tr.key === key)!);
+const homeTreatments = `${pathFor('home', lang)}#tratamientos`;
+---
+
+<section class="section-y relative overflow-hidden bg-white">
+  <div class="container-k">
+    <SectionHeading eyebrow={t('related.eyebrow')} title={t('related.title')} description={t('related.desc')} split />
+
+    <div class="mt-14 grid gap-5 md:grid-cols-3">
+      {related.map((item, i) => (
+        <a
+          href={pathFor(item.key, lang)}
+          class="related-card group glow-border relative flex flex-col overflow-hidden rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-8 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[var(--shadow-elevated)]"
+          data-reveal
+          style={`--d:${i * 0.08}s`}
+        >
+          <span class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.16)_0%,transparent_70%)] transition-transform duration-700 group-hover:scale-125" aria-hidden="true"></span>
+          <span class="relative mb-7 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-aqua-pale to-white text-accent ring-1 ring-accent/10 transition-all duration-500 group-hover:from-accent group-hover:to-ocean-700 group-hover:text-white" style="--icon-accent:#F2617A">
+            <TreatmentIcon name={item.key} size={36} />
+          </span>
+          <h3 class="relative text-2xl text-ocean-900">{t(item.label as any)}</h3>
+          <p class="relative mt-3 flex-1 text-[15px] leading-relaxed text-slate-600">{t(item.desc as any)}</p>
+          <span class="relative mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+            {t('treatments.more')}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </span>
+        </a>
+      ))}
+    </div>
+
+    <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-ocean-900/[0.07] pt-8 text-sm font-semibold" data-reveal>
+      <a href={homeTreatments} class="link-u text-ocean-900 hover:text-accent">{t('related.all')} →</a>
+      <a href={pathFor('pricing', lang)} class="link-u text-ocean-900 hover:text-accent">{t('nav.pricing')} →</a>
+      <a href={pathFor('team', lang)} class="link-u text-ocean-900 hover:text-accent">{t('team.cta')} →</a>
+    </div>
+  </div>
+</section>

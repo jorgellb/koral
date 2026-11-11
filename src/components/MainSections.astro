@@ -1,243 +1,252 @@
 ---
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { ChevronRight, Star, Award, Users } from 'lucide-astro';
+import { pathFor } from '../i18n/routes';
+import CoralBranch from './svg/CoralBranch.astro';
+import Bubbles from './svg/Bubbles.astro';
+import Waves from './svg/Waves.astro';
+import TreatmentIcon from './svg/TreatmentIcon.astro';
+import Picture from './ui/Picture.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+const stats = [
+  { value: '10', suffix: '+', label: t('home.stat.years') },
+  { value: '4.8', suffix: '', label: t('home.stat.rating'), star: true },
+  { value: '5', suffix: '', label: t('home.stat.languages') },
+  { value: '9', suffix: '', label: t('home.stat.specialties') },
+];
+
+const trust = ['trust.1', 'trust.2', 'trust.3', 'trust.4', 'trust.5', 'trust.6', 'trust.7'].map((k) => t(k as any));
+
+const heroAlt: Record<string, string> = {
+  es: 'Niña aprendiendo a cepillarse los dientes con una dentista en Clínica Dental Koral, Vera',
+  en: 'Girl learning to brush her teeth with a dentist at Koral Dental Clinic, Vera',
+  de: 'Mädchen lernt mit einer Zahnärztin der Zahnklinik Koral in Vera das Zähneputzen',
+  nl: 'Meisje leert tandenpoetsen met een tandarts van Tandkliniek Koral in Vera',
+  fr: 'Fillette apprenant à se brosser les dents avec une dentiste de la Clinique Koral à Vera',
+};
+const doctorAlt: Record<string, string> = {
+  es: 'Dra. Ana Padilla, directora de Clínica Dental Koral en Vera (Almería)',
+  en: 'Dr Ana Padilla, clinical director of Koral Dental Clinic in Vera (Almería)',
+  de: 'Dr. Ana Padilla, Leiterin der Zahnklinik Koral in Vera (Almería)',
+  nl: 'Dr. Ana Padilla, directeur van Tandkliniek Koral in Vera (Almería)',
+  fr: 'Dr Ana Padilla, directrice de la Clinique Dentaire Koral à Vera (Almería)',
+};
 ---
 
-<!-- Hero Section -->
-<section class="relative min-h-[94vh] flex items-center overflow-hidden bg-primary noise-overlay">
-  <div class="absolute inset-0 z-0">
-    <img
+<!-- ============ HERO ============ -->
+<section class="home-hero relative isolate flex min-h-[100svh] items-center overflow-hidden bg-ocean-900 text-white noise-overlay">
+  <!-- Photo -->
+  <div class="absolute inset-0 -z-20" aria-hidden="true">
+    <Picture
       src="/Slider imagen/clinica-koral-slider.jpg"
-      alt={lang === 'es' ? 'Clinica Dental Koral - Dentista de confianza en Vera, Almeria' : 'Koral Dental Clinic - Trusted dentist in Vera, Almeria'}
-      class="w-full h-full object-cover scale-110 animate-[ken-burns_30s_ease-in-out_infinite_alternate] opacity-65"
+      webp={[
+        { src: '/Slider imagen/clinica-koral-slider-960.webp', w: 960 },
+        { src: '/Slider imagen/clinica-koral-slider.webp', w: 1920 },
+      ]}
+      sizes="100vw"
+      alt=""
+      width={1920}
+      height={777}
+      class="hero-photo h-full w-full object-cover object-[72%_center] opacity-70"
       loading="eager"
       fetchpriority="high"
-      decoding="async"
     />
-    <!-- Layered overlays: stronger on the left for legibility, fades right to keep photo visible -->
-    <div class="absolute inset-0 bg-gradient-to-r from-primary via-primary/75 to-primary/20"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-primary/40 via-transparent to-primary/60"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_45%,rgba(37,99,235,0.18)_0%,transparent_55%)]"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(201,168,106,0.06)_0%,transparent_50%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,#0A1F33_0%,rgba(10,31,51,0.92)_32%,rgba(10,31,51,0.55)_62%,rgba(10,31,51,0.25)_100%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,31,51,0.65)_0%,transparent_30%,transparent_65%,rgba(10,31,51,0.9)_100%)]"></div>
   </div>
 
-  <div class="container mx-auto px-6 relative z-10 pt-16 pb-24 md:pt-24 md:pb-16">
-    <div class="grid lg:grid-cols-12 gap-12 items-center">
-      <!-- LEFT: copy -->
-      <div class="lg:col-span-7 xl:col-span-7">
-        <!-- Trust badge -->
-        <div class="fade-up inline-flex items-center gap-3 pl-2 pr-5 py-2 bg-white/[0.06] backdrop-blur-xl rounded-full border border-white/[0.14] mb-10">
-          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-accent/20 border border-accent/30">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-            </span>
+  <!-- Decor -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute -left-40 top-1/4 h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.18)_0%,transparent_65%)]"></div>
+    <div class="absolute bottom-0 right-1/4 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(242,97,122,0.16)_0%,transparent_65%)]"></div>
+    <div class="draw">
+      <CoralBranch seed={7} color="duo" draw class="absolute bottom-10 right-[-30px] hidden h-[340px] w-auto opacity-40 xl:block" />
+    </div>
+    <CoralBranch seed={3} color="white" depth={6} class="absolute -left-16 -top-10 h-[360px] w-auto rotate-180 opacity-[0.05]" />
+    <Bubbles count={18} seed={9} />
+  </div>
+
+  <div class="container-k relative pb-40 pt-40 md:pb-44 lg:pt-44">
+    <div class="grid items-center gap-14 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <p class="mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] py-2 pl-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-aqua-soft backdrop-blur-md" data-reveal>
+          <span class="relative flex h-5 w-5 items-center justify-center rounded-full bg-aqua/20">
+            <span class="absolute inset-0 animate-pulse-ring rounded-full bg-aqua/40"></span>
+            <span class="relative h-1.5 w-1.5 rounded-full bg-aqua"></span>
           </span>
-          <span class="text-[11px] font-bold text-white/90 uppercase tracking-[0.24em]">{t('home.hero.badge')}</span>
-        </div>
-
-        <!-- Main headline -->
-        <h1 class="text-5xl md:text-6xl lg:text-[5.5rem] xl:text-[6rem] text-white font-black mb-8 md:mb-10 leading-[0.95] tracking-[-0.03em] fade-up" style="transition-delay: 0.1s">
-          {t('hero.title').split(' ').map((word: string, i: number) => (
-            <span class="inline-block" style={`transition-delay: ${i * 0.04}s`}>{word}&nbsp;</span>
-          ))}
-        </h1>
-
-        <!-- Gold hairline accent -->
-        <div class="gold-line max-w-[140px] mb-8 fade-up" style="transition-delay: 0.2s"></div>
-
-        <p class="text-lg md:text-xl text-slate-200/85 mb-10 md:mb-14 leading-relaxed max-w-2xl fade-up font-normal" style="transition-delay: 0.3s">
-          {t('hero.subtitle')}
+          {t('home.hero.badge')}
         </p>
 
-        <!-- CTA Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 fade-up" style="transition-delay: 0.4s">
-          <a href="#appointment" class="shine-effect relative bg-accent text-white px-9 py-5 rounded-2xl font-bold text-base hover:bg-white hover:text-primary transition-all flex items-center justify-center gap-3 group shadow-[0_18px_40px_-12px_rgba(37,99,235,0.55)] active:scale-[0.98] hover:-translate-y-0.5 ring-1 ring-white/10">
+        <h1 class="text-[2.9rem] leading-[0.98] tracking-[-0.03em] text-white sm:text-7xl lg:text-[4.9rem] xl:text-[5.4rem]" data-reveal style="--d:.08s">
+          {t('home.hero.h1.lead')}
+          <span class="accent-italic block text-coral-soft">{t('home.hero.h1.accent')}</span>
+        </h1>
+
+        <p class="mt-8 max-w-xl text-lg leading-relaxed text-white/75" data-reveal style="--d:.18s">{t('hero.subtitle')}</p>
+
+        <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.28s">
+          <a href="#appointment" class="btn btn-coral shine-effect !px-8 !py-[1.1rem] text-base">
             {t('home.hero.cta.appointment')}
-            <ChevronRight class="group-hover:translate-x-1 transition-transform" size={18} />
+            <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </a>
-          <a href="#treatments" class="bg-white/[0.04] hover:bg-white/[0.10] text-white px-9 py-5 rounded-2xl font-bold text-base border border-white/[0.16] backdrop-blur-xl transition-all text-center group active:scale-[0.98] hover:-translate-y-0.5 hover:border-white/30">
-            {t('home.hero.cta.treatments')}
-          </a>
+          <a href="#tratamientos" class="btn btn-ghost-light !px-8 !py-[1.1rem] text-base">{t('home.hero.cta.treatments')}</a>
         </div>
 
-        <!-- Trust pillars strip -->
-        <div class="grid grid-cols-3 gap-px mt-14 md:mt-16 rounded-2xl overflow-hidden bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl max-w-2xl fade-up" style="transition-delay: 0.6s">
-          <div class="px-5 py-5 bg-primary/40">
-            <div class="flex items-center gap-2 mb-1.5">
-              <Star size={14} class="text-amber-400" fill="currentColor" />
-              <span class="text-white font-bold text-sm">5.0</span>
+        <dl class="mt-12 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/10 sm:grid-cols-4" data-reveal style="--d:.38s">
+          {stats.map((s) => (
+            <div class="flex flex-col-reverse bg-ocean-900/60 px-5 py-5 backdrop-blur-md">
+              <dt class="mt-1.5 text-[11px] font-medium uppercase leading-snug tracking-[0.14em] text-white/55">{s.label}</dt>
+              <dd class="font-display flex items-center gap-1.5 text-3xl text-white">
+                <span data-count={s.value} data-suffix={s.suffix}>{s.value.replace('.', lang === 'en' ? '.' : ',')}{s.suffix}</span>
+                {s.star && <svg width="16" height="16" viewBox="0 0 24 24" fill="#FBBF24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z" /></svg>}
+              </dd>
             </div>
-            <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">Google</span>
-          </div>
-          <div class="px-5 py-5 bg-primary/40">
-            <div class="flex items-center gap-2 mb-1.5">
-              <Award size={14} class="text-accent" />
-              <span class="text-white font-bold text-sm">+10</span>
-            </div>
-            <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">{lang === 'es' ? 'años exp.' : lang === 'en' ? 'years exp.' : lang === 'de' ? 'Jahre Erf.' : lang === 'nl' ? 'jaar erv.' : 'ans exp.'}</span>
-          </div>
-          <div class="px-5 py-5 bg-primary/40">
-            <div class="flex items-center gap-2 mb-1.5">
-              <Users size={14} class="text-accent" />
-              <span class="text-white font-bold text-sm">5</span>
-            </div>
-            <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">{lang === 'es' ? 'idiomas' : lang === 'en' ? 'languages' : lang === 'de' ? 'Sprachen' : lang === 'nl' ? 'talen' : 'langues'}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: floating glass info card -->
-      <div class="lg:col-span-5 xl:col-span-5 hidden lg:flex justify-end fade-up" style="transition-delay: 0.5s">
-        <div class="relative w-full max-w-sm">
-          <!-- Gold accent blob behind -->
-          <div class="absolute -inset-6 bg-gradient-to-br from-accent/20 via-accent/5 to-transparent rounded-[3rem] blur-2xl"></div>
-
-          <div class="relative bg-white/[0.06] backdrop-blur-2xl rounded-[2rem] border border-white/[0.14] p-8 shadow-2xl overflow-hidden">
-            <!-- Decorative quote -->
-            <div class="absolute -top-2 -right-2 text-white/[0.06] text-[140px] leading-none font-display select-none pointer-events-none">"</div>
-
-            <div class="relative">
-              <div class="flex items-center gap-1 mb-5">
-                {[...Array(5)].map(() => (
-                  <Star size={14} class="text-amber-400" fill="currentColor" />
-                ))}
-              </div>
-              <p class="text-white/90 text-base leading-relaxed mb-6 font-light italic font-display">
-                "{t('reviews.review1.text')}"
-              </p>
-              <div class="flex items-center justify-between pt-5 border-t border-white/10">
-                <div>
-                  <p class="text-white text-sm font-bold">Carmen García</p>
-                  <p class="text-white/50 text-[11px] font-medium uppercase tracking-[0.15em] mt-0.5">{t('reviews.review1.treatment')}</p>
-                </div>
-                <svg class="w-7 h-7 opacity-80" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scroll indicator -->
-  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-3 fade-up" style="transition-delay: 0.8s">
-    <span class="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/40">{lang === 'es' ? 'Descubre más' : lang === 'en' ? 'Discover more' : lang === 'de' ? 'Mehr entdecken' : lang === 'nl' ? 'Ontdek meer' : 'Découvrir'}</span>
-    <div class="w-6 h-10 border border-white/30 rounded-full flex justify-center p-1.5">
-      <div class="w-1 h-1.5 bg-white/60 rounded-full animate-scroll-down"></div>
-    </div>
-  </div>
-</section>
-
-<!-- Presentation Section -->
-<section class="section-padding bg-cream relative overflow-hidden" style="background:#faf9f6">
-  <!-- Premium decorative elements -->
-  <div class="absolute -right-20 top-20 text-slate-200/40 select-none pointer-events-none text-[12vw] font-black uppercase tracking-tighter mix-blend-multiply font-display italic">
-    Almería
-  </div>
-  <div class="absolute -left-10 bottom-10 text-accent/[0.025] select-none pointer-events-none text-[18vw] font-black uppercase tracking-tighter font-display">
-    Koral
-  </div>
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-radial from-accent/[0.03] to-transparent rounded-full blur-3xl pointer-events-none"></div>
-
-  <div class="container mx-auto px-6 relative z-10">
-    <div class="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center">
-      <!-- Image column -->
-      <div class="lg:col-span-5 fade-up relative">
-        <!-- Soft glow behind -->
-        <div class="absolute -inset-10 bg-gradient-to-br from-accent/8 via-gold/5 to-transparent rounded-[4rem] -rotate-2 blur-3xl"></div>
-
-        <!-- Decorative gold dot grid -->
-        <div class="absolute -top-6 -left-6 grid grid-cols-4 gap-3 opacity-30 pointer-events-none">
-          {[...Array(16)].map(() => (
-            <span class="w-1 h-1 rounded-full bg-gold"></span>
           ))}
-        </div>
+        </dl>
+      </div>
 
-        <div class="relative rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_-20px_rgba(11,18,38,0.25)] border border-white/40 group">
-          <img
-            src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg"
-            alt={lang === 'es' ? 'Dra. Ana Padilla - Directora de Clinica Dental Koral en Vera' : 'Dr. Ana Padilla - Director of Koral Dental Clinic in Vera'}
-            class="w-full aspect-[4/5] object-cover scale-[1.03] group-hover:scale-100 transition-transform duration-[2s] ease-out"
-            loading="lazy"
-            decoding="async"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent"></div>
-
-          <!-- Doctor signature overlay -->
-          <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
-            <p class="font-display italic text-2xl leading-none mb-1.5">Dra. Ana Padilla</p>
-            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70">{lang === 'es' ? 'Directora · Cirugía & Implantología' : lang === 'en' ? 'Director · Surgery & Implantology' : lang === 'de' ? 'Direktorin · Chirurgie' : lang === 'nl' ? 'Directeur · Chirurgie' : 'Directrice · Chirurgie'}</p>
+      <!-- Floating cards -->
+      <div class="relative hidden lg:col-span-5 lg:block" aria-hidden="true">
+        <div class="relative ml-auto h-[460px] w-full max-w-[400px]">
+          <div class="animate-float absolute right-0 top-0 w-[340px] rounded-[1.75rem] border border-white/15 bg-white/[0.08] p-7 shadow-2xl backdrop-blur-2xl" data-reveal="right" style="--d:.45s">
+            <div class="mb-4 flex items-center justify-between">
+              <div class="flex gap-0.5">
+                {[0, 1, 2, 3, 4].map(() => <svg width="15" height="15" viewBox="0 0 24 24" fill="#FBBF24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z" /></svg>)}
+              </div>
+              <svg class="h-6 w-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+            </div>
+            <p class="font-display text-[1.05rem] italic leading-relaxed text-white/90">“{t('reviews.review1.text')}”</p>
+            <div class="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
+              <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-aqua to-accent text-xs font-bold">CG</span>
+              <div>
+                <p class="text-sm font-semibold">Carmen García</p>
+                <p class="text-[11px] uppercase tracking-[0.14em] text-white/50">{t('reviews.review1.treatment')}</p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <!-- Floating Stats Card -->
-        <div class="absolute -bottom-8 -right-4 md:-right-10 bg-white p-7 md:p-8 rounded-[1.75rem] shadow-elevated border border-slate-100 fade-up max-w-[220px]" style="transition-delay: 0.4s">
-          <div class="flex items-start gap-3 mb-4">
-            <span class="w-9 h-9 bg-accent/8 rounded-xl flex items-center justify-center text-accent shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>
+          <div class="animate-float-slow absolute bottom-6 left-0 flex items-center gap-4 rounded-[1.4rem] bg-white p-4 pr-6 text-ocean-900 shadow-[var(--shadow-premium)]" data-reveal="left" style="--d:.6s">
+            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="3" /><path d="M8 2.5v4M16 2.5v4M3 10h18" /><path d="m9 15 2 2 4-4" /></svg>
             </span>
-            <p class="text-accent font-black text-5xl leading-none tracking-tighter">{t('home.presentation.years.value')}</p>
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{t('appointment.free.title')}</p>
+              <p class="font-display text-lg">{t('nav.mega.promo.title')}</p>
+            </div>
           </div>
-          <div class="gold-line mb-3"></div>
-          <p class="text-primary font-bold text-[11px] uppercase tracking-[0.2em] leading-snug">{t('home.presentation.years.title')}</p>
-          <p class="text-slate-400 text-[11px] font-medium mt-1 leading-snug">{t('home.presentation.years.subtitle')}</p>
+
+          <div class="absolute bottom-40 right-6 flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-ocean-900/50 text-aqua backdrop-blur-xl" data-reveal="scale" style="--d:.7s">
+            <TreatmentIcon name="tooth" size={40} strokeWidth={1.4} />
+            <span class="absolute inset-[-8px] animate-spin-slow rounded-full border border-dashed border-aqua/40"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+</section>
+
+<!-- ============ TRUST STRIP ============ -->
+<section class="relative bg-white py-7" aria-label={t('nav.mega.title')}>
+  <div class="marquee group flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+    {[0, 1].map((copy) => (
+      <ul class="marquee-track flex shrink-0 items-center gap-12 pr-12 group-hover:[animation-play-state:paused]" aria-hidden={copy === 1 ? 'true' : undefined}>
+        {trust.map((item) => (
+          <li class="flex items-center gap-12 whitespace-nowrap">
+            <span class="font-display text-xl text-ocean-900 md:text-2xl">{item}</span>
+            <svg width="22" height="22" viewBox="0 0 48 48" fill="none" stroke="#F2617A" stroke-width="2.4" aria-hidden="true"><path d="M24 6v36M6 24h36M11 11l26 26M37 11 11 37" stroke-linecap="round" opacity=".7" /></svg>
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</section>
+
+<!-- ============ PRESENTATION ============ -->
+<section id="clinica" class="section-y relative overflow-hidden bg-white">
+  <div class="pointer-events-none absolute -right-24 top-10 select-none font-display text-[22vw] italic leading-none text-ocean-900/[0.025]" aria-hidden="true">Koral</div>
+
+  <div class="container-k relative">
+    <div class="grid items-center gap-16 lg:grid-cols-12 lg:gap-20">
+      <!-- Portrait -->
+      <div class="relative mx-auto w-full max-w-[460px] lg:col-span-5" data-reveal="left">
+        <div class="draw absolute -left-14 -top-10 h-[260px] w-auto" aria-hidden="true">
+          <CoralBranch seed={21} color="duo" draw class="h-full w-auto opacity-80" />
+        </div>
+        <svg class="absolute -right-8 bottom-24 h-28 w-28 text-coral/30" viewBox="0 0 100 100" aria-hidden="true">
+          {[0, 1, 2, 3, 4, 5].map((r) => [0, 1, 2, 3, 4, 5].map((c) => <circle cx={8 + c * 17} cy={8 + r * 17} r="2" fill="currentColor" />))}
+        </svg>
+
+        <div class="absolute -inset-3 rounded-t-[999px] rounded-b-[2.9rem] border border-dashed border-accent/30" aria-hidden="true"></div>
+        <div class="relative overflow-hidden rounded-t-[999px] rounded-b-[2.5rem] bg-white shadow-[var(--shadow-premium)] ring-1 ring-ocean-900/5">
+          <Picture
+            src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg"
+            alt={doctorAlt[lang]}
+            width={682}
+            height={948}
+            class="aspect-[4/5] w-full object-cover object-top"
+          />
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ocean-900/85 via-ocean-900/40 to-transparent p-8 pt-24 text-white">
+            <p class="font-display text-3xl italic">Dra. Ana Padilla</p>
+            <p class="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-aqua-soft">{t('home.presentation.role')}</p>
+          </div>
+        </div>
+
+        <div class="absolute -right-3 top-10 rounded-[1.5rem] bg-white p-5 shadow-[var(--shadow-elevated)] ring-1 ring-ocean-900/5 md:-bottom-8 md:-right-10 md:top-auto md:p-6" data-reveal style="--d:.3s">
+          <p class="font-display text-5xl leading-none text-accent"><span data-count="10" data-suffix="+">10+</span></p>
+          <p class="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ocean-900">{t('home.presentation.years.title')}</p>
+          <p class="text-[12px] text-slate-500">{t('home.presentation.years.subtitle')}</p>
         </div>
       </div>
 
-      <!-- Content column -->
-      <div class="lg:col-span-7 fade-up" style="transition-delay: 0.2s">
-        <span class="eyebrow mb-6">
-          <span class="w-6 h-px bg-accent"></span>
-          {t('home.presentation.badge')}
-        </span>
-        <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-primary mb-4 leading-[1.05] tracking-tight mt-4">
+      <!-- Copy -->
+      <div class="lg:col-span-7" data-reveal style="--d:.1s">
+        <p class="eyebrow mb-6">{t('home.presentation.badge')}</p>
+        <h2 class="text-[2.35rem] leading-[1.06] sm:text-5xl lg:text-[3.6rem]">
           {t('home.presentation.title')}
+          <span class="accent-italic block">{t('home.presentation.accent')}</span>
         </h2>
-        <!-- Serif accent under title -->
-        <p class="font-display italic text-2xl md:text-3xl text-accent/90 mb-10 leading-tight">{lang === 'es' ? 'donde el detalle marca la diferencia' : lang === 'en' ? 'where every detail matters' : lang === 'de' ? 'wo Details den Unterschied machen' : lang === 'nl' ? 'waar details het verschil maken' : 'où le détail fait la différence'}</p>
 
-        <div class="space-y-7">
-          <p class="font-medium text-slate-800 text-xl md:text-[1.4rem] leading-[1.6] border-l-2 border-accent pl-7 py-1">
-            {t('home.presentation.lead')}
-          </p>
-          <p class="text-slate-500 text-lg leading-[1.75] max-w-2xl">
-            {t('home.presentation.desc')}
-          </p>
+        <p class="mt-9 border-l-2 border-coral pl-6 text-xl leading-relaxed text-ocean-900 md:text-[1.35rem]">{t('home.presentation.lead')}</p>
+        <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">{t('home.presentation.desc')}</p>
 
-          <div class="grid sm:grid-cols-2 gap-5 pt-6">
-            <div class="surface-card group p-7">
-              <div class="w-12 h-12 bg-accent/8 text-accent rounded-xl flex items-center justify-center mb-5 group-hover:bg-accent group-hover:text-white transition-all duration-500 group-hover:shadow-lg group-hover:shadow-accent/20">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <h3 class="font-bold text-primary text-lg mb-2 tracking-tight">{t('home.presentation.tech.title')}</h3>
-              <p class="text-slate-500 text-sm leading-relaxed">{t('home.presentation.tech.desc')}</p>
-            </div>
-            <div class="surface-card group p-7">
-              <div class="w-12 h-12 bg-accent/8 text-accent rounded-xl flex items-center justify-center mb-5 group-hover:bg-accent group-hover:text-white transition-all duration-500 group-hover:shadow-lg group-hover:shadow-accent/20">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              </div>
-              <h3 class="font-bold text-primary text-lg mb-2 tracking-tight">{t('home.presentation.team.title')}</h3>
-              <p class="text-slate-500 text-sm leading-relaxed">{t('home.presentation.team.desc')}</p>
-            </div>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2">
+          <div class="surface-card group p-7">
+            <span class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <h3 class="font-sans text-lg font-semibold tracking-tight">{t('home.presentation.tech.title')}</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{t('home.presentation.tech.desc')}</p>
           </div>
+          <div class="surface-card group p-7">
+            <span class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep transition-colors duration-500 group-hover:bg-coral-deep group-hover:text-white">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" /></svg>
+            </span>
+            <h3 class="font-sans text-lg font-semibold tracking-tight">{t('home.presentation.team.title')}</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{t('home.presentation.team.desc')}</p>
+          </div>
+        </div>
+
+        <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <a href={pathFor('team', lang)} class="btn btn-dark">
+            {t('team.cta')}
+            <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+          <a href={pathFor('pricing', lang)} class="link-u text-sm font-semibold text-accent">{t('nav.pricing')} →</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<style>
-  @keyframes ken-burns {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.15); }
+<style is:global>
+  .hero-photo { animation: ken-burns 18s var(--ease-out-expo) both; }
+  .marquee-track { animation: marquee 45s linear infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-photo, .marquee-track { animation: none; }
   }
 </style>

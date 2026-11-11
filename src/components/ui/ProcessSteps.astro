@@ -1,0 +1,46 @@
+---
+/**
+ * Numbered steps joined by a line that draws itself on scroll.
+ * Works for 3–8 steps; wraps into rows of `columns` on desktop.
+ */
+interface Props {
+  steps: { title: string; desc: string }[];
+  tone?: 'light' | 'dark';
+  columns?: 3 | 4;
+  class?: string;
+}
+
+const { steps, tone = 'light', columns = 4, class: className = '' } = Astro.props;
+const dark = tone === 'dark';
+const colClass = columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
+---
+
+<ol class:list={['process-steps relative grid gap-x-8 gap-y-12 sm:grid-cols-2', colClass, className]}>
+  {steps.map((step, i) => (
+    <li class="relative pl-16 sm:pl-0" data-reveal style={`--d:${i * 0.1}s`}>
+      <!-- connector (desktop: horizontal, mobile: vertical) -->
+      {i < steps.length - 1 && (
+        <svg class="draw absolute left-[27px] top-14 h-[calc(100%+1rem)] w-px sm:hidden" viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="1" y1="0" x2="1" y2="100" stroke={dark ? '#2CC5D2' : '#0B7C86'} stroke-opacity=".35" stroke-width="2" stroke-dasharray="1" pathLength="1" />
+        </svg>
+      )}
+      {(i + 1) % columns !== 0 && i < steps.length - 1 && (
+        <svg class="draw absolute left-[64px] right-[-16px] top-[27px] hidden h-px lg:block" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden="true" style={`--dd:${0.3 + i * 0.15}s`}>
+          <line x1="0" y1="1" x2="100" y2="1" stroke={dark ? '#2CC5D2' : '#0B7C86'} stroke-opacity=".35" stroke-width="2" pathLength="1" />
+        </svg>
+      )}
+
+      <span
+        class:list={[
+          'absolute left-0 top-0 flex h-14 w-14 items-center justify-center rounded-full font-display text-xl italic sm:relative sm:mb-6',
+          dark ? 'bg-white/[0.06] text-aqua-soft ring-1 ring-white/15' : 'bg-white text-accent shadow-[var(--shadow-card)] ring-1 ring-accent/15',
+        ]}
+      >
+        <span class="absolute inset-[-6px] rounded-full border border-dashed opacity-40" style={`border-color:${dark ? '#2CC5D2' : '#F2617A'}`} aria-hidden="true"></span>
+        {String(i + 1).padStart(2, '0')}
+      </span>
+      <h3 class:list={['font-sans text-xl font-semibold tracking-tight', dark ? 'text-white' : 'text-ocean-900']}>{step.title}</h3>
+      <p class:list={['mt-3 text-[15px] leading-relaxed', dark ? 'text-white/65' : 'text-slate-600']}>{step.desc}</p>
+    </li>
+  ))}
+</ol>

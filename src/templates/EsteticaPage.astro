@@ -3,322 +3,572 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
+import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
+import { TEAM } from '../data/team';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  Sparkles, 
-  Zap, 
-  CheckCircle2, 
-  HelpCircle, 
-  ChevronRight,
-  Palette,
-  Camera,
-  Star,
-  Layers,
-  Smile,
-  ShieldCheck
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const veneersProblems = [
-  t('estetica.problems.list.1'),
-  t('estetica.problems.list.2'),
-  t('estetica.problems.list.3'),
-  t('estetica.problems.list.4'),
-  t('estetica.problems.list.5')
+// Short UI labels that only exist on this page.
+const copy = ({
+  es: {
+    smileDesign: 'Diseño de sonrisa',
+    dsd: 'Diseño digital de la sonrisa',
+    golden: 'Proporción áurea',
+    arc: 'Arco de la sonrisa',
+    midline: 'Línea media',
+    enamel: 'Esmalte',
+    dentin: 'Dentina',
+    solutions: 'Soluciones',
+    goodToKnow: 'Bueno saberlo',
+    ortho: 'Si los espacios o los dientes torcidos son el origen, la ortodoncia invisible puede ser la opción más conservadora.',
+    lips: 'Los labios enmarcan la sonrisa: complétala con un tratamiento de ácido hialurónico.',
+    budget: 'Consulta nuestros precios y las opciones de financiación para tu tratamiento estético.',
+  },
+  en: {
+    smileDesign: 'Smile design',
+    dsd: 'Digital smile design',
+    golden: 'Golden proportion',
+    arc: 'Smile arc',
+    midline: 'Midline',
+    enamel: 'Enamel',
+    dentin: 'Dentin',
+    solutions: 'Solutions',
+    goodToKnow: 'Good to know',
+    ortho: 'If gaps or crooked teeth are the cause, clear aligners may be the most conservative option.',
+    lips: 'Your lips frame your smile: complete it with a hyaluronic acid treatment.',
+    budget: 'See our prices and the financing options for your cosmetic treatment.',
+  },
+  de: {
+    smileDesign: 'Smile-Design',
+    dsd: 'Digitales Smile-Design',
+    golden: 'Goldener Schnitt',
+    arc: 'Lachlinie',
+    midline: 'Mittellinie',
+    enamel: 'Zahnschmelz',
+    dentin: 'Dentin',
+    solutions: 'Lösungen',
+    goodToKnow: 'Gut zu wissen',
+    ortho: 'Sind Lücken oder schiefe Zähne die Ursache, kann eine unsichtbare Zahnspange die schonendste Lösung sein.',
+    lips: 'Die Lippen umrahmen Ihr Lächeln: Vollenden Sie es mit einer Hyaluronsäure-Behandlung.',
+    budget: 'Sehen Sie sich unsere Preise und Finanzierungsmöglichkeiten für Ihre ästhetische Behandlung an.',
+  },
+  nl: {
+    smileDesign: 'Glimlachontwerp',
+    dsd: 'Digitaal glimlachontwerp',
+    golden: 'Gulden snede',
+    arc: 'Glimlachlijn',
+    midline: 'Middellijn',
+    enamel: 'Glazuur',
+    dentin: 'Dentine',
+    solutions: 'Oplossingen',
+    goodToKnow: 'Goed om te weten',
+    ortho: 'Zijn spleten of scheve tanden de oorzaak, dan kan onzichtbare orthodontie de meest conservatieve optie zijn.',
+    lips: 'Uw lippen omlijsten uw glimlach: maak hem compleet met een behandeling met hyaluronzuur.',
+    budget: 'Bekijk onze prijzen en de financieringsmogelijkheden voor uw esthetische behandeling.',
+  },
+  fr: {
+    smileDesign: 'Design du sourire',
+    dsd: 'Conception numérique du sourire',
+    golden: 'Proportion dorée',
+    arc: 'Courbe du sourire',
+    midline: 'Ligne médiane',
+    enamel: 'Émail',
+    dentin: 'Dentine',
+    solutions: 'Solutions',
+    goodToKnow: 'Bon à savoir',
+    ortho: 'Si des espaces ou des dents mal alignées sont en cause, l’orthodontie invisible peut être l’option la plus conservatrice.',
+    lips: 'Les lèvres encadrent votre sourire : sublimez-le avec un traitement à l’acide hyaluronique.',
+    budget: 'Consultez nos tarifs et les options de financement de votre traitement esthétique.',
+  },
+} as const)[lang];
+
+const unquote = (s: string) => s.replace(/^["“]|["”]$/g, '');
+/** "Carillas dentales: La magia…" → title + italic accent. */
+const splitTitle = (s: string) => {
+  const i = s.indexOf(':');
+  return i < 0 ? { title: s, accent: undefined } : { title: s.slice(0, i).trim(), accent: s.slice(i + 1).trim() };
+};
+
+const specialists = ['/equipo/Ana-padilla.jpg', '/equipo/minerva.jpg', '/equipo/blaneirys.jpg']
+  .map((image) => TEAM.find((m) => m.image === image))
+  .filter((m) => m !== undefined);
+
+/* ---------- Smile design drawing (front view, golden proportion) ---------- */
+const INCISOR = 'M-15 0Q0-5 15 0C21 14 23 36 21 55Q20 64 12 65.5H-12Q-20 64-21 55C-23 36-21 14-15 0Z';
+const CANINE = 'M-14 0Q0-5 14 0C20 16 22 36 18 50Q11 63 0 68Q-11 63-18 50C-22 36-20 16-14 0Z';
+// Apparent widths shrink towards the back (1.618 : 1 : 0.618).
+const smileTeeth = [
+  { d: INCISOR, x: 137, y: 122, sx: 0.28, sy: 0.8, back: true },
+  { d: INCISOR, x: 343, y: 122, sx: 0.28, sy: 0.8, back: true },
+  { d: CANINE, x: 152.7, y: 116, sx: 0.45, sy: 0.95 },
+  { d: CANINE, x: 327.3, y: 116, sx: 0.45, sy: 0.95 },
+  { d: INCISOR, x: 176.6, y: 124, sx: 0.68, sy: 0.84 },
+  { d: INCISOR, x: 303.4, y: 124, sx: 0.68, sy: 0.84 },
+  { d: INCISOR, x: 215.8, y: 118, sx: 1.1, sy: 1.06 },
+  { d: INCISOR, x: 264.2, y: 118, sx: 1.1, sy: 1.06 },
+];
+const goldenLines = [143.7, 161.7, 191.6, 240, 288.4, 318.3, 336.3];
+const goldenLabels = [
+  { x: 152.7, label: '0.618' },
+  { x: 176.6, label: '1' },
+  { x: 215.8, label: '1.618' },
+  { x: 264.2, label: '1.618' },
+  { x: 303.4, label: '1' },
+  { x: 327.3, label: '0.618' },
 ];
 
-const faqs = [
+const whiteningSteps = [
+  { text: t('estetica.whitening.method.step1'), icon: 'tray' },
+  { text: t('estetica.whitening.method.step2'), icon: 'calendar' },
+  { text: t('estetica.whitening.method.step3'), icon: 'check' },
+];
+const shades = ['#E2C690', '#EAD3A6', '#F0DFBD', '#F6EAD3', '#FBF4E8', '#FFFFFF'];
+
+const veneers = [
   {
-    question: t('estetica.faq.q1.q'),
-    answer: t('estetica.faq.q1.a')
+    key: 'porcelain',
+    badge: t('estetica.veneers.porcelain.badge'),
+    title: t('estetica.veneers.porcelain.title'),
+    desc: t('estetica.veneers.porcelain.desc'),
+    feature: t('estetica.veneers.porcelain.feature'),
   },
   {
-    question: t('estetica.faq.q2.q'),
-    answer: t('estetica.faq.q2.a')
+    key: 'composite',
+    badge: t('estetica.veneers.composite.badge'),
+    title: t('estetica.veneers.composite.title'),
+    desc: t('estetica.veneers.composite.desc'),
+    feature: t('estetica.veneers.composite.feature'),
+  },
+];
+const veneersTitle = splitTitle(t('estetica.veneers.title'));
+
+// Bespoke 48×48 icons for each problem (teal strokes, coral detail).
+const CROWN = 'M15 10Q24 7 33 10C36 18 37 28 35 37Q34 42 29 42.5H19Q14 42 13 37C11 28 12 18 15 10Z';
+const problems = [
+  {
+    text: t('estetica.problems.list.1'),
+    icon: `<path d="${CROWN}"/><path d="M5 13C11 6 18 5.5 24 8.5 30 5.5 37 6 43 13" stroke="#F2617A"/><path d="M15.6 12.4Q24 9.6 32.4 12.4" stroke="#0A1F33" stroke-width="3.2"/>`,
   },
   {
-    question: t('estetica.faq.q3.q'),
-    answer: t('estetica.faq.q3.a')
+    text: t('estetica.problems.list.2'),
+    icon: `<path d="${CROWN}"/><path d="M14.5 19.5h19M14 26.5h20.5M14.5 33.5h19" stroke="#F2617A" stroke-width="2.6" stroke-opacity=".75"/>`,
   },
   {
-    question: t('estetica.faq.q4.q'),
-    answer: t('estetica.faq.q4.a')
+    text: t('estetica.problems.list.3'),
+    icon: `<path d="${CROWN}" stroke="#F2617A" stroke-dasharray="2.5 3"/><path d="M15 10Q24 7 33 10C35.5 17 36.5 24 36 31L32.5 35 29.5 32.5 26 40.5H19.5Q14.5 40 13.5 35.5C11.5 27 12.5 18 15 10Z"/>`,
   },
   {
-    question: t('estetica.faq.q5.q'),
-    answer: t('estetica.faq.q5.a')
-  }
+    text: t('estetica.problems.list.4'),
+    icon: `<path d="M15 10Q24 7 33 10C36 18 37 25 36.2 30L30.5 33.5 32.5 37.5 28.5 42.5H19Q14 42 13 37C11 28 12 18 15 10Z"/><path d="M39 33.5l4 3.5-2.5 5-4.5-2.5Z" stroke="#F2617A" fill="#FFE4E8"/><path d="M30.5 33.5 26 31.5" stroke="#F2617A"/>`,
+  },
+  {
+    text: t('estetica.problems.list.5'),
+    icon: '<path d="M6 10Q12.5 7.5 19 10C21 18 22 28 20.5 37Q19.5 42 15.5 42.5H10Q6 42 5 37C3.5 28 4 18 6 10Z"/><path d="M29 10Q35.5 7.5 42 10C44 18 44.5 28 43 37Q42 42 38 42.5H32.5Q28.5 42 27.5 37C26 28 27 18 29 10Z"/><path d="M21.5 25h5M23.5 23l-2 2 2 2M24.5 23l2 2-2 2" stroke="#F2617A"/>',
+  },
 ];
 
-const slug = lang === 'es' ? '/estetica-dental' : `/${lang}/estetica-dental`;
+const tips = [
+  { href: pathFor('ortodoncia', lang), label: t('nav.treatments.ortodoncia'), text: copy.ortho, icon: 'ortodoncia' as const },
+  { href: pathFor('armonia', lang), label: t('nav.treatments.armonia'), text: copy.lips, icon: 'armonia' as const },
+  { href: pathFor('pricing', lang), label: t('nav.pricing'), text: copy.budget, icon: null },
+];
+
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`estetica.faq.q${n}.q` as any),
+  answer: t(`estetica.faq.q${n}.a` as any),
+}));
+
+const url = absoluteUrl(pathFor('estetica', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('estetica.meta.title'),
-      "description": t('estetica.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.estetica'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('estetica.meta.title'),
+  description: t('estetica.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    '@type': 'MedicalProcedure',
+    name: t('nav.treatments.estetica'),
+    procedureType: 'https://schema.org/NoninvasiveProcedure',
+    bodyLocation: 'Mouth',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('estetica.meta.title')} description={t('estetica.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-white overflow-hidden">
-       <div class="absolute top-0 right-0 w-1/2 h-full bg-accent/5 skew-x-12 translate-x-32 pointer-events-none"></div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-accent rounded-full text-xs font-black tracking-widest uppercase mb-8 border border-blue-100">
-                   <Palette size={14} /> {t('estetica.hero.badge')}
+
+  <main id="main">
+    <PageHero
+      badge={t('estetica.hero.badge')}
+      title={t('nav.treatments.estetica')}
+      accent={t('hero.in.vera')}
+      subtitle={t('estetica.hero.subtitle')}
+      breadcrumbs={[{ label: t('nav.treatments.estetica') }]}
+      illustration="estetica"
+      illustrationTitle={t('nav.treatments.estetica')}
+      highlights={[t('estetica.hero.result.natural'), t('estetica.hero.result.minimal'), t('estetica.whitening.box2.title')]}
+    />
+
+    <!-- Artistic vision: smile design + the team -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <SectionHeading eyebrow={copy.smileDesign} title={t('estetica.hero.title')} accent={t('estetica.hero.title.italic')} />
+
+            <div class="mt-10 border-l-2 border-coral pl-6" data-reveal style="--d:.1s">
+              <h3 class="font-sans text-xl font-semibold tracking-tight">{t('estetica.secret.title')}</h3>
+              <blockquote class="font-display mt-3 text-xl italic leading-relaxed text-ocean-900/85">{unquote(t('estetica.secret.desc'))}</blockquote>
+            </div>
+
+            <div class="mt-10 rounded-[1.75rem] bg-sand p-6 md:p-7" data-reveal style="--d:.15s">
+              <p class="eyebrow">{t('estetica.hero.specialist.role')}</p>
+              <ul class="mt-5 space-y-4">
+                {specialists.map((m) => (
+                  <li class="flex items-center gap-4">
+                    <img src={m.image} alt={`${m.name}, ${t(m.role)}`} width="52" height="52" class="h-13 w-13 shrink-0 rounded-full object-cover ring-2 ring-white" loading="lazy" decoding="async" />
+                    <span class="text-sm">
+                      <span class="block font-semibold text-ocean-900">{m.name}</span>
+                      <span class="block text-slate-500">{t(m.role)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <a href={pathFor('team', lang)} class="prose-link mt-5 inline-block text-sm">{t('team.cta')}</a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7" data-reveal="right">
+            <figure class="relative overflow-hidden rounded-[2rem] bg-sand p-5 ring-1 ring-ocean-900/5 md:p-8">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <p class="eyebrow mt-2">{copy.dsd}</p>
+                <p class="-rotate-3 rounded-2xl bg-ocean-900 px-5 py-3 text-white shadow-[var(--shadow-elevated)]">
+                  <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">{t('estetica.hero.floating.specialists')}</span>
+                  <span class="font-display block text-xl italic leading-tight text-coral-soft">{t('estetica.hero.floating.harmony')}</span>
+                </p>
+              </div>
+
+              <div class="mt-5 overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-ocean-900/5" aria-hidden="true">
+                <svg viewBox="0 0 480 290" class="block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <defs>
+                    <pattern id="est-canvas" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" stroke="#0B7C86" stroke-opacity=".07" /></pattern>
+                    <linearGradient id="est-enamel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" /><stop offset="1" stop-color="#EAF6F7" /></linearGradient>
+                    <linearGradient id="est-lip-up" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7A8B5" /><stop offset="1" stop-color="#EC7489" /></linearGradient>
+                    <linearGradient id="est-lip-low" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0798D" /><stop offset="1" stop-color="#FDBDC7" /></linearGradient>
+                  </defs>
+                  <rect width="480" height="290" fill="url(#est-canvas)" />
+                  <!-- mouth, gum and teeth -->
+                  <path d="M104 158C140 128 190 113 240 113S340 128 376 158C330 186 284 200 240 200S150 186 104 158Z" fill="#143B5C" />
+                  <path d="M104 158C140 128 190 113 240 113S340 128 376 158V174C340 144 290 129 240 129S140 144 104 174Z" fill="#F7A6B4" />
+                  {smileTeeth.map((tt) => (
+                    <path d={tt.d} transform={`translate(${tt.x} ${tt.y}) scale(${tt.sx} ${tt.sy})`} fill="url(#est-enamel)" stroke="#0A1F33" stroke-opacity={tt.back ? 0.15 : 0.22} stroke-width="1.2" vector-effect="non-scaling-stroke" opacity={tt.back ? 0.75 : 1} />
+                  ))}
+                  <path d="M202 132C199 148 199 164 202 178M250 132C247 148 247 164 250 178" stroke="#FFFFFF" stroke-width="3" />
+                  <!-- lips -->
+                  <path d="M100 160C128 134 170 104 210 95Q226 92 240 101Q254 92 270 95C310 104 352 134 380 160C344 133 292 113 240 113S136 133 100 160Z" fill="url(#est-lip-up)" stroke="#C9304A" stroke-opacity=".25" />
+                  <path d="M100 160C136 188 188 201 240 201S344 188 380 160C356 200 306 226 240 228S124 200 100 160Z" fill="url(#est-lip-low)" stroke="#C9304A" stroke-opacity=".2" />
+                  <path d="M204 213C226 219 254 219 276 213" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="3" />
+                  <path d="M180 107C194 101 206 99 216 100" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="2" />
+                  <!-- design guides -->
+                  <path d="M240 16V276" stroke="#0B7C86" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="4 5" />
+                  <path d="M104 158H376" stroke="#0B7C86" stroke-opacity=".3" stroke-width="1.2" stroke-dasharray="2 5" />
+                  {goldenLines.map((x) => (
+                    <path d={`M${x} 58V196`} stroke="#0B7C86" stroke-opacity=".45" stroke-width="1" stroke-dasharray="2 4" />
+                  ))}
+                  <path d="M143.7 58H336.3" stroke="#0B7C86" stroke-opacity=".6" stroke-width="1.2" />
+                  {goldenLines.map((x) => (
+                    <path d={`M${x} 54V62`} stroke="#0B7C86" stroke-width="1.2" />
+                  ))}
+                  {goldenLabels.map((g) => (
+                    <text x={g.x} y="46" text-anchor="middle" fill="#0B7C86" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600">{g.label}</text>
+                  ))}
+                  <path d="M120 176Q240 204 360 176" stroke="#F2617A" stroke-width="2.4" pathLength="1" class="draw-me" style="--dd:.5s" />
+                  <circle cx="104" cy="158" r="4" fill="#fff" stroke="#0B7C86" stroke-width="1.6" />
+                  <circle cx="376" cy="158" r="4" fill="#fff" stroke="#0B7C86" stroke-width="1.6" />
+                  <path d="M430 40l2.6 7.4 7.4 2.6-7.4 2.6-2.6 7.4-2.6-7.4-7.4-2.6 7.4-2.6Z" fill="#F2617A" class="animate-twinkle" />
+                  <path d="M52 228l1.8 5.2 5.2 1.8-5.2 1.8-1.8 5.2-1.8-5.2-5.2-1.8 5.2-1.8Z" fill="#2CC5D2" class="animate-twinkle" style="animation-delay:-1.5s" />
+                </svg>
+              </div>
+
+              <figcaption class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+                <span class="inline-flex items-center gap-2"><svg width="24" height="10" aria-hidden="true"><path d="M1 5h22" stroke="#0B7C86" stroke-width="1.4" stroke-dasharray="2 3" /></svg>{copy.golden}</span>
+                <span class="inline-flex items-center gap-2"><svg width="24" height="10" aria-hidden="true"><path d="M1 3q11 6 22 0" fill="none" stroke="#F2617A" stroke-width="2" /></svg>{copy.arc}</span>
+                <span class="inline-flex items-center gap-2"><svg width="24" height="10" aria-hidden="true"><path d="M1 5h22" stroke="#0B7C86" stroke-width="1.4" stroke-dasharray="4 4" /></svg>{copy.midline}</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Teeth whitening -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={61} color="coral" class="pointer-events-none absolute -right-12 top-12 h-[260px] w-auto opacity-[0.1]" />
+      <div class="container-k relative">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('estetica.whitening.badge')} title={t('estetica.whitening.title')} />
+            <p class="mt-6 text-lg leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-ocean-900" data-reveal style="--d:.08s" set:html={t('estetica.whitening.desc')} />
+
+            <div class="mt-10 rounded-[2rem] bg-white p-7 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 md:p-9" data-reveal style="--d:.12s">
+              <div class="flex items-start gap-4">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep">
+                  <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 40V22a16 16 0 0 1 32 0v18" /><path d="M16 40V22a8 8 0 0 1 16 0v18" /><path d="M8 40h8M32 40h8" /><path d="M24 10v-5M14 13l-3-4M34 13l3-4" stroke="#0B7C86" /></svg>
                 </span>
-                <h1 class="text-5xl md:text-7xl font-black text-primary leading-tight mb-8">
-                   {t('estetica.hero.title')} <br/> <span class="text-accent italic font-serif">{t('estetica.hero.title.italic')}</span>
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
-                   {t('estetica.hero.subtitle')}
+                <div>
+                  <h3 class="font-sans text-xl font-semibold tracking-tight">{t('estetica.whitening.method.title')}</h3>
+                  <p class="mt-1 text-[15px] text-slate-600">{t('estetica.whitening.method.subtitle')}</p>
+                </div>
+              </div>
+
+              <ol class="relative mt-8 space-y-6">
+                <span class="absolute bottom-5 left-[21px] top-5 w-px bg-gradient-to-b from-accent/40 via-coral/40 to-accent/40" aria-hidden="true"></span>
+                {whiteningSteps.map((step) => (
+                  <li class="relative flex items-center gap-5">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-accent ring-1 ring-accent/20 shadow-[var(--shadow-soft)]">
+                      {step.icon === 'tray' && (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-9a8 8 0 0 1 16 0v9" /><path d="M8.5 21v-9a3.5 3.5 0 0 1 7 0v9" /><circle cx="6.2" cy="11" r=".6" fill="#F2617A" stroke="#F2617A" /><circle cx="12" cy="5.7" r=".6" fill="#F2617A" stroke="#F2617A" /><circle cx="17.8" cy="11" r=".6" fill="#F2617A" stroke="#F2617A" /></svg>
+                      )}
+                      {step.icon === 'calendar' && (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M3.5 10h17M8 3v4M16 3v4" /><path d="m9 15 2 2 4-4" stroke="#F2617A" /></svg>
+                      )}
+                      {step.icon === 'check' && (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H7a2.5 2.5 0 0 0-2.5 2.5v12A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-12A2.5 2.5 0 0 0 17 4h-2" /><rect x="9" y="2.5" width="6" height="3.5" rx="1.2" /><path d="m8.8 13.5 2.2 2.2 4.4-4.6" stroke="#F2617A" /></svg>
+                      )}
+                    </span>
+                    <span class="text-[15px] font-medium text-ocean-900">{step.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2 lg:col-span-6 lg:self-center">
+            <!-- enamel vs dentin -->
+            <figure class="relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 sm:col-span-2" data-reveal="right">
+              <svg viewBox="0 0 320 250" class="mx-auto block h-auto w-full max-w-[360px]" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <defs>
+                  <linearGradient id="est-dentin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6E6" /><stop offset=".55" stop-color="#F3DFB8" /><stop offset="1" stop-color="#E9CF9C" /></linearGradient>
+                  <linearGradient id="est-enamel-cap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" /><stop offset="1" stop-color="#E4F5F6" /></linearGradient><linearGradient id="est-gum-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD3DA" /><stop offset="1" stop-color="#FFE4E8" stop-opacity="0" /></linearGradient>
+                </defs>
+                <path d="M30 172C64 168 84 156 94 162H166C176 156 196 168 230 172V250H30Z" fill="url(#est-gum-fade)" />
+                <path d="M30 172C64 168 84 156 94 162M166 162C176 156 196 168 230 172" stroke="#F2617A" stroke-opacity=".5" stroke-width="1.4" />
+                <path d="M130 18C150 22 166 48 172 88C176 118 172 138 166 154C162 188 152 222 136 240Q130 246 124 240C108 222 98 188 94 154C88 138 84 118 88 88C94 48 110 22 130 18Z" fill="url(#est-dentin)" stroke="#0A1F33" stroke-opacity=".3" stroke-width="1.4" />
+                <path d="M94 154C88 138 84 118 88 88C94 48 110 22 130 18C150 22 166 48 172 88C176 118 172 138 166 154L156 150C160 134 163 114 160 90C156 60 144 36 130 33C116 36 104 60 100 90C97 114 100 134 104 150Z" fill="url(#est-enamel-cap)" stroke="#0B7C86" stroke-width="1.4" />
+                <path d="M130 66C138 70 142 92 140 126C138 166 134 204 131 228H129C126 204 122 166 120 126C118 92 122 70 130 66Z" fill="#FFD3DA" stroke="#F2617A" stroke-opacity=".6" />
+                <path d="M84 150C78 132 76 112 80 86C86 46 106 16 130 12" stroke="#2CC5D2" stroke-opacity=".45" stroke-width="5" />
+                <g stroke="#F2617A" stroke-width="1.8">
+                  <path d="M58 64H110M104 59l6 5-6 5" pathLength="1" class="draw-me" style="--dd:.3s" />
+                  <path d="M54 96H108M102 91l6 5-6 5" pathLength="1" class="draw-me" style="--dd:.5s" />
+                  <path d="M58 128H110M104 123l6 5-6 5" pathLength="1" class="draw-me" style="--dd:.7s" />
+                </g>
+                <g fill="#2CC5D2">
+                  <circle cx="44" cy="64" r="3" /><circle cx="40" cy="96" r="3" /><circle cx="44" cy="128" r="3" /><circle cx="34" cy="80" r="2" opacity=".6" /><circle cx="34" cy="112" r="2" opacity=".6" />
+                </g>
+                <path d="M170 72 196 56H210" stroke="#0B7C86" stroke-width="1.2" />
+                <circle cx="170" cy="72" r="3" fill="#0B7C86" />
+                <text x="214" y="60" fill="#0A1F33" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600">{copy.enamel}</text>
+                <path d="M146 112 196 128H210" stroke="#C9304A" stroke-width="1.2" />
+                <circle cx="146" cy="112" r="3" fill="#C9304A" />
+                <text x="214" y="132" fill="#0A1F33" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600">{copy.dentin}</text>
+              </svg>
+            </figure>
+
+            <div class="surface-card flex flex-col justify-between p-7" data-reveal style="--d:.08s">
+              <svg viewBox="0 0 160 70" class="h-auto w-full max-w-[200px]" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                {shades.map((c, i) => (
+                  <path d={`M${8 + i * 25} 6h18v28a9 9 0 0 1-18 0Z`} fill={c} stroke="#0A1F33" stroke-opacity=".14" />
+                ))}
+                <path d="M8 60H150M143 55l7 5-7 5" stroke="#F2617A" stroke-width="2" />
+              </svg>
+              <h3 class="mt-6 text-2xl text-ocean-900">{t('estetica.whitening.box1.title')}</h3>
+            </div>
+
+            <div class="relative isolate flex flex-col justify-between overflow-hidden rounded-[1.75rem] bg-ocean p-7 text-white shadow-[var(--shadow-elevated)]" data-reveal style="--d:.14s">
+              <CoralBranch seed={88} depth={4} color="duo" class="pointer-events-none absolute -bottom-3 -right-4 -z-10 h-[120px] w-auto opacity-30" />
+              <svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 4 40 10v12c0 10-7 18-16 22-9-4-16-12-16-22V10Z" /><path d="M19 15c-2.4 0-4.2 1.8-4.2 4.4 0 2.6 1.3 4 1.8 6.8.4 2.4.8 5.4 2.6 5.4 1.6 0 1.7-2.8 2.3-4.8.3-.9.8-1.4 1.5-1.4s1.2.5 1.5 1.4c.6 2 .7 4.8 2.3 4.8 1.8 0 2.2-3 2.6-5.4.5-2.8 1.8-4.2 1.8-6.8 0-2.6-1.8-4.4-4.2-4.4-1.7 0-2.5.9-4 .9s-2.3-.9-4-.9Z" stroke="#FF9AAA" /></svg>
+              <h3 class="mt-6 text-2xl text-white">{t('estetica.whitening.box2.title')}</h3>
+            </div>
+
+            <div class="surface-card flex items-start gap-5 p-7 sm:col-span-2" data-reveal style="--d:.2s">
+              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale text-accent">
+                <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17a4 4 0 0 1 4-4h5l3-5h14l3 5h5a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z" /><circle cx="24" cy="26" r="8" /><path d="M20.5 26.5 23 29l4.5-5" stroke="#F2617A" /><path d="M37 19h1.5" /></svg>
+              </span>
+              <div>
+                <h3 class="font-sans text-xl font-semibold tracking-tight">{t('estetica.whitening.box3.title')}</h3>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-slate-600">{t('estetica.whitening.box3.desc')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Veneers (dark) -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={71} />
+        <CoralBranch seed={152} color="duo" class="absolute -right-10 top-28 h-[240px] w-auto opacity-20" />
+        <CoralBranch seed={17} depth={4} color="white" class="absolute -left-8 bottom-24 h-[200px] w-auto opacity-[0.07]" />
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <!-- Title and subtitle come from one string ("Title: subtitle"), so the accent always gets its own line. -->
+        <div class="mx-auto max-w-3xl text-center" data-reveal>
+          <p class="eyebrow eyebrow-light eyebrow-center mb-5 justify-center">{t('estetica.veneers.badge')}</p>
+          <h2 class="text-[2.35rem] leading-[1.06] text-white sm:text-5xl lg:text-[3.6rem]">
+            {veneersTitle.title}
+            {veneersTitle.accent && <span class="accent-italic block">{veneersTitle.accent}</span>}
+          </h2>
+          <p class="font-display mx-auto mt-6 max-w-2xl text-xl italic leading-relaxed text-white/75 md:text-2xl">{unquote(t('estetica.veneers.quote'))}</p>
+        </div>
+
+        <div class="mt-16 grid gap-6 md:grid-cols-2">
+          {veneers.map((v, i) => (
+            <article class="group flex flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.05] backdrop-blur-xl transition-colors duration-500 hover:border-aqua/30" data-reveal style={`--d:${i * 0.1}s`}>
+              <div class="relative flex h-60 items-center justify-center md:h-72 bg-[radial-gradient(60%_70%_at_50%_45%,rgba(44,197,210,0.22)_0%,transparent_70%)]" aria-hidden="true">
+                <svg viewBox="0 0 260 200" class="h-full w-auto py-4 transition-transform duration-700 group-hover:scale-[1.04]" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <defs>
+                    <linearGradient id={`est-v-enamel-${v.key}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" /><stop offset="1" stop-color="#D5F6F8" /></linearGradient>
+                    <linearGradient id={`est-v-gum-${v.key}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9AAA" stop-opacity=".15" /><stop offset=".55" stop-color="#F48A9B" stop-opacity=".9" /><stop offset="1" stop-color="#F2617A" /></linearGradient>
+                    <linearGradient id={`est-v-shell-${v.key}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".85" /><stop offset=".55" stop-color="#D5F6F8" stop-opacity=".35" /><stop offset="1" stop-color="#8FE3EA" stop-opacity=".2" /></linearGradient>
+                  </defs>
+                  <ellipse cx="130" cy="186" rx="80" ry="6" fill="#000" fill-opacity=".25" />
+                  {v.key === 'porcelain' ? (
+                    <>
+                      <g transform="translate(96 40) scale(1.75)">
+                        <path d={INCISOR} fill={`url(#est-v-enamel-${v.key})`} />
+                        <path d="M-14 12C-17 26-17 42-14 54" stroke="#FFFFFF" stroke-width="2.4" />
+                      </g>
+                      <path d="M40 46C60 28 132 28 152 46C160 36 156 22 136 18Q96 10 56 18C36 22 32 36 40 46Z" fill={`url(#est-v-gum-${v.key})`} />
+                      <path d="M40 46C60 28 132 28 152 46" stroke="#FFE4E8" stroke-opacity=".7" stroke-width="1.4" />
+                      <g transform="translate(176 52) rotate(10) scale(1.62)"><g class="animate-float-slow">
+                        <path d={INCISOR} fill={`url(#est-v-shell-${v.key})`} stroke="#FFFFFF" stroke-opacity=".95" stroke-width=".9" />
+                        <path d="M-19 44C-8 47 8 47 19 44" stroke="#8FE3EA" stroke-opacity=".7" stroke-width="1" />
+                        <path d="M-17 50C-6 53 6 53 17 50" stroke="#8FE3EA" stroke-opacity=".45" stroke-width=".8" />
+                        <path d="M-12 8C-15 22-15 36-12 48" stroke="#FFFFFF" stroke-width="1.6" /></g>
+                      </g>
+                      <path d="M168 150C156 164 140 168 124 166" stroke="#FF9AAA" stroke-width="1.8" stroke-dasharray="3 5" />
+                      <path d="M130 160l-7 6 8 4" stroke="#FF9AAA" stroke-width="1.8" />
+                      <path d="M226 30l2.4 6.6 6.6 2.4-6.6 2.4-2.4 6.6-2.4-6.6-6.6-2.4 6.6-2.4Z" fill="#FFFFFF" class="animate-twinkle" />
+                    </>
+                  ) : (
+                    <>
+                      <g transform="translate(118 40) scale(1.75)">
+                        <path d="M-15 0Q0-5 15 0C21 14 23 36 21 55Q20 64 12 65.5L4 61-3 66-8 61-12 65.5Q-20 64-21 55C-23 36-21 14-15 0Z" fill={`url(#est-v-enamel-${v.key})`} />
+                        <path d="M-21 46C-8 50 8 50 21 46L21 55Q20 64 12 65.5H-12Q-20 64-21 55Z" fill="#FFE9C6" fill-opacity=".55" />
+                        <path d="M-20.5 52C-8 56 8 56 20.5 52" stroke="#2CC5D2" stroke-opacity=".8" stroke-width="1" stroke-dasharray="2 2" />
+                        <path d="M-12 65.5H12Q20 64 21 55" stroke="#2CC5D2" stroke-width="1.4" stroke-dasharray="2.5 2" />
+                        <path d="M-14 12C-17 26-17 42-14 54" stroke="#FFFFFF" stroke-width="2.4" />
+                      </g>
+                      <path d="M62 46C82 28 154 28 174 46C182 36 178 22 158 18Q118 10 78 18C58 22 54 36 62 46Z" fill={`url(#est-v-gum-${v.key})`} />
+                      <path d="M62 46C82 28 154 28 174 46" stroke="#FFE4E8" stroke-opacity=".7" stroke-width="1.4" />
+                      <g transform="rotate(-38 196 120)">
+                        <rect x="190" y="40" width="12" height="96" rx="6" fill="#D5F6F8" fill-opacity=".9" />
+                        <path d="M196 136v18" stroke="#8FE3EA" stroke-width="3" />
+                        <path d="M190 154h12l-3 14h-6Z" fill="#F2617A" />
+                        <path d="M190 64h12M190 72h12M190 80h12" stroke="#0B7C86" stroke-opacity=".35" />
+                      </g>
+                      <path d="M52 150l2 5.6 5.6 2-5.6 2-2 5.6-2-5.6-5.6-2 5.6-2Z" fill="#8FE3EA" class="animate-twinkle" />
+                    </>
+                  )}
+                </svg>
+              </div>
+
+              <div class="flex flex-1 flex-col p-7 md:p-10">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-aqua-soft">{v.badge}</span>
+                  <span class="font-display text-2xl italic text-coral-soft">{String(i + 1).padStart(2, '0')}</span>
+                </div>
+                <h3 class="mt-6 text-3xl text-white">{v.title}</h3>
+                <p class="mt-4 leading-relaxed text-white/70">{v.desc}</p>
+                <p class="mt-auto flex items-center gap-3 border-t border-white/10 pt-6 text-sm font-semibold text-white">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-aqua-soft">
+                    {v.key === 'porcelain' ? (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 16 9 5 9-5" stroke="#FF9AAA" /></svg>
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4 9.5 14.5" /><path d="M9.5 14.5c-2-.4-4 .8-4.6 3-.4 1.6-1.3 2.4-2.4 2.5 2.6 1.6 6.6 1.4 8.2-1.2.8-1.4.4-3.2-1.2-4.3Z" stroke="#FF9AAA" /><path d="m17 3.5 3.5 3.5" /></svg>
+                    )}
+                  </span>
+                  {v.feature}
                 </p>
-                <div class="flex flex-wrap gap-4">
-                   <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <CheckCircle2 size={16} class="text-accent" />
-                      <span class="text-xs font-bold text-primary uppercase tracking-tighter">{t('estetica.hero.result.natural')}</span>
-                   </div>
-                   <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <CheckCircle2 size={16} class="text-accent" />
-                      <span class="text-xs font-bold text-primary uppercase tracking-tighter">{t('estetica.hero.result.minimal')}</span>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="relative fade-up" style="transition-delay: 0.2s">
-                <!-- Dual Prominence Layout - No Overlap -->
-                <div class="grid grid-cols-2 gap-4 md:gap-8 items-end relative group">
-                   <!-- Background Decoration -->
-                   <div class="absolute -inset-10 bg-accent/10 rounded-full blur-[100px] pointer-events-none"></div>
-                   
-                   <!-- Minerva -->
-                   <div class="space-y-4">
-                      <div class="aspect-[3/4.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 transform hover:-translate-y-2 transition-all duration-700">
-                         <img src="/equipo/minerva.jpg" alt="Minerva" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
-                      </div>
-                      <div class="pl-4">
-                         <p class="text-primary font-black text-sm uppercase tracking-tighter">Minerva</p>
-                         <p class="text-accent text-[10px] font-bold uppercase tracking-widest">{t('estetica.hero.specialist.role')}</p>
-                      </div>
-                   </div>
-
-                   <!-- Blaneirys -->
-                   <div class="space-y-4 pb-12">
-                      <div class="aspect-[3/4.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-100 transform hover:-translate-y-2 transition-all duration-700">
-                         <img src="/equipo/blaneirys.jpg" alt="Blaneirys" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
-                      </div>
-                      <div class="pl-4">
-                         <p class="text-primary font-black text-sm uppercase tracking-tighter">Blaneirys</p>
-                         <p class="text-accent text-[10px] font-bold uppercase tracking-widest">{t('estetica.hero.specialist.role')}</p>
-                      </div>
-                   </div>
-
-                   <!-- Floating Badge Connection -->
-                   <div class="absolute top-0 right-0 bg-primary text-white p-6 rounded-3xl shadow-xl shadow-primary/20 z-30 transform -rotate-6">
-                      <p class="text-[10px] font-black uppercase tracking-[0.2em] leading-tight opacity-60 mb-1">{t('estetica.hero.floating.specialists')}</p>
-                      <p class="text-lg font-black italic text-accent leading-none">{t('estetica.hero.floating.harmony')}</p>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
     </section>
 
-    <!-- Teeth Whitening Section -->
-    <section class="py-24 bg-slate-50 overflow-hidden">
-       <div class="container mx-auto px-6">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up lg:pr-12">
-                <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6">{t('estetica.whitening.badge')}</h2>
-                <h3 class="text-4xl font-black text-primary mb-8 leading-tight italic">{t('estetica.whitening.title')}</h3>
-                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
-                   <p set:html={t('estetica.whitening.desc')}></p>
-                   <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                      <h4 class="font-black text-primary mb-4 flex items-center gap-2">
-                         <Zap size={20} class="text-accent" /> {t('estetica.whitening.method.title')}
-                      </h4>
-                      <p class="text-sm mb-4 italic">{t('estetica.whitening.method.subtitle')}</p>
-                      <ul class="space-y-3">
-                         <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
-                            {t('estetica.whitening.method.step1')}
-                         </li>
-                         <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
-                            {t('estetica.whitening.method.step2')}
-                         </li>
-                         <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
-                            {t('estetica.whitening.method.step3')}
-                         </li>
-                      </ul>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="grid grid-cols-2 gap-6 fade-up" style="transition-delay: 0.2s">
-                <div class="aspect-square bg-white p-8 rounded-[3rem] shadow-xl flex flex-col justify-center items-center text-center group hover:bg-accent transition-all duration-500">
-                   <div class="text-accent group-hover:text-white transition-colors mb-6"><Sparkles size={48} /></div>
-                   <p class="text-primary group-hover:text-white font-black text-xs uppercase tracking-[0.2em]">{t('estetica.whitening.box1.title')}</p>
-                </div>
-                <div class="aspect-square bg-primary p-8 rounded-[3rem] shadow-xl flex flex-col justify-center items-center text-center group hover:-translate-y-2 transition-all duration-500">
-                   <div class="text-accent mb-6"><ShieldCheck size={48} /></div>
-                   <p class="text-white font-black text-xs uppercase tracking-[0.2em]">{t('estetica.whitening.box2.title')}</p>
-                </div>
-                <div class="col-span-2 p-10 bg-white rounded-[3rem] border border-slate-100 shadow-sm flex items-center gap-8 group">
-                   <div class="w-20 h-20 bg-blue-50 text-accent rounded-2xl flex-none flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Camera size={32} />
-                   </div>
-                   <div>
-                      <h5 class="font-black text-primary mb-1 uppercase tracking-tighter">{t('estetica.whitening.box3.title')}</h5>
-                      <p class="text-xs text-slate-500">{t('estetica.whitening.box3.desc')}</p>
-                   </div>
-                </div>
-             </div>
+    <!-- What we solve -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.solutions} title={t('estetica.problems.title')} align="center" />
+
+        <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {problems.map((p, i) => (
+            <li class="surface-card group flex items-center gap-5 p-5 lg:flex-col lg:items-start lg:gap-0 lg:p-6" data-reveal style={`--d:${i * 0.06}s`}>
+              <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale/70 text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                <svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={p.icon} />
+              </span>
+              <p class="font-medium leading-snug text-ocean-900 lg:mt-6">{p.text}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div class="mt-16" data-reveal>
+          <p class="eyebrow">{copy.goodToKnow}</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            {tips.map((tip, i) => (
+              <a href={tip.href} class="group flex items-start gap-4 rounded-[1.5rem] border border-ocean-900/[0.07] bg-sand/70 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-accent/25 hover:bg-white hover:shadow-[var(--shadow-soft)]" data-reveal style={`--d:${i * 0.08}s`}>
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-accent ring-1 ring-accent/10">
+                  {tip.icon ? (
+                    <TreatmentIcon name={tip.icon} size={28} strokeWidth={1.8} />
+                  ) : (
+                    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="18" /><path d="M30.5 16.6a9.5 9.5 0 1 0 0 14.8" /><path d="M13 21.5h12M13 26.5h12" stroke="#F2617A" /></svg>
+                  )}
+                </span>
+                <span>
+                  <span class="block text-[15px] leading-relaxed text-slate-600">{tip.text}</span>
+                  <span class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                    {tip.label}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </span>
+                </span>
+              </a>
+            ))}
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Veneers Section -->
-    <section class="py-24 bg-white">
-       <div class="container mx-auto px-6">
-          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
-             <h4 class="text-accent font-black uppercase tracking-[0.4em] mb-4 text-xs">{t('estetica.veneers.badge')}</h4>
-             <h3 class="text-4xl md:text-5xl font-black text-primary mb-6 leading-tight">{t('estetica.veneers.title')}</h3>
-             <p class="text-slate-500 italic">{t('estetica.veneers.quote')}</p>
-          </div>
+    <div class="bg-white pb-10 md:pb-14">
+      <CtaBand />
+    </div>
 
-          <div class="grid md:grid-cols-2 gap-8 mb-20">
-             <!-- Porcelain -->
-             <div class="fade-up bg-primary p-12 rounded-[4rem] text-white relative overflow-hidden group">
-                <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all"></div>
-                <div class="relative z-10">
-                   <span class="inline-block px-4 py-1 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-white/10">{t('estetica.veneers.porcelain.badge')}</span>
-                   <h4 class="text-3xl font-black mb-6 italic text-white">01. {t('estetica.veneers.porcelain.title')}</h4>
-                   <p class="text-slate-300 leading-relaxed mb-8">
-                      {t('estetica.veneers.porcelain.desc')}
-                   </p>
-                   <div class="flex items-center gap-4 text-accent font-black text-xs uppercase tracking-widest">
-                      <Layers size={20} /> {t('estetica.veneers.porcelain.feature')}
-                   </div>
-                </div>
-             </div>
+    <FaqSection eyebrow={t('estetica.faq.badge')} title={t('estetica.faq.title')} faqs={faqs} />
 
-             <!-- Composite -->
-             <div class="fade-up bg-slate-50 p-12 rounded-[4rem] text-primary border border-slate-100 group">
-                <span class="inline-block px-4 py-1 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest mb-6">{t('estetica.veneers.composite.badge')}</span>
-                <h4 class="text-3xl font-black mb-6 italic">02. {t('estetica.veneers.composite.title')}</h4>
-                <p class="text-slate-500 leading-relaxed mb-8">
-                   {t('estetica.veneers.composite.desc')}
-                </p>
-                <div class="flex items-center gap-4 text-primary font-black text-xs uppercase tracking-widest">
-                   <Palette size={20} /> {t('estetica.veneers.composite.feature')}
-                </div>
-             </div>
-          </div>
+    <RelatedTreatments current="estetica" />
 
-          <!-- Problems Solved -->
-          <div class="max-w-5xl mx-auto bg-[#0A1A2F] rounded-[3.5rem] p-12 md:p-20 relative overflow-hidden shadow-3xl text-white">
-             <div class="absolute top-0 right-0 w-1/3 h-full bg-accent/10 blur-3xl pointer-events-none"></div>
-             
-             <div class="lg:flex gap-20 items-center relative z-10">
-                <div class="lg:w-1/2 mb-12 lg:mb-0">
-                   <h3 class="text-3xl font-black mb-8 leading-tight italic text-white">{t('estetica.problems.title')}</h3>
-                   <ul class="space-y-4">
-                      {veneersProblems.map(problem => (
-                         <li class="flex items-center gap-4 group">
-                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
-                               <CheckCircle2 size={16} />
-                            </div>
-                            <span class="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">{problem}</span>
-                         </li>
-                      ))}
-                   </ul>
-                </div>
-                
-                <div class="lg:w-1/2">
-                   <div class="bg-white/5 backdrop-blur-md p-10 rounded-[3rem] border border-white/10">
-                      <div class="flex gap-4 items-center mb-6">
-                         <div class="p-3 bg-accent text-white rounded-xl"><Star /></div>
-                         <h4 class="text-xl font-black text-white">{t('estetica.secret.title')}</h4>
-                      </div>
-                      <p class="text-slate-400 text-sm leading-relaxed italic">
-                         {t('estetica.secret.desc')}
-                      </p>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('estetica.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('estetica.faq.title')}</h3>
-          </div>
-
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
-
-    <!-- Final CTA -->
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

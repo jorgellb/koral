@@ -3,459 +3,490 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  Baby, 
-  Heart, 
-  Milestone, 
-  Sparkles, 
-  Zap, 
-  CheckCircle2, 
-  AlertCircle, 
-  HelpCircle, 
-  ChevronRight,
-  Stethoscope,
-  Apple,
-  Cookie
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const stages = [
-  {
-    num: '1',
-    title: t('odontopediatria.stages.1.title'),
-    subtitle: t('odontopediatria.stages.1.subtitle'),
-    points: [
-      t('odontopediatria.stages.1.p1'),
-      t('odontopediatria.stages.1.p2'),
-      t('odontopediatria.stages.1.p3'),
-      t('odontopediatria.stages.1.p4')
-    ],
-    color: 'bg-indigo-50 text-indigo-600'
+// Short UI strings that only this page needs.
+const copy = ({
+  es: {
+    photoAlt: 'Niña aprendiendo a cepillarse los dientes con un modelo dental gigante en la consulta de odontopediatría de Clínica Dental Koral en Vera',
+    stage: 'Etapa',
+    healthy: 'Diente sano',
+    whiteSpot: 'Mancha blanca',
+    cavity: 'Caries',
+    reversible: 'Reversible',
+    orthoEyebrow: 'Ortodoncia infantil',
+    orthoLead: '¿Ha llegado el momento del tratamiento?',
   },
-  {
-    num: '2',
-    title: t('odontopediatria.stages.2.title'),
-    subtitle: t('odontopediatria.stages.2.subtitle'),
-    points: [
-      t('odontopediatria.stages.2.p1'),
-      t('odontopediatria.stages.2.p2'),
-      t('odontopediatria.stages.2.p3'),
-      t('odontopediatria.stages.2.p4')
-    ],
-    color: 'bg-blue-50 text-blue-600'
-  }
+  en: {
+    photoAlt: "Girl learning to brush her teeth on a giant tooth model during a children's dentistry visit at Koral Dental Clinic in Vera",
+    stage: 'Stage',
+    healthy: 'Healthy tooth',
+    whiteSpot: 'White spot',
+    cavity: 'Cavity',
+    reversible: 'Reversible',
+    orthoEyebrow: 'Early orthodontics',
+    orthoLead: 'Is it time for treatment?',
+  },
+  de: {
+    photoAlt: 'Mädchen lernt beim Kinderzahnarzt der Zahnklinik Koral in Vera an einem großen Zahnmodell das Zähneputzen',
+    stage: 'Phase',
+    healthy: 'Gesunder Zahn',
+    whiteSpot: 'Weißer Fleck',
+    cavity: 'Karies',
+    reversible: 'Umkehrbar',
+    orthoEyebrow: 'Frühe Kieferorthopädie',
+    orthoLead: 'Ist es Zeit für eine Behandlung?',
+  },
+  nl: {
+    photoAlt: 'Meisje leert tandenpoetsen op een groot tandmodel bij de kindertandarts van Tandkliniek Koral in Vera',
+    stage: 'Fase',
+    healthy: 'Gezonde tand',
+    whiteSpot: 'Witte vlek',
+    cavity: 'Gaatje',
+    reversible: 'Omkeerbaar',
+    orthoEyebrow: 'Vroege orthodontie',
+    orthoLead: 'Is het tijd voor behandeling?',
+  },
+  fr: {
+    photoAlt: 'Fillette apprenant à se brosser les dents sur une grande dent modèle chez le dentiste pour enfants de la Clinique Dentaire Koral à Vera',
+    stage: 'Étape',
+    healthy: 'Dent saine',
+    whiteSpot: 'Tache blanche',
+    cavity: 'Carie',
+    reversible: 'Réversible',
+    orthoEyebrow: 'Orthodontie précoce',
+    orthoLead: 'Le moment du traitement est-il venu ?',
+  },
+} as const)[lang];
+
+/* ---------------------------------------------------------------------------
+   Icon geometry. Icons are drawn on a 48 (or 24) grid with `currentColor`
+   strokes and one coral detail, and injected with set:html.
+   --------------------------------------------------------------------------- */
+const CORAL = '#F2617A';
+// Milk tooth, centred on (24, 23), 30 × 24 units.
+const BABY =
+  'M16.5 11C12 11 9 14.6 9 19.4c0 4.2 2 6.6 2.8 10.2.7 3 1.6 5.4 4 5.4s3.2-2.6 4.2-4.8c.8-1.6 2.2-2.4 4-2.4s3.2.8 4 2.4c1 2.2 1.8 4.8 4.2 4.8s3.3-2.4 4-5.4c.8-3.6 2.8-6 2.8-10.2 0-4.8-3-8.4-7.5-8.4-2.9 0-4.7 1.6-7.5 1.6S19.4 11 16.5 11Z';
+// Permanent tooth, centred on (24, 23.5), 32 × 33 units.
+const ADULT =
+  'M16 7c-4.4 0-8 3.4-8 8.6 0 5 2.6 7.9 3.6 13.4.9 5 1.5 11 5 11 3.2 0 3.3-5.6 4.6-9.6.6-1.9 1.6-2.9 2.8-2.9s2.2 1 2.8 2.9c1.3 4 1.4 9.6 4.6 9.6 3.5 0 4.1-6 5-11 1-5.5 3.6-8.4 3.6-13.4C40 10.4 36.4 7 32 7c-3.4 0-5 1.8-8 1.8S19.4 7 16 7Z';
+
+const r2 = (n: number) => Math.round(n * 100) / 100;
+/** Places a tooth outline at (cx, cy) with scale s, keeping the visual stroke width `sw`. */
+const tooth = (d: string, oy: number, cx: number, cy: number, s: number, sw = 2, extra = '') =>
+  `<path d="${d}" transform="translate(${r2(cx - 24 * s)} ${r2(cy - oy * s)}) scale(${s})" stroke-width="${r2(sw / s)}" ${extra}/>`;
+const baby = (cx: number, cy: number, s: number, sw = 2, extra = '') => tooth(BABY, 23, cx, cy, s, sw, extra);
+const adult = (cx: number, cy: number, s: number, sw = 2, extra = '') => tooth(ADULT, 23.5, cx, cy, s, sw, extra);
+
+/** Four-point sparkle. */
+const star4 = (cx: number, cy: number, r: number) =>
+  `M${cx} ${cy - r}Q${cx} ${cy} ${cx + r} ${cy}Q${cx} ${cy} ${cx} ${cy + r}Q${cx} ${cy} ${cx - r} ${cy}Q${cx} ${cy} ${cx} ${cy - r}Z`;
+/** Five-point star (reward). */
+const star5 = (cx: number, cy: number, r: number) =>
+  Array.from({ length: 10 }, (_, i) => {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const rr = i % 2 ? r * 0.46 : r;
+    return `${i ? 'L' : 'M'}${r2(cx + Math.cos(a) * rr)} ${r2(cy + Math.sin(a) * rr)}`;
+  }).join('') + 'Z';
+const heart = (cx: number, top: number, w: number) => {
+  const k = w / 8.4;
+  return `M${cx} ${top + 0.9 * k}c${r2(1.4 * k)}-${r2(1.6 * k)} ${r2(4.2 * k)}-${r2(0.9 * k)} ${r2(4.2 * k)} ${r2(1.4 * k)} 0 ${r2(2.2 * k)}-${r2(4.2 * k)} ${r2(4.6 * k)}-${r2(4.2 * k)} ${r2(4.6 * k)}s-${r2(4.2 * k)}-${r2(2.4 * k)}-${r2(4.2 * k)}-${r2(4.6 * k)}c0-${r2(2.3 * k)} ${r2(2.8 * k)}-${r2(3 * k)} ${r2(4.2 * k)}-${r2(1.4 * k)}Z`;
+};
+const coralFill = `stroke="${CORAL}" fill="${CORAL}" fill-opacity=".15"`;
+
+const icons = {
+  // Intro
+  firstVisit: `<rect x="7" y="10" width="34" height="31" rx="6"/><path d="M7 18.5h34M16 6.5v7M32 6.5v7"/>${baby(24, 29.6, 0.44, 2, `stroke="${CORAL}"`)}`,
+  calm: `<circle cx="22" cy="25" r="15"/><path d="M15.8 23.2q1.7-2.2 3.4 0M24.8 23.2q1.7-2.2 3.4 0M16.5 28.6q5.5 5 11 0"/><path d="${heart(39.5, 6.6, 8.4)}" ${coralFill}/>`,
+  trust: `${baby(18, 25, 0.8)}${baby(37.5, 32, 0.46)}<path d="${heart(36, 12.4, 6.8)}" ${coralFill}/>`,
+  // Stages
+  pregnancy: `<path d="M24 41S7 31.5 7 19.2C7 13.6 11 9 16.2 9c3.4 0 6.2 1.9 7.8 4.7C25.6 10.9 28.4 9 31.8 9 37 9 41 13.6 41 19.2 41 31.5 24 41 24 41Z"/>${baby(24, 23.5, 0.42, 2, `stroke="${CORAL}"`)}`,
+  newborn: `<circle cx="24" cy="26" r="15"/><path d="M24 11c0-3 1.8-5 4.2-5 1.7 0 2.8 1.1 2.8 2.5S30 11 28.8 11" stroke="${CORAL}"/><path d="M16.8 24.5q1.8 1.8 3.6 0M27.6 24.5q1.8 1.8 3.6 0M20.5 31q3.5 3 7 0"/><circle cx="15.5" cy="30" r="1.8" fill="${CORAL}" fill-opacity=".4" stroke="none"/><circle cx="32.5" cy="30" r="1.8" fill="${CORAL}" fill-opacity=".4" stroke="none"/>`,
+  firstTeeth: `<path d="M5 33c0-7.5 7-12.5 19-12.5S43 25.5 43 33c0 3-2 5-5 5H10c-3 0-5-2-5-5Z"/><path d="M17.5 21v-4.5c0-2.1 1.3-3.6 3-3.6s3 1.5 3 3.6v4M24.5 20.5v-4c0-2.1 1.3-3.6 3-3.6s3 1.5 3 3.6V21"/><path d="M11 31.5c3-3 7.5-4.5 13-4.5" stroke-opacity=".4"/><path d="${star4(39, 10, 5)}" ${coralFill}/>`,
+  fullSet: `<path d="M9 9.5c0 17 6.5 29.5 15 29.5s15-12.5 15-29.5M16 9.5c0 12 3.6 21.5 8 21.5s8-9.5 8-21.5M9 9.5h7M32 9.5h7"/><path d="M10.2 21.7l6.5-3.4M13.3 30.9l5.2-5.9M18.1 36.9l3-7.5M24 39v-8M29.9 36.9l-3-7.5M34.7 30.9l-5.2-5.9M37.8 21.7l-6.5-3.4" stroke-opacity=".5"/><path d="M24 12.5c1.9 2.5 3 4.1 3 5.4a3 3 0 0 1-6 0c0-1.3 1.1-2.9 3-5.4Z" ${coralFill}/>`,
+  permanent: `${baby(24, 12.6, 0.46, 2, `stroke-dasharray="${r2(2.4 / 0.46)} ${r2(3 / 0.46)}" stroke-opacity=".6"`)}<path d="M21 23l3-3 3 3" stroke="${CORAL}"/>${adult(24, 34.2, 0.6)}`,
+  selfCare: `<g transform="rotate(-40 24 24)"><rect x="3" y="27" width="27" height="5.5" rx="2.75"/><rect x="30" y="26" width="13" height="7.5" rx="2.2"/><path d="M32.5 26v-5M36 26v-5M39.5 26v-5" stroke="${CORAL}"/></g><path d="${star5(13.5, 13, 7.5)}" ${coralFill}/>`,
+  // Caries
+  candy: `<circle cx="12" cy="12" r="4.8"/><path d="M7.4 10.6 3 7.5v9l4.4-3.1M16.6 10.6 21 7.5v9l-4.4-3.1"/><path d="M10.4 7.6c-1.2 2.8-1.2 6 0 8.8M13.6 7.6c1.2 2.8 1.2 6 0 8.8" stroke="${CORAL}"/>`,
+  lens: `<circle cx="10.5" cy="10.5" r="7.2"/><path d="m15.8 15.8 5.4 5.4"/>${baby(10.5, 10.7, 0.28, 1.6)}<circle cx="12.6" cy="8.9" r="1.3" fill="${CORAL}" stroke="none"/>`,
+  brush: `<rect x="2.5" y="13" width="12" height="3.4" rx="1.7"/><rect x="14.5" y="12.4" width="7" height="4.6" rx="1.2"/><path d="M16 12.4V9.2M18.2 12.4V9.2M20.4 12.4V9.2" stroke="${CORAL}"/>`,
+  shield: `<path d="M12 21.5s7.5-3.6 7.5-9.5V5.5L12 2.8 4.5 5.5V12c0 5.9 7.5 9.5 7.5 9.5Z"/><path d="m8.8 12 2.2 2.2 4.4-4.6" stroke="${CORAL}"/>`,
+  // Orthodontic warning signs (24 grid)
+  thumb: `<path d="M8.5 21.5V10a3.5 3.5 0 0 1 7 0v11.5"/><path d="M10 9.4c0-1.7.9-2.7 2-2.7s2 1 2 2.7V11h-4Z" stroke="${CORAL}"/><path d="M8.5 15.5h7" stroke-opacity=".4"/>`,
+  pacifier: `<path d="M10 8V6.3a2 2 0 0 1 4 0V8" stroke="${CORAL}"/><path d="M4 11c0-2 2.7-3 8-3s8 1 8 3-3 4-8 4-8-2-8-4Z"/><circle cx="12" cy="18.5" r="3"/>`,
+  gap: `<path d="M3 10a2.5 2.5 0 0 1 5 0v6.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1ZM16 10a2.5 2.5 0 0 1 5 0v6.5a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1Z"/><path d="M9.5 10a2.5 2.5 0 0 1 5 0v6.5a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1Z" stroke="${CORAL}" stroke-dasharray="1.6 2"/><path d="M2 20.5h20" stroke-opacity=".4"/>`,
+  crowded: `<rect x="3.5" y="6" width="6" height="12" rx="3" transform="rotate(-14 6.5 12)"/><rect x="14.5" y="6" width="6" height="12" rx="3" transform="rotate(14 17.5 12)"/><rect x="9" y="5" width="6" height="12.5" rx="3" stroke="${CORAL}"/>`,
+  jaws: `<path d="M3.5 10C5.8 6.2 8.8 4.5 12 4.5s6.2 1.7 8.5 5.5"/><path d="M7 14.5c1.6 3.3 3.2 5 5 5s3.4-1.7 5-5"/><path d="M2.5 12.2h19" stroke="${CORAL}" stroke-dasharray="1.6 2"/>`,
+  bite: `<path d="M3 8.5c3-3.4 15-3.4 18 0M3 15.5c3 3.4 15 3.4 18 0"/><path d="m5 11 2 2 2-2 2 2 2-2 2 2 2-2 2 2"/><circle cx="20.4" cy="12" r="1.6" fill="${CORAL}" stroke="none"/>`,
+};
+
+const intro = [
+  { title: t('odontopediatria.intro.visit.title'), desc: t('odontopediatria.intro.visit.desc'), icon: icons.firstVisit },
+  { title: t('odontopediatria.intro.sedation.title'), desc: t('odontopediatria.intro.sedation.desc'), icon: icons.calm },
+  { title: t('odontopediatria.intro.trust.title'), desc: t('odontopediatria.intro.trust.desc'), icon: icons.trust },
 ];
 
-const stagesMiddle = [
+const stageIcons = [icons.pregnancy, icons.newborn, icons.firstTeeth, icons.fullSet, icons.permanent, icons.selfCare];
+const stages = stageIcons.map((icon, i) => {
+  const n = i + 1;
+  return {
+    n,
+    icon,
+    title: t(`odontopediatria.stages.${n}.title` as any),
+    subtitle: t(`odontopediatria.stages.${n}.subtitle` as any),
+    points: [1, 2, 3, 4].map((p) => t(`odontopediatria.stages.${n}.p${p}` as any)),
+  };
+});
+
+// Healthy → white spot (reversible) → cavity, drawn on the 48 grid.
+const toothBase = `<path d="${BABY}" fill="rgba(255,255,255,0.07)" stroke="#8FE3EA" stroke-width="1.3"/><path d="M14.2 16.8c.8-2 2.3-3 4.3-3.2" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round" fill="none"/>`;
+const cariesSteps = [
+  { label: copy.healthy, svg: toothBase },
   {
-    num: '3',
-    title: t('odontopediatria.stages.3.title'),
-    subtitle: t('odontopediatria.stages.3.subtitle'),
-    points: [
-      t('odontopediatria.stages.3.p1'),
-      t('odontopediatria.stages.3.p2'),
-      t('odontopediatria.stages.3.p3'),
-      t('odontopediatria.stages.3.p4')
-    ],
-    color: 'bg-cyan-50 text-cyan-600'
+    label: copy.whiteSpot,
+    tag: copy.reversible,
+    svg: `${toothBase}<ellipse cx="29.5" cy="17.2" rx="3.4" ry="2.5" fill="#FFFFFF" fill-opacity=".92"/><circle cx="29.5" cy="17.2" r="6.4" fill="none" stroke="#8FE3EA" stroke-width=".9" stroke-dasharray="1.4 1.8"/>`,
   },
   {
-    num: '4',
-    title: t('odontopediatria.stages.4.title'),
-    subtitle: t('odontopediatria.stages.4.subtitle'),
-    points: [
-      t('odontopediatria.stages.4.p1'),
-      t('odontopediatria.stages.4.p2'),
-      t('odontopediatria.stages.4.p3'),
-      t('odontopediatria.stages.4.p4')
-    ],
-    color: 'bg-emerald-50 text-emerald-600'
-  }
+    label: copy.cavity,
+    svg: `${toothBase}<path d="M26.4 12.6c2-.8 4.6-.4 5.7 1.5 1 1.7.3 4.1-1.4 5.4-1.7 1.3-4.2 1.1-5.3-.5-1-1.5-.8-3.6.1-4.9Z" fill="#F2617A"/><path d="M27.8 14.6c1-.3 2.2-.1 2.7.7.5.8.1 1.9-.7 2.5-.8.6-2 .5-2.5-.3-.4-.7-.3-1.6.5-2.9Z" fill="#C9304A"/>`,
+  },
 ];
 
-const stagesFinal = [
-  {
-    num: '5',
-    title: t('odontopediatria.stages.5.title'),
-    subtitle: t('odontopediatria.stages.5.subtitle'),
-    points: [
-      t('odontopediatria.stages.5.p1'),
-      t('odontopediatria.stages.5.p2'),
-      t('odontopediatria.stages.5.p3'),
-      t('odontopediatria.stages.5.p4')
-    ],
-    color: 'bg-orange-50 text-orange-600'
-  },
-  {
-    num: '6',
-    title: t('odontopediatria.stages.6.title'),
-    subtitle: t('odontopediatria.stages.6.subtitle'),
-    points: [
-      t('odontopediatria.stages.6.p1'),
-      t('odontopediatria.stages.6.p2'),
-      t('odontopediatria.stages.6.p3'),
-      t('odontopediatria.stages.6.p4')
-    ],
-    color: 'bg-rose-50 text-rose-600'
-  }
+const indicators = [
+  { label: t('odontopediatria.ortho.ind1'), icon: icons.thumb },
+  { label: t('odontopediatria.ortho.ind2'), icon: icons.pacifier },
+  { label: t('odontopediatria.ortho.ind3'), icon: icons.gap },
+  { label: t('odontopediatria.ortho.ind4'), icon: icons.crowded },
+  { label: t('odontopediatria.ortho.ind5'), icon: icons.jaws },
+  { label: t('odontopediatria.ortho.ind6'), icon: icons.bite },
 ];
 
-const orthoIndicators = [
-  t('odontopediatria.ortho.ind1'),
-  t('odontopediatria.ortho.ind2'),
-  t('odontopediatria.ortho.ind3'),
-  t('odontopediatria.ortho.ind4'),
-  t('odontopediatria.ortho.ind5'),
-  t('odontopediatria.ortho.ind6')
-];
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`odontopediatria.faq.q${n}.q` as any),
+  answer: t(`odontopediatria.faq.q${n}.a` as any),
+}));
 
-const faqs = [
-  {
-    question: t('odontopediatria.faq.q1.q'),
-    answer: t('odontopediatria.faq.q1.a')
-  },
-  {
-    question: t('odontopediatria.faq.q2.q'),
-    answer: t('odontopediatria.faq.q2.a')
-  },
-  {
-    question: t('odontopediatria.faq.q3.q'),
-    answer: t('odontopediatria.faq.q3.a')
-  },
-  {
-    question: t('odontopediatria.faq.q4.q'),
-    answer: t('odontopediatria.faq.q4.a')
-  },
-  {
-    question: t('odontopediatria.faq.q5.q'),
-    answer: t('odontopediatria.faq.q5.a')
-  }
-];
+const unquote = (s: string) => s.replace(/^\s*["“„«]\s*|\s*["”“»]\s*$/g, '');
+const pad = (n: number) => String(n).padStart(2, '0');
 
-const slug = lang === 'es' ? '/odontopediatria' : `/${lang}/odontopediatria`;
+const url = absoluteUrl(pathFor('odontopediatria', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('odontopediatria.meta.title'),
-      "description": t('odontopediatria.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.odontopediatria'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('odontopediatria.meta.title'),
+  description: t('odontopediatria.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    '@type': 'MedicalProcedure',
+    name: t('nav.treatments.odontopediatria'),
+    procedureType: 'https://schema.org/NoninvasiveProcedure',
+    bodyLocation: 'Mouth',
+  },
+  audience: { '@type': 'PeopleAudience', suggestedMinAge: 0, suggestedMaxAge: 14 },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('odontopediatria.meta.title')} description={t('odontopediatria.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-24 bg-slate-50 overflow-hidden">
-       <!-- Decorative Elements -->
-       <div class="absolute top-20 right-[-10%] w-[40%] h-[60%] bg-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
-       <div class="absolute bottom-[-10%] left-[-5%] w-[30%] h-[50%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-xs font-black tracking-widest uppercase mb-8 shadow-lg shadow-accent/20">
-                   <Sparkles size={14} fill="currentColor" /> {t('odontopediatria.hero.badge')}
-                </span>
-                <h1 class="text-5xl md:text-7xl font-black text-primary leading-[1.1] mb-8">
-                   {t('odontopediatria.hero.title')} <span class="text-accent italic font-serif">{t('odontopediatria.hero.title.italic')}</span> {t('odontopediatria.hero.title.end')}
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
-                   {t('odontopediatria.hero.subtitle')}
+
+  <main id="main">
+    <PageHero
+      badge={t('odontopediatria.hero.badge')}
+      title={t('nav.treatments.odontopediatria')}
+      accent={t('hero.in.vera')}
+      subtitle={t('odontopediatria.hero.subtitle')}
+      breadcrumbs={[{ label: t('nav.treatments.odontopediatria') }]}
+      illustration="odontopediatria"
+      illustrationTitle={t('nav.treatments.odontopediatria')}
+      highlights={[t('odontopediatria.intro.sedation.title'), t('odontopediatria.hero.protocol'), t('trust.6')]}
+      primaryCta={{ label: t('odontopediatria.hero.cta'), href: '#appointment' }}
+    />
+
+    <!-- Early prevention -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <svg class="pointer-events-none absolute right-[4%] top-16 hidden h-28 w-36 lg:block" viewBox="0 0 144 112" aria-hidden="true">
+        <path d={star4(30, 30, 11)} fill="#FF9AAA" fill-opacity=".55" class="animate-twinkle" />
+        <path d={star4(104, 18, 7)} fill="#8FE3EA" class="animate-twinkle" style="animation-delay:-1.2s" />
+        <path d={star5(118, 80, 9)} fill="none" stroke="#F2617A" stroke-opacity=".35" stroke-width="1.4" stroke-linejoin="round" />
+        <circle cx="62" cy="88" r="5" fill="none" stroke="#2CC5D2" stroke-opacity=".45" />
+      </svg>
+
+      <div class="container-k relative">
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-16">
+          <div class="lg:col-span-7">
+            <SectionHeading eyebrow={t('odontopediatria.intro.badge')} title={t('odontopediatria.intro.title')} />
+          </div>
+
+          <div class="lg:col-span-5" data-reveal style="--d:.1s">
+            <div class="flex items-center gap-5 rounded-[1.75rem] border border-ocean-900/[0.07] bg-sand p-5 pr-6">
+              <img src="/equipo/ana-soler.jpg" alt="" width="80" height="80" class="h-20 w-20 shrink-0 rounded-2xl object-cover ring-4 ring-white" loading="lazy" decoding="async" />
+              <div class="min-w-0">
+                <p class="font-semibold text-ocean-900">Dra. Ana Soler</p>
+                <p class="text-sm text-slate-500">{t('role.ortho')}</p>
+                <p class="mt-2.5 flex items-start gap-2 text-sm font-medium leading-snug text-accent">
+                  <svg class="mt-px shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9 12 4.5 21.5 9 12 13.5Z" /><path d="M6.5 11v4.6c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3V11" /><path d="M21.5 9v5.5" stroke="#F2617A" /></svg>
+                  {t('odontopediatria.hero.staff')}
                 </p>
-                <div class="flex flex-col sm:flex-row gap-6">
-                   <a href="#appointment" class="px-8 py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest hover:bg-accent transition-all shadow-xl shadow-primary/20 text-center">
-                      {t('odontopediatria.hero.cta')}
-                   </a>
-                   <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                      <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent"><Heart size={20} fill="currentColor" /></div>
-                      <p class="text-xs font-bold text-primary uppercase tracking-tighter leading-tight" set:html={t('odontopediatria.hero.staff')}> </p>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="relative fade-up" style="transition-delay: 0.2s">
-                <div class="aspect-square bg-white rounded-[4rem] border border-slate-100 shadow-2xl overflow-hidden relative group">
-                   <div class="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent pointer-events-none"></div>
-                   <img src="/equipo/ana-soler.jpg" alt="Odontopediatría Koral" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                   <!-- Floating Label -->
-                   <div class="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl">
-                      <p class="text-primary font-black text-lg mb-1 italic">{t('odontopediatria.hero.quote')}</p>
-                      <p class="text-slate-500 text-xs uppercase tracking-widest font-bold">{t('odontopediatria.hero.protocol')}</p>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
-
-    <!-- Intro Wisdom -->
-    <section class="py-24 bg-white relative">
-       <div class="container mx-auto px-6">
-          <div class="max-w-4xl mx-auto text-center fade-up">
-             <h2 class="text-sm font-black uppercase tracking-[0.3em] text-accent mb-6">{t('odontopediatria.intro.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary mb-12">{t('odontopediatria.intro.title')}</h3>
-             <div class="grid md:grid-cols-3 gap-8 text-left uppercase tracking-tighter">
-                <div class="p-8 bg-slate-50 rounded-3xl border-b-4 border-accent">
-                   <div class="text-accent mb-4"><Baby size={32} /></div>
-                   <h4 class="font-black text-primary mb-2">{t('odontopediatria.intro.visit.title')}</h4>
-                   <p class="text-slate-500 text-xs font-medium leading-relaxed normal-case">{t('odontopediatria.intro.visit.desc')}</p>
-                </div>
-                <div class="p-8 bg-slate-50 rounded-3xl border-b-4 border-accent">
-                   <div class="text-accent mb-4"><Zap size={32} /></div>
-                   <h4 class="font-black text-primary mb-2">{t('odontopediatria.intro.sedation.title')}</h4>
-                   <p class="text-slate-500 text-xs font-medium leading-relaxed normal-case">{t('odontopediatria.intro.sedation.desc')}</p>
-                </div>
-                <div class="p-8 bg-slate-50 rounded-3xl border-b-4 border-accent">
-                   <div class="text-accent mb-4"><Heart size={32} /></div>
-                   <h4 class="font-black text-primary mb-2">{t('odontopediatria.intro.trust.title')}</h4>
-                   <p class="text-slate-500 text-xs font-medium leading-relaxed normal-case">{t('odontopediatria.intro.trust.desc')}</p>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
-
-    <!-- Timeline / Stages -->
-    <section class="py-24 bg-slate-50 overflow-hidden relative">
-       <div class="container mx-auto px-6">
-          <div class="text-center max-w-3xl mx-auto mb-20 fade-up">
-             <h4 class="text-accent font-black uppercase tracking-[0.3em] mb-4 text-sm">{t('odontopediatria.calendar.badge')}</h4>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('odontopediatria.calendar.title')}</h3>
-          </div>
-
-           <div class="grid lg:grid-cols-3 gap-12 relative">
-             <!-- Stage Column 1 -->
-             <div class="space-y-12">
-                {stages.map((stage, idx) => (
-                  <div class="fade-up" style={`transition-delay: ${idx * 0.1}s`}>
-                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
-                       <span class={`absolute top-4 right-6 text-[5rem] leading-none font-black opacity-[0.07] pointer-events-none select-none ${stage.color}`}>{stage.num}</span>
-                       <div class="relative z-10">
-                         <div class={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${stage.color} text-lg font-black mb-5`}>{stage.num}</div>
-                         <h5 class="text-2xl font-black text-primary mb-2 uppercase tracking-tighter">{stage.title}</h5>
-                         <p class="text-accent font-bold mb-6 text-sm italic">{stage.subtitle}</p>
-                         <ul class="space-y-3">
-                            {stage.points.map(point => (
-                              <li class="flex items-start gap-3 text-sm text-slate-500 leading-snug">
-                                 <div class="mt-1 flex-none w-1.5 h-1.5 rounded-full bg-accent"></div>
-                                 {point}
-                              </li>
-                            ))}
-                         </ul>
-                       </div>
-                    </div>
-                  </div>
-                ))}
-             </div>
-
-             <!-- Stage Column 2 -->
-             <div class="space-y-12 lg:pt-20">
-                {stagesMiddle.map((stage, idx) => (
-                  <div class="fade-up" style={`transition-delay: ${(idx + 2) * 0.1}s`}>
-                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
-                       <span class={`absolute top-4 right-6 text-[5rem] leading-none font-black opacity-[0.07] pointer-events-none select-none ${stage.color}`}>{stage.num}</span>
-                       <div class="relative z-10">
-                         <div class={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${stage.color} text-lg font-black mb-5`}>{stage.num}</div>
-                         <h5 class="text-2xl font-black text-primary mb-2 uppercase tracking-tighter">{stage.title}</h5>
-                         <p class="text-accent font-bold mb-6 text-sm italic">{stage.subtitle}</p>
-                         <ul class="space-y-3">
-                            {stage.points.map(point => (
-                              <li class="flex items-start gap-3 text-sm text-slate-500 leading-snug">
-                                 <div class="mt-1 flex-none w-1.5 h-1.5 rounded-full bg-accent"></div>
-                                 {point}
-                              </li>
-                            ))}
-                         </ul>
-                       </div>
-                    </div>
-                  </div>
-                ))}
-             </div>
-
-             <!-- Stage Column 3 -->
-             <div class="space-y-12">
-                {stagesFinal.map((stage, idx) => (
-                  <div class="fade-up" style={`transition-delay: ${(idx + 4) * 0.1}s`}>
-                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
-                       <span class={`absolute top-4 right-6 text-[5rem] leading-none font-black opacity-[0.07] pointer-events-none select-none ${stage.color}`}>{stage.num}</span>
-                       <div class="relative z-10">
-                         <div class={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${stage.color} text-lg font-black mb-5`}>{stage.num}</div>
-                         <h5 class="text-2xl font-black text-primary mb-2 uppercase tracking-tighter">{stage.title}</h5>
-                         <p class="text-accent font-bold mb-6 text-sm italic">{stage.subtitle}</p>
-                         <ul class="space-y-3">
-                            {stage.points.map(point => (
-                              <li class="flex items-start gap-3 text-sm text-slate-500 leading-snug">
-                                 <div class="mt-1 flex-none w-1.5 h-1.5 rounded-full bg-accent"></div>
-                                 {point}
-                              </li>
-                            ))}
-                         </ul>
-                       </div>
-                    </div>
-                  </div>
-                ))}
-             </div>
-          </div>
-       </div>
-    </section>
-
-    <!-- Caries Section -->
-    <section class="py-24 bg-primary text-white overflow-hidden relative">
-       <!-- Decoration -->
-       <div class="absolute inset-0 z-0 opacity-10">
-          <svg width="100%" height="100%"><pattern id="stripes" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="40" stroke="white" stroke-width="2"/></pattern><rect width="100%" height="100%" fill="url(#stripes)"/></svg>
-       </div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-20 items-center">
-             <div class="fade-up">
-                <h2 class="text-accent font-black uppercase tracking-widest text-xs mb-6">{t('odontopediatria.caries.badge')}</h2>
-                <h3 class="text-4xl md:text-6xl font-black mb-10 leading-tight text-white">{t('odontopediatria.caries.title')}</h3>
-                <div class="space-y-6 text-slate-300 text-lg">
-                   <p set:html={t('odontopediatria.caries.p1')}></p>
-                   <p set:html={t('odontopediatria.caries.p2')}></p>
-                   <div class="flex gap-8 mt-12">
-                      <div class="flex flex-col gap-2">
-                         <span class="text-3xl font-black text-white">{t('odontopediatria.caries.stat1.val')}</span>
-                         <span class="text-xs uppercase tracking-widest text-accent font-bold">{t('odontopediatria.caries.stat1.label')}</span>
-                      </div>
-                      <div class="h-12 w-px bg-white/20"></div>
-                      <div class="flex flex-col gap-2">
-                         <span class="text-3xl font-black text-white">{t('odontopediatria.caries.stat2.val')}</span>
-                         <span class="text-xs uppercase tracking-widest text-accent font-bold">{t('odontopediatria.caries.stat2.label')}</span>
-                      </div>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="fade-up" style="transition-delay: 0.2s">
-                <div class="bg-white p-10 md:p-14 rounded-[4rem] shadow-3xl text-primary">
-                   <div class="flex gap-6 items-start mb-8">
-                      <div class="w-16 h-16 bg-accent text-white rounded-[1.5rem] flex flex-none items-center justify-center shadow-lg shadow-accent/20">
-                         <Apple size={32} />
-                      </div>
-                      <h4 class="text-2xl font-black leading-tight italic">{t('odontopediatria.caries.quote')}</h4>
-                   </div>
-                   <hr class="border-slate-100 mb-8" />
-                   <div class="grid grid-cols-2 gap-8">
-                      <div class="space-y-2">
-                         <div class="flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest leading-loose uppercase">
-                            <Cookie size={14} /> {t('odontopediatria.caries.cause.title')}
-                         </div>
-                         <p class="text-xs text-slate-500 font-medium leading-relaxed normal-case">{t('odontopediatria.caries.cause.desc')}</p>
-                      </div>
-                      <div class="space-y-2">
-                         <div class="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest leading-loose uppercase">
-                            <Stethoscope size={14} /> {t('odontopediatria.caries.diag.title')}
-                         </div>
-                         <p class="text-xs text-slate-500 font-medium leading-relaxed normal-case">{t('odontopediatria.caries.diag.desc')}</p>
-                      </div>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
-    </section>
-
-    <!-- Orthodontics Indicators -->
-    <section class="py-24 bg-white relative">
-       <div class="container mx-auto px-6">
-          <div class="max-w-6xl mx-auto bg-slate-50 border border-slate-100 rounded-[3.5rem] p-12 md:p-20 overflow-hidden relative">
-             <div class="lg:flex gap-20 items-center relative z-10">
-                 <div class="lg:w-1/2 mb-12 lg:mb-0">
-                    <h3 class="text-3xl md:text-4xl font-black text-primary mb-8 leading-tight">{t('odontopediatria.ortho.title')}</h3>
-                    <p class="text-lg text-slate-600 mb-10">
-                       {t('odontopediatria.ortho.desc')}
-                    </p>
-                    <ul class="grid sm:grid-cols-2 gap-4">
-                       {orthoIndicators.map(indicator => (
-                          <li class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/50 shadow-sm group hover:border-accent hover:shadow-md transition-all">
-                             <span class="text-accent group-hover:scale-110 transition-transform"><CheckCircle2 size={16} /></span>
-                             <span class="text-sm font-bold text-slate-700 leading-tight">{indicator}</span>
-                          </li>
-                       ))}
-                    </ul>
-                 </div>
-                 
-                 <div class="lg:w-1/2">
-                    <div class="bg-accent p-12 rounded-[2.5rem] shadow-2xl shadow-accent/20 relative overflow-hidden group">
-                       <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-                       <div class="relative z-10 text-white leading-relaxed">
-                          <div class="mb-6"><AlertCircle size={40} /></div>
-                          <h4 class="text-2xl font-black mb-4 italic uppercase tracking-tighter">{t('odontopediatria.ortho.note.title')}</h4>
-                          <p class="text-white/90 font-medium" set:html={t('odontopediatria.ortho.note.desc')}>
-                          </p>
-                       </div>
-                    </div>
-                 </div>
+                <a href={pathFor('team', lang)} class="link-u mt-3 inline-block text-sm font-semibold text-ocean-900 hover:text-accent">{t('team.cta')} →</a>
               </div>
-           </div>
+            </div>
+          </div>
         </div>
-     </section>
- 
-     <!-- FAQ Section -->
-     <section class="py-24 bg-slate-50">
-        <div class="container mx-auto px-6 max-w-4xl">
-           <div class="text-center mb-16 fade-up">
-              <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('odontopediatria.faq.badge')}</h2>
-              <h3 class="text-4xl md:text-5xl font-black text-primary">{t('odontopediatria.faq.title')}</h3>
-           </div>
- 
-           <div class="space-y-4">
-              {faqs.map((faq, idx) => (
-                 <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <details class="group">
-                       <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                          <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                          <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                       </summary>
-                       <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                          <p>{faq.answer}</p>
-                       </div>
-                    </details>
-                 </div>
+
+        <figure class="relative mt-14 md:mt-16" data-reveal="scale">
+          <div class="relative overflow-hidden rounded-[2rem] shadow-[var(--shadow-elevated)] ring-1 ring-ocean-900/5 md:rounded-[2.5rem]">
+            <img
+              src="/Slider%20imagen/clinica-koral-slider.jpg"
+              alt={copy.photoAlt}
+              width="1920"
+              height="777"
+              class="aspect-[4/3] w-full object-cover object-[58%_center] sm:aspect-[2/1] lg:aspect-[1920/777]"
+              loading="lazy"
+              decoding="async"
+            />
+            <div class="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(10,31,51,0.28)_0%,transparent_32%)] lg:block" aria-hidden="true"></div>
+          </div>
+
+          <figcaption class="relative mx-4 -mt-12 rounded-[1.5rem] border border-white/60 bg-white/90 p-6 shadow-[var(--shadow-elevated)] backdrop-blur-xl sm:mx-8 sm:max-w-sm lg:absolute lg:left-6 lg:top-1/2 lg:mx-0 lg:mt-0 lg:w-[250px] lg:-translate-y-1/2 xl:left-8 xl:w-[280px]">
+            <svg class="h-7 w-8 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+            <p class="font-display mt-4 text-2xl italic leading-snug text-ocean-900">{unquote(t('odontopediatria.hero.quote'))}</p>
+            <p class="mt-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{t('odontopediatria.hero.protocol')}</p>
+          </figcaption>
+
+          <svg class="pointer-events-none absolute -bottom-7 right-8 hidden h-14 w-24 md:block" viewBox="0 0 96 56" aria-hidden="true">
+            <path d={star4(20, 28, 10)} fill="#F2617A" fill-opacity=".6" class="animate-twinkle" />
+            <path d={star4(60, 16, 6)} fill="#2CC5D2" fill-opacity=".7" class="animate-twinkle" style="animation-delay:-1.6s" />
+            <circle cx="82" cy="40" r="4" fill="none" stroke="#2CC5D2" stroke-opacity=".5" />
+          </svg>
+        </figure>
+
+        <ol class="mt-16 grid gap-5 md:grid-cols-3">
+          {intro.map((item, i) => (
+            <li class="surface-card group relative overflow-hidden p-8" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class="font-display pointer-events-none absolute right-6 top-5 select-none text-5xl italic text-ocean-900/[0.06]" aria-hidden="true">{pad(i + 1)}</span>
+              <span class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                <svg width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={item.icon} />
+              </span>
+              <h3 class="font-sans text-xl font-semibold tracking-tight">{item.title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{item.desc}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- Health calendar -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={52} color="coral" class="pointer-events-none absolute -left-12 bottom-0 h-[240px] w-auto opacity-[0.1] md:h-[320px]" />
+      <svg class="pointer-events-none absolute left-[6%] top-24 hidden h-24 w-28 lg:block" viewBox="0 0 112 96" aria-hidden="true">
+        <path d={star4(24, 30, 9)} fill="#2CC5D2" fill-opacity=".55" class="animate-twinkle" />
+        <path d={star4(80, 64, 6)} fill="#F2617A" fill-opacity=".5" class="animate-twinkle" style="animation-delay:-2s" />
+        <circle cx="86" cy="20" r="4.5" fill="none" stroke="#F2617A" stroke-opacity=".35" />
+      </svg>
+
+      <div class="container-k relative">
+        <SectionHeading eyebrow={t('odontopediatria.calendar.badge')} title={t('odontopediatria.calendar.title')} align="center" />
+
+        <ol class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {stages.map((stage, i) => (
+            <li class="surface-card group relative flex flex-col overflow-hidden p-7 md:p-8" data-reveal style={`--d:${(i % 3) * 0.08}s`}>
+              <div class="flex items-start justify-between gap-4">
+                <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-aqua-pale text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                  <svg width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={stage.icon} />
+                </span>
+                <!-- growth chart: where this stage sits in the child's development -->
+                <svg class="mt-1 shrink-0" width="46" height="26" viewBox="0 0 46 26" aria-hidden="true">
+                  {stages.map((_, j) => (
+                    <rect
+                      x={j * 8}
+                      y={26 - (7 + j * 3.8)}
+                      width="4.5"
+                      height={7 + j * 3.8}
+                      rx="2.25"
+                      fill={j === i ? '#F2617A' : j < i ? '#0B7C86' : '#0A1F33'}
+                      fill-opacity={j === i ? 1 : j < i ? 0.35 : 0.08}
+                    />
+                  ))}
+                </svg>
+              </div>
+              <p class="mt-7 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{copy.stage} {pad(stage.n)}</p>
+              <h3 class="mt-2 font-sans text-xl font-semibold tracking-tight">{stage.title}</h3>
+              <p class="font-display mt-1 text-lg italic text-accent">{stage.subtitle}</p>
+              <ul class="mt-6 space-y-3 border-t border-ocean-900/[0.07] pt-6">
+                {stage.points.map((point) => (
+                  <li class="flex gap-3 text-[15px] leading-snug text-slate-600">
+                    <svg class="mt-0.5 shrink-0 text-accent" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="currentColor" fill-opacity=".12" /><path d="m5 8.2 2 2 4-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- Milk teeth & childhood caries -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#ffffff" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={14} seed={47} />
+        <CoralBranch seed={61} color="duo" class="absolute -left-12 bottom-24 h-[220px] w-auto opacity-20 md:h-[280px]" />
+        <svg class="absolute right-[5%] top-36 hidden h-24 w-32 lg:block" viewBox="0 0 128 96">
+          <path d={star4(20, 24, 8)} fill="#FF9AAA" fill-opacity=".6" class="animate-twinkle" />
+          <path d={star4(96, 60, 11)} fill="#8FE3EA" fill-opacity=".45" class="animate-twinkle" style="animation-delay:-1.4s" />
+          <path d={star4(64, 14, 4)} fill="#FFFFFF" fill-opacity=".6" class="animate-twinkle" style="animation-delay:-2.4s" />
+        </svg>
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-6">
+            <SectionHeading eyebrow={t('odontopediatria.caries.badge')} title={t('odontopediatria.caries.title')} tone="dark" />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-white/75 [&_span]:font-semibold [&_span]:text-coral-soft [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.1s">
+              <p set:html={t('odontopediatria.caries.p1')} />
+              <p set:html={t('odontopediatria.caries.p2')} />
+            </div>
+
+            <div class="mt-10 grid grid-cols-2 gap-4" data-reveal style="--d:.15s">
+              {[
+                { val: t('odontopediatria.caries.stat1.val'), label: t('odontopediatria.caries.stat1.label'), icon: icons.brush },
+                { val: t('odontopediatria.caries.stat2.val'), label: t('odontopediatria.caries.stat2.label'), icon: icons.shield },
+              ].map((stat) => (
+                <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-6">
+                  <svg class="text-aqua" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={stat.icon} />
+                  <p class="font-display tabular mt-4 text-4xl text-white md:text-5xl">{stat.val}</p>
+                  <p class="mt-2 text-sm leading-snug text-white/65">{stat.label}</p>
+                </div>
               ))}
-           </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-xl md:p-10">
+              <div class="relative">
+                <svg class="draw absolute inset-x-[16%] top-[37px] h-0.5 w-[68%] md:top-[45px]" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden="true">
+                  <defs><linearGradient id="odp-caries-line" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"><stop offset="0" stop-color="#2CC5D2" /><stop offset="1" stop-color="#F2617A" /></linearGradient></defs>
+                  <line x1="0" y1="1" x2="100" y2="1" stroke="url(#odp-caries-line)" stroke-opacity=".7" stroke-width="2" stroke-dasharray="1" pathLength="1" />
+                </svg>
+                <ol class="relative grid grid-cols-3 gap-2 text-center">
+                  {cariesSteps.map((step) => (
+                    <li class="flex flex-col items-center">
+                      <span class="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-ocean-900 ring-1 ring-white/10 md:h-[92px] md:w-[92px]">
+                        <svg class="h-14 w-14 md:h-[68px] md:w-[68px]" viewBox="6 6 36 34" aria-hidden="true" set:html={step.svg} />
+                      </span>
+                      <p class="mt-3 text-sm font-semibold leading-tight text-white">{step.label}</p>
+                      {step.tag && <p class="mt-2 rounded-full bg-aqua/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-aqua-soft">{step.tag}</p>}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <blockquote class="font-display mt-9 border-t border-white/10 pt-8 text-xl italic leading-relaxed text-white/90 md:text-2xl">
+                {unquote(t('odontopediatria.caries.quote'))}
+              </blockquote>
+
+              <div class="mt-8 grid gap-4 sm:grid-cols-2">
+                {[
+                  { title: t('odontopediatria.caries.cause.title'), desc: t('odontopediatria.caries.cause.desc'), icon: icons.candy, tone: 'bg-coral/15 text-coral-soft' },
+                  { title: t('odontopediatria.caries.diag.title'), desc: t('odontopediatria.caries.diag.desc'), icon: icons.lens, tone: 'bg-aqua/15 text-aqua-soft' },
+                ].map((card) => (
+                  <div class="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                    <span class:list={['flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', card.tone]}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={card.icon} />
+                    </span>
+                    <div>
+                      <h3 class="font-sans text-base font-semibold tracking-tight text-white">{card.title}</h3>
+                      <p class="mt-1 text-sm leading-relaxed text-white/65">{card.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-     </section>
- 
-     <!-- Final CTA -->
-     <Contact />
+      </div>
+    </section>
+
+    <!-- When to start orthodontics -->
+    <section class="relative overflow-hidden bg-white pb-16 pt-20 md:pb-20 md:pt-28">
+      <div class="container-k">
+        <div class="grid gap-12 lg:grid-cols-12 lg:items-end lg:gap-16">
+          <div class="lg:col-span-7">
+            <SectionHeading eyebrow={copy.orthoEyebrow} title={t('odontopediatria.ortho.title')} description={t('odontopediatria.ortho.desc')} />
+
+            <ul class="mt-10 grid gap-3 sm:grid-cols-2">
+              {indicators.map((item, i) => (
+                <li class="flex items-center gap-4 rounded-2xl border border-ocean-900/[0.07] bg-white p-4 pr-5 shadow-[var(--shadow-soft)] transition-colors duration-300 hover:border-accent/30" data-reveal style={`--d:${i * 0.05}s`}>
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aqua-pale text-accent">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={item.icon} />
+                  </span>
+                  <span class="text-[15px] font-medium leading-snug text-ocean-900">{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="lg:col-span-5">
+            <div class="relative isolate overflow-hidden rounded-[2rem] bg-[linear-gradient(150deg,#0B7C86_0%,#08636B_100%)] p-8 pr-16 text-white shadow-[var(--shadow-elevated)] md:p-10 md:pr-20" data-reveal="right">
+              <!-- growth ruler -->
+              <svg class="pointer-events-none absolute bottom-8 right-5 top-8 -z-10 w-8 md:right-7" viewBox="0 0 32 300" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="24" y1="0" x2="24" y2="300" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="1.5" />
+                {Array.from({ length: 16 }, (_, k) => (
+                  <line x1={k % 5 === 0 ? 10 : 16} y1={10 + k * 18.6} x2="24" y2={10 + k * 18.6} stroke="#FFFFFF" stroke-opacity={k % 5 === 0 ? 0.5 : 0.25} stroke-width="1.5" />
+                ))}
+              </svg>
+              <svg class="pointer-events-none absolute right-3 top-10 -z-10 h-10 w-10 md:right-5" viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={`${baby(24, 26, 0.7, 2, 'stroke="#FFE4E8" fill="#FFE4E8" fill-opacity=".18"')}<path d="M18 9l6-5 6 5" stroke="#FFE4E8" stroke-width="2"/>`} />
+              <CoralBranch seed={74} color="white" class="pointer-events-none absolute -bottom-6 -left-6 -z-10 h-[160px] w-auto opacity-[0.08]" />
+
+              <p class="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M12 7.5v5.5" /><circle cx="12" cy="16.5" r=".6" fill="#FFE4E8" stroke="#FFE4E8" /></svg>
+                {t('odontopediatria.ortho.note.title').replace(/\s*:\s*$/, '')}
+              </p>
+              <p class="font-display mt-6 text-2xl leading-snug md:text-[1.7rem] [&_strong]:font-normal [&_strong]:italic [&_strong]:text-coral-pale" set:html={t('odontopediatria.ortho.note.desc')} />
+
+              <div class="mt-8 border-t border-white/15 pt-6">
+                <p class="text-sm text-white/85">{copy.orthoLead}</p>
+                <a href={pathFor('ortodoncia', lang)} class="btn mt-4 bg-white text-accent-dark hover:-translate-y-0.5 hover:bg-aqua-pale">
+                  {t('nav.treatments.ortodoncia')}
+                  <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bg-white pb-16 md:pb-24">
+      <CtaBand />
+    </div>
+
+    <FaqSection eyebrow={t('odontopediatria.faq.badge')} title={t('odontopediatria.faq.title')} faqs={faqs} />
+
+    <RelatedTreatments current="odontopediatria" />
+
+    <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

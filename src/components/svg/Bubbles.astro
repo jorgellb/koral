@@ -1,0 +1,59 @@
+---
+/** Small rising bubbles for dark ocean sections. Pure CSS, deterministic layout. */
+interface Props {
+  count?: number;
+  seed?: number;
+  class?: string;
+}
+
+const { count = 14, seed = 3, class: className = '' } = Astro.props;
+
+let state = seed * 7919;
+const rand = () => {
+  state = (state * 16807) % 2147483647;
+  return state / 2147483647;
+};
+
+const bubbles = Array.from({ length: count }, () => {
+  const size = 4 + Math.round(rand() * 12);
+  return {
+    left: Math.round(rand() * 100),
+    size,
+    duration: 12 + Math.round(rand() * 14),
+    delay: -Math.round(rand() * 20),
+    rise: -(260 + Math.round(rand() * 420)),
+    opacity: (0.25 + rand() * 0.45).toFixed(2),
+    filled: rand() > 0.6,
+  };
+});
+---
+
+<div class:list={['bubbles absolute inset-0 overflow-hidden pointer-events-none', className]} aria-hidden="true">
+  {bubbles.map((b) => (
+    <span
+      class:list={['bubble', { 'bubble-filled': b.filled }]}
+      style={`left:${b.left}%;width:${b.size}px;height:${b.size}px;animation-duration:${b.duration}s;animation-delay:${b.delay}s;--rise:${b.rise}px;--o:${b.opacity}`}
+    />
+  ))}
+</div>
+
+<style is:global>
+  .bubble {
+    position: absolute;
+    bottom: -24px;
+    border-radius: 999px;
+    border: 1px solid rgba(143, 227, 234, 0.55);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), transparent 60%);
+    animation-name: rise;
+    animation-timing-function: ease-in;
+    animation-iteration-count: infinite;
+    opacity: 0;
+  }
+  .bubble-filled {
+    border-color: transparent;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 154, 170, 0.7), rgba(242, 97, 122, 0.15));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubble { display: none; }
+  }
+</style>

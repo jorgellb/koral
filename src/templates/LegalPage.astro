@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
+import PageHero from '../components/ui/PageHero.astro';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
 
 interface Props {
@@ -11,71 +12,235 @@ interface Props {
 const { title } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+const copy = ({
+  es: { toc: 'En esta página' },
+  en: { toc: 'On this page' },
+  de: { toc: 'Auf dieser Seite' },
+  nl: { toc: 'Op deze pagina' },
+  fr: { toc: 'Sur cette page' },
+} as const)[lang];
+
+// Build the in-page table of contents from the h2s of the slotted legal text:
+// each heading gets a stable id, its leading number ("1.") becomes a numeral,
+// and headings written in capitals are shown in sentence case (German keeps
+// its capitals, since nouns must stay capitalised, and gets a tracked style).
+const slugify = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&[a-z0-9#]+;/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+const isCaps = (s: string) => /\p{Lu}/u.test(s) && s === s.toUpperCase();
+
+const toc: { id: string; num?: string; label: string; caps: boolean }[] = [];
+const html = (await Astro.slots.render('default')).replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/g, (_, attrs: string, inner: string) => {
+  const text = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const match = text.match(/^(\d+)\.\s*(.+)$/);
+  const num = match ? match[1].padStart(2, '0') : undefined;
+  let label = match ? match[2] : text;
+  const caps = isCaps(label) && lang === 'de';
+  if (isCaps(label) && lang !== 'de') label = label.charAt(0) + label.slice(1).toLowerCase();
+
+  let id = slugify(label) || `section-${toc.length + 1}`;
+  while (toc.some((item) => item.id === id)) id += '-2';
+  toc.push({ id, num, label, caps });
+
+  const numeral = num ? `<span class="legal-num" aria-hidden="true">${num}</span>` : '';
+  return `<h2 id="${id}"${attrs}${caps ? ' class="is-caps"' : ''}>${numeral}<span>${label}</span></h2>`;
+});
+const hasToc = toc.length >= 3;
 ---
 
-<Layout title={`${title} | Clínica Koral Dental`} lang={lang}>
+<Layout title={`${title} | Clínica Dental Koral`} description={t('legal.meta.description')} lang={lang}>
   <Navigation />
-  
-  <main class="min-h-screen bg-white overflow-hidden">
-    <!-- Premium Legal Hero -->
-    <section class="relative pt-44 pb-32 bg-slate-50 border-b border-slate-100">
-       <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
-          <svg width="100%" height="100%"><pattern id="legalGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#legalGrid)"/></svg>
-       </div>
-       
-       <div class="container mx-auto px-6 relative z-10 text-center">
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-100 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-8 text-slate-400 shadow-sm">
-             {t('legal.header')}
-          </div>
-          <h1 class="text-6xl md:text-8xl font-black text-primary tracking-tighter mb-4 italic leading-none">
-             {title}
-          </h1>
-          <div class="w-24 h-1 bg-accent mx-auto rounded-full"></div>
-       </div>
-    </section>
 
-    <!-- Content Container -->
-    <section class="py-24 relative">
-       <!-- Decorative side element -->
-       <div class="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-1/2 pointer-events-none"></div>
-       
-       <div class="container mx-auto px-6 max-w-4xl relative">
-          <div class="legal-content">
-             <slot />
+  <main id="main">
+    <PageHero
+      compact
+      badge={t('legal.header')}
+      title={title}
+      subtitle={t('legal.meta.description')}
+      breadcrumbs={[{ label: title }]}
+      illustration="legal"
+      illustrationTitle={title}
+      primaryCta={false}
+      secondaryCta={false}
+    />
+
+    <section class="relative bg-white pb-24 pt-8 md:pb-32 md:pt-14">
+      <div class="container-k">
+        <div class:list={['grid gap-12 lg:gap-14 xl:gap-20', hasToc && 'lg:grid-cols-12']}>
+          {hasToc && (
+            <aside class="order-2 lg:order-1 lg:col-span-4">
+              <div class="space-y-5 lg:sticky lg:top-32">
+                <nav aria-label={copy.toc} class="hidden rounded-[1.75rem] bg-sand p-6 ring-1 ring-ocean-900/5 lg:block">
+                  <p class="eyebrow mb-4">{copy.toc}</p>
+                  <ol class="legal-toc space-y-0.5">
+                    {toc.map((item) => (
+                      <li>
+                        <a href={`#${item.id}`} class:list={['toc-link flex gap-3 rounded-xl px-3 py-2 text-[14px] leading-snug text-slate-600 transition-colors hover:bg-white hover:text-ocean-900', item.caps && 'text-[12px] uppercase tracking-[0.04em] [overflow-wrap:break-word]']}>
+                          {item.num && <span class="font-display w-5 shrink-0 italic text-coral-deep">{item.num}</span>}
+                          <span class="min-w-0" set:html={item.label} />
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+
+                <div class="relative overflow-hidden rounded-[1.75rem] bg-ocean p-6 text-white">
+                  <p class="font-display relative text-xl text-white">{t('faq.more.title')}</p>
+                  <p class="relative mt-2 text-[14px] leading-relaxed text-white/65">{t('faq.more.desc')}</p>
+                  <div class="relative mt-5 space-y-2 text-[14px] font-semibold">
+                    <a href="mailto:koraldentalclinic@gmail.com" class="flex items-center gap-2.5 text-aqua-soft hover:text-white">
+                      <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="m3 6 9 7 9-7" /></svg>
+                      <span>koraldentalclinic<wbr />@gmail.com</span>
+                    </a>
+                    <a href="tel:+34950395319" class="tabular flex items-center gap-2.5 text-aqua-soft hover:text-white">
+                      <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" /></svg>
+                      +34 950 39 53 19
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          )}
+
+          <div class:list={['order-1 min-w-0 lg:order-2', hasToc ? 'lg:col-span-8' : 'mx-auto w-full max-w-[760px]']}>
+            {hasToc && (
+              <details class="group mb-10 rounded-[1.5rem] bg-sand ring-1 ring-ocean-900/5 lg:hidden">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4">
+                  <span class="eyebrow">{copy.toc}</span>
+                  <svg class="text-accent transition-transform duration-300 group-open:rotate-180" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </summary>
+                <ol class="space-y-0.5 px-3 pb-4">
+                  {toc.map((item) => (
+                    <li>
+                      <a href={`#${item.id}`} class:list={['flex gap-3 rounded-xl px-3 py-2 text-[14px] leading-snug text-slate-600 hover:bg-white hover:text-ocean-900', item.caps && 'text-[12px] uppercase tracking-[0.04em] [overflow-wrap:break-word]']}>
+                        {item.num && <span class="font-display w-5 shrink-0 italic text-coral-deep">{item.num}</span>}
+                        <span class="min-w-0" set:html={item.label} />
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+
+            <article class="legal-prose max-w-[760px]" set:html={html} />
           </div>
-       </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <FooterInfo />
 </Layout>
 
-<style is:global>
-  @reference "../styles/global.css";
+<script>
+  // Highlight the section currently being read in the table of contents.
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>('.legal-toc .toc-link')].map((a) => [a.hash.slice(1), a]),
+  );
+  const headings = [...document.querySelectorAll<HTMLElement>('.legal-prose h2[id]')];
+  if (links.size && 'IntersectionObserver' in window) {
+    const setActive = (id: string) =>
+      links.forEach((a, key) => {
+        const active = key === id;
+        a.classList.toggle('is-active', active);
+        if (active) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-20% 0px -65% 0px' },
+    );
+    headings.forEach((h) => observer.observe(h));
+  }
+</script>
 
-  .legal-content h2 {
-    @apply text-3xl font-black text-primary mt-20 mb-10 border-b border-primary/5 pb-6 italic tracking-tight;
+<style is:global>
+  .legal-prose {
+    color: #475569;
+    font-size: 1.0625rem;
+    line-height: 1.8;
   }
-  .legal-content h3 {
-    @apply text-xl font-black text-primary mt-12 mb-6 italic tracking-tight uppercase;
+  .legal-prose > :first-child { margin-top: 0; }
+  .legal-prose p { margin-top: 1.15em; }
+  .legal-prose h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-top: 3.25rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(10, 31, 51, 0.08);
+    font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
+    line-height: 1.2;
+    scroll-margin-top: 7rem;
   }
-  .legal-content p {
-    @apply text-slate-500 leading-loose mb-8 text-lg font-light;
+  .legal-prose > h2:first-child { padding-top: 0; border-top: 0; }
+  .legal-prose h2 .legal-num {
+    flex-shrink: 0;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.8em;
+    color: var(--color-coral);
   }
-  .legal-content ul {
-    @apply mb-12 space-y-4;
+  .legal-prose h2.is-caps {
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    font-weight: 650;
+    letter-spacing: 0.07em;
   }
-  .legal-content li {
-    @apply text-slate-500 leading-relaxed text-base flex gap-4 items-start;
+  .legal-prose h2.is-caps .legal-num { font-family: var(--font-serif); font-size: 1.4rem; letter-spacing: 0; }
+  .legal-prose h3 {
+    margin-top: 2.25rem;
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
-  .legal-content li::before {
-    content: "→";
-    @apply text-accent font-black mt-0.5;
+  .legal-prose h3 + ul { margin-top: 0.9em; }
+  .legal-prose ul {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 1.15em;
+    padding: 0;
+    list-style: none;
   }
-  .legal-content strong {
-    @apply text-primary font-black;
+  .legal-prose li {
+    position: relative;
+    padding-left: 1.6rem;
   }
-  .legal-content a {
-    @apply text-accent font-black hover:text-primary underline decoration-accent/20 underline-offset-4 transition-colors;
+  .legal-prose li::before {
+    content: "";
+    position: absolute;
+    left: 0.2rem;
+    top: 0.68em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--color-aqua), var(--color-coral));
+  }
+  .legal-prose strong { font-weight: 600; color: var(--color-ocean-900); }
+  .legal-prose a {
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(11, 124, 134, 0.3);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+    transition: text-decoration-color 0.3s ease;
+  }
+  .legal-prose a:hover { text-decoration-color: currentColor; }
+
+  .legal-toc .toc-link.is-active {
+    background: #fff;
+    color: var(--color-ocean-900);
+    box-shadow: var(--shadow-soft);
   }
 </style>

@@ -1,5 +1,18 @@
 ---
-import { getLangFromUrl } from '../i18n/utils';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import {
+  alternatesFor,
+  routeKeyFromPath,
+  NOINDEX_ROUTES,
+  HTML_LANG,
+  OG_LOCALE,
+  LANGS,
+  SITE_URL,
+  absoluteUrl,
+  pathFor,
+  type Lang,
+  type RouteKey,
+} from '../i18n/routes';
 import '../styles/global.css';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import CookieBanner from '../components/CookieBanner.astro';
@@ -11,236 +24,237 @@ interface Props {
   lang?: string;
   schema?: string;
   ogImage?: string;
+  ogImageAlt?: string;
+  noindex?: boolean;
 }
 
-const { 
-  title, 
-  description = "Clinica Dental Koral - Tu clinica dental de confianza en Vera, Almeria. Especialistas en implantologia, ortodoncia y estetica dental.", 
-  lang: propLang,
+const urlLang = getLangFromUrl(Astro.url);
+const lang = ((Astro.props.lang as Lang) || urlLang) as Lang;
+const t = useTranslations(lang);
+
+const {
+  title,
+  description = t('meta.default.description'),
   schema,
-  ogImage = "/Logo/logokoral.png"
+  ogImage = '/og/clinica-dental-koral-vera.jpg',
+  ogImageAlt = 'Clínica Dental Koral · Vera, Almería',
 } = Astro.props;
 
-const lang = propLang || getLangFromUrl(Astro.url);
-const site = Astro.site || new URL('https://clinicadentalkoral.es');
-const canonicalURL = new URL(Astro.url.pathname, site);
+const pathname = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonicalURL = absoluteUrl(pathname);
+const routeKey = routeKeyFromPath(pathname);
+const noindex = Astro.props.noindex || (routeKey ? NOINDEX_ROUTES.includes(routeKey) : false);
+const alternates = noindex ? undefined : alternatesFor(pathname);
 
-// Build hreflang alternates
-const currentPath = Astro.url.pathname;
-const pathWithoutLang = currentPath.replace(/^\/(en|de|nl|fr)\//, '/').replace(/^\/(en|de|nl|fr)$/, '/');
+const fullOgImage = absoluteUrl(ogImage);
 
-// Map for language-specific path variations
-const langPaths: Record<string, string> = {
-  es: pathWithoutLang,
-  en: `/en${pathWithoutLang === '/' ? '/' : pathWithoutLang}`,
-  de: `/de${pathWithoutLang === '/' ? '/' : pathWithoutLang}`,
-  nl: `/nl${pathWithoutLang === '/' ? '/' : pathWithoutLang}`,
-  fr: `/fr${pathWithoutLang === '/' ? '/' : pathWithoutLang}`,
+// Site-wide entities: the clinic and the website. Pages reference them by @id.
+const siteSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Dentist',
+      '@id': `${SITE_URL}/#dentist`,
+      name: 'Clínica Dental Koral',
+      alternateName: ['Koral Dental Clinic', 'Zahnklinik Koral', 'Tandkliniek Koral', 'Clinique Dentaire Koral'],
+      url: `${SITE_URL}/`,
+      logo: `${SITE_URL}/Logo/logokoral.png`,
+      image: [`${SITE_URL}/Presentacion/Ana-clinica-koral-vera-almeria.jpg`, fullOgImage],
+      description: t('meta.default.description'),
+      telephone: '+34950395319',
+      email: 'koraldentalclinic@gmail.com',
+      priceRange: '€€',
+      currenciesAccepted: 'EUR',
+      paymentAccepted: 'Cash, Credit Card, Financing',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Av. de Baria, 4, local',
+        addressLocality: 'Vera',
+        addressRegion: 'Almería',
+        postalCode: '04620',
+        addressCountry: 'ES',
+      },
+      geo: { '@type': 'GeoCoordinates', latitude: 37.2372, longitude: -1.8506 },
+      hasMap: 'https://www.google.com/maps/place/Cl%C3%ADnica+Dental+Koral/@37.2371629,-1.8531261,17z',
+      contactPoint: [
+        { '@type': 'ContactPoint', telephone: '+34950395319', contactType: 'customer service', availableLanguage: ['es', 'en', 'de', 'nl', 'fr'] },
+        { '@type': 'ContactPoint', telephone: '+34634683639', contactType: 'reservations', availableLanguage: ['es', 'en', 'de', 'nl', 'fr'] },
+      ],
+      openingHoursSpecification: [
+        { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Monday', opens: '10:00', closes: '20:00' },
+        { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Tuesday', opens: '08:00', closes: '16:00' },
+        { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Wednesday', opens: '10:00', closes: '18:00' },
+        { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Thursday', opens: '08:00', closes: '16:00' },
+        { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Friday', opens: '08:00', closes: '16:00' },
+      ],
+      areaServed: [
+        'Vera', 'Garrucha', 'Mojácar', 'Cuevas del Almanzora', 'Los Gallardos', 'Turre', 'Antas', 'Palomares',
+      ].map((name) => ({ '@type': 'City', name })).concat([{ '@type': 'AdministrativeArea', name: 'Levante Almeriense' } as any]),
+      medicalSpecialty: ['Dentistry', 'Surgical', 'Pediatric'],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Tratamientos dentales',
+        itemListElement: [
+          { key: 'implantes', name: 'Implantes dentales Straumann' },
+          { key: 'ortodoncia', name: 'Ortodoncia e Invisalign' },
+          { key: 'estetica', name: 'Estética dental y carillas' },
+          { key: 'endodoncia', name: 'Endodoncia con microscopio' },
+          { key: 'odontopediatria', name: 'Odontopediatría' },
+          { key: 'periodoncia', name: 'Periodoncia' },
+          { key: 'cirugia', name: 'Cirugía oral' },
+          { key: 'rehabilitacion', name: 'Rehabilitación oral' },
+          { key: 'armonia', name: 'Armonía orofacial' },
+        ].map((s) => ({
+          '@type': 'Offer',
+          itemOffered: { '@type': 'Service', name: s.name, url: absoluteUrl(pathFor(s.key as RouteKey, 'es')) },
+        })),
+      },
+      founder: {
+        '@type': 'Person',
+        name: 'Dra. Ana Padilla',
+        jobTitle: 'Directora médica · Cirugía, implantología y estética dental',
+      },
+      sameAs: [
+        'https://www.facebook.com/koralclinicadental',
+        'https://www.instagram.com/koraldental',
+        'https://www.tiktok.com/@koraldental',
+      ],
+      knowsLanguage: ['es', 'en', 'de', 'nl', 'fr'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: `${SITE_URL}/`,
+      name: 'Clínica Dental Koral',
+      publisher: { '@id': `${SITE_URL}/#dentist` },
+      inLanguage: LANGS.map((l) => HTML_LANG[l]),
+    },
+  ],
 };
 
-// Handle pricing page URL difference
-if (pathWithoutLang === '/precio-y-financiacion/' || pathWithoutLang === '/precio-y-financiacion') {
-  langPaths.en = '/en/pricing-and-financing/';
-  langPaths.de = '/de/pricing-and-financing/';
-  langPaths.nl = '/nl/pricing-and-financing/';
-  langPaths.fr = '/fr/pricing-and-financing/';
-} else if (pathWithoutLang === '/pricing-and-financing/' || pathWithoutLang === '/pricing-and-financing') {
-  langPaths.es = '/precio-y-financiacion/';
-}
-
-const localeMap: Record<string, string> = {
-  es: 'es_ES',
-  en: 'en_GB',
-  de: 'de_DE',
-  nl: 'nl_NL',
-  fr: 'fr_FR',
-};
-
-const hreflangMap: Record<string, string> = {
-  es: 'es',
-  en: 'en',
-  de: 'de',
-  nl: 'nl',
-  fr: 'fr',
-};
-
-// Default LocalBusiness Schema
-const defaultSchema = {
-  "@context": "https://schema.org",
-  "@type": "Dentist",
-  "@id": "https://clinicadentalkoral.es/#dentist",
-  "name": "Clinica Dental Koral",
-  "alternateName": "Koral Dental Clinic",
-  "url": "https://clinicadentalkoral.es",
-  "logo": "https://clinicadentalkoral.es/Logo/logokoral.png",
-  "image": "https://clinicadentalkoral.es/Presentacion/Ana-clinica-koral-vera-almeria.jpg",
-  "description": "Clinica dental de confianza en Vera, Almeria. Especialistas en implantes dentales, ortodoncia invisible, estetica dental, endodoncia y odontopediatria.",
-  "telephone": ["+34950395319", "+34634683639"],
-  "email": "koraldentalclinic@gmail.com",
-  "priceRange": "$$",
-  "currenciesAccepted": "EUR",
-  "paymentAccepted": "Cash, Credit Card, Financing",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Av. de Baria, 4, local",
-    "addressLocality": "Vera",
-    "addressRegion": "Almeria",
-    "postalCode": "04620",
-    "addressCountry": "ES"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 37.2453,
-    "longitude": -1.8611
-  },
-  "openingHoursSpecification": [
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Monday", "opens": "10:00", "closes": "20:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Tuesday", "opens": "08:00", "closes": "16:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Wednesday", "opens": "10:00", "closes": "18:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Thursday", "opens": "08:00", "closes": "16:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "08:00", "closes": "16:00" }
-  ],
-  "areaServed": [
-    { "@type": "City", "name": "Vera" },
-    { "@type": "City", "name": "Garrucha" },
-    { "@type": "City", "name": "Mojacar" },
-    { "@type": "City", "name": "Cuevas del Almanzora" },
-    { "@type": "City", "name": "Los Gallardos" },
-    { "@type": "City", "name": "Turre" },
-    { "@type": "City", "name": "Antas" },
-    { "@type": "AdministrativeArea", "name": "Levante Almeriense" }
-  ],
-  "hasOfferCatalog": {
-    "@type": "OfferCatalog",
-    "name": "Dental Services",
-    "itemListElement": [
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Ortodoncia e Invisalign" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Implantes Dentales Straumann" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Estetica Dental y Carillas" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Endodoncia Microscopica" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Odontopediatria" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Periodoncia" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cirugia Oral" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Rehabilitacion Oral" } },
-      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Armonia Orofacial" } }
-    ]
-  },
-  "sameAs": [
-    "https://www.facebook.com/koralclinicadental",
-    "https://www.instagram.com/koraldental",
-    "https://www.tiktok.com/@koraldental"
-  ],
-  "founder": {
-    "@type": "Person",
-    "name": "Dra. Ana Padilla",
-    "jobTitle": "Directora - Cirugia, Implantologia y Estetica Dental"
-  },
-  "medicalSpecialty": [
-    "Orthodontics",
-    "Dental Implantology",
-    "Cosmetic Dentistry",
-    "Endodontics",
-    "Pediatric Dentistry",
-    "Periodontics",
-    "Oral Surgery"
-  ],
-  "availableLanguage": ["Spanish", "English", "German", "Dutch", "French"]
-};
-
-const fullOgImage = new URL(ogImage, site).toString();
+const fontsHref =
+  'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter:wght@300..800&display=swap';
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang={lang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/Logo/logokoral.png" />
-    
-    <meta name="generator" content={Astro.generator} />
-    
-    <!-- SEO Core -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL.toString()} />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    
-    <!-- Performance: Preconnect -->
+    <link rel="canonical" href={canonicalURL} />
+    <meta
+      name="robots"
+      content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
+    />
+
+    {alternates && alternates.map((alt) => <link rel="alternate" hreflang={alt.lang} href={alt.href} />)}
+    {alternates && <link rel="alternate" hreflang="x-default" href={alternates.find((a) => a.lang === 'es')!.href} />}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0A1F33" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="generator" content={Astro.generator} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://maps.google.com" />
-    <link rel="dns-prefetch" href="https://wa.me" />
-    
-    <!-- Fonts with display=swap for performance -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    </noscript>
-    
-    <!-- Hreflang Tags for International SEO -->
-    {Object.entries(langPaths).map(([langCode, path]) => (
-      <link rel="alternate" hreflang={hreflangMap[langCode]} href={new URL(path, site).toString()} />
-    ))}
-    <link rel="alternate" hreflang="x-default" href={new URL(langPaths.es, site).toString()} />
-    
-    <!-- Open Graph -->
+    <link rel="preload" as="style" href={fontsHref} />
+    <link href={fontsHref} rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href={fontsHref} rel="stylesheet" /></noscript>
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Clínica Dental Koral" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalURL.toString()} />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={fullOgImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content={localeMap[lang] || 'es_ES'} />
-    {Object.entries(localeMap).filter(([code]) => code !== lang).map(([, locale]) => (
-      <meta property="og:locale:alternate" content={locale} />
-    ))}
-    <meta property="og:site_name" content="Clinica Dental Koral" />
-
-    <!-- Twitter Card -->
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    {LANGS.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={OG_LOCALE[l]} />)}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={fullOgImage} />
 
-    <!-- Geo tags for local SEO -->
+    <!-- Local SEO -->
     <meta name="geo.region" content="ES-AL" />
-    <meta name="geo.placename" content="Vera, Almeria" />
-    <meta name="geo.position" content="37.2453;-1.8611" />
-    <meta name="ICBM" content="37.2453, -1.8611" />
+    <meta name="geo.placename" content="Vera, Almería" />
+    <meta name="geo.position" content="37.2372;-1.8506" />
+    <meta name="ICBM" content="37.2372, -1.8506" />
 
-    <!-- Additional SEO Meta -->
-    <meta name="author" content="Clinica Dental Koral" />
-    <meta name="theme-color" content="#2563eb" />
-    <meta name="format-detection" content="telephone=yes" />
-
-    <!-- Schema.org JSON-LD -->
-    <script type="application/ld+json" set:html={JSON.stringify(defaultSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(siteSchema)} />
     {schema && <script type="application/ld+json" set:html={schema} />}
   </head>
-  <body>
+  <body data-contact-path={pathFor('contact', lang)}>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-5 focus:py-3 focus:rounded-full focus:bg-white focus:text-ocean-900 focus:shadow-xl focus:font-semibold"
+    >
+      {t('a11y.skip')}
+    </a>
     <slot />
     <WhatsAppFloat />
     <CookieBanner />
     <Toast />
-    
-    <script>
-      // Scroll reveal animation with better performance
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.05, rootMargin: '0px 0px -60px 0px' });
 
-      document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    <script>
+      // Pages without the appointment form send "book" buttons to the contact page.
+      if (!document.getElementById('appointment')) {
+        const contactPath = document.body.dataset.contactPath || '/contacto/';
+        document.querySelectorAll<HTMLAnchorElement>('a[href="#appointment"]').forEach((a) => {
+          a.href = `${contactPath}#appointment`;
+        });
+      }
+
+      const revealTargets = document.querySelectorAll<HTMLElement>('.fade-up, [data-reveal], .draw, [data-count]');
+
+      const animateCount = (el: HTMLElement) => {
+        const target = parseFloat(el.dataset.count || '0');
+        const decimals = (el.dataset.count || '').split('.')[1]?.length ?? 0;
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const locale = document.documentElement.lang || 'es';
+        const duration = 1600;
+        const start = performance.now();
+        const step = (now: number) => {
+          const p = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent =
+            prefix +
+            (target * eased).toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) +
+            suffix;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!('IntersectionObserver' in window) || reduceMotion) {
+        revealTargets.forEach((el) => el.classList.add('visible'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const el = entry.target as HTMLElement;
+              el.classList.add('visible');
+              if (el.dataset.count) animateCount(el);
+              observer.unobserve(el);
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+        );
+        revealTargets.forEach((el) => observer.observe(el));
+      }
     </script>
   </body>
 </html>

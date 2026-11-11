@@ -1,135 +1,102 @@
 ---
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
-import { ShieldCheck, ChevronDown, Check, X, Cookie } from 'lucide-astro';
+import { pathFor } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<div id="cookie-banner" class="fixed bottom-6 left-6 right-6 z-[9999] pointer-events-none transform translate-y-full opacity-0 transition-all duration-700 ease-out">
-  <div class="max-w-4xl mx-auto pointer-events-auto">
-    <div class="glass rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-white/40 overflow-hidden relative">
-      <!-- Decoration -->
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div class="p-6 md:p-8">
-        <div class="flex flex-col md:flex-row gap-8 items-start">
-          <!-- Icon & Info -->
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-                <Cookie size={24} />
-              </div>
-              <h2 class="text-xl font-black text-primary uppercase tracking-tight italic">
-                {t('cookies.banner.title')}
-              </h2>
-            </div>
-            <p class="text-slate-600 text-sm md:text-base leading-relaxed max-w-2xl">
-              {t('cookies.banner.desc')}
-            </p>
-            
-            <!-- Settings Dropdown -->
-            <div id="cookie-settings" class="hidden mt-8 space-y-4 border-t border-slate-100 pt-6 animate-in slide-in-from-top-4 duration-500">
-              <div class="grid md:grid-cols-2 gap-4">
-                <!-- Essential -->
-                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex gap-4">
-                  <div class="flex-1">
-                    <h3 class="font-bold text-primary text-sm mb-1">{t('cookies.settings.essential.title')}</h3>
-                    <p class="text-xs text-slate-500 leading-tight">{t('cookies.settings.essential.desc')}</p>
-                  </div>
-                  <div class="flex flex-col items-center gap-2">
-                    <div class="w-5 h-5 rounded bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/20">
-                      <Check size={14} />
-                    </div>
-                    <span class="text-[10px] font-bold text-accent uppercase tracking-tighter">On</span>
-                  </div>
-                </div>
-                
-                <!-- Marketing -->
-                <div class="p-4 rounded-2xl bg-slate-100/50 border border-slate-100 flex gap-4 opacity-60">
-                  <div class="flex-1">
-                    <h3 class="font-bold text-slate-400 text-sm mb-1">{t('cookies.settings.marketing.title')}</h3>
-                    <p class="text-xs text-slate-400 leading-tight">{t('cookies.settings.marketing.desc')}</p>
-                  </div>
-                  <div class="flex flex-col items-center gap-2">
-                    <div class="w-5 h-5 rounded border-2 border-slate-300 text-slate-300 flex items-center justify-center">
-                      <X size={14} />
-                    </div>
-                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Off</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+<div id="cookie-banner" class="cookie-banner no-print fixed inset-x-3 bottom-3 z-[60] sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[430px]" data-show="false" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-desc">
+  <div class="relative overflow-hidden rounded-[1.75rem] border border-ocean-900/[0.06] bg-white/95 p-6 shadow-[var(--shadow-premium)] backdrop-blur-xl">
+    <div class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(242,97,122,0.18)_0%,transparent_70%)]" aria-hidden="true"></div>
 
-          <!-- Actions -->
-          <div class="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px]">
-            <button id="cookie-accept" class="w-full px-6 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-black transition-colors shadow-xl shadow-primary/10 text-sm uppercase tracking-wide">
-              {t('cookies.banner.accept')}
-            </button>
-            <div class="flex items-center gap-3">
-              <button id="cookie-decline" class="flex-1 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:border-accent hover:text-accent transition-all text-xs uppercase tracking-wide">
-                {t('cookies.banner.decline')}
-              </button>
-              <button id="toggle-settings" class="px-4 py-3 bg-slate-100 text-slate-500 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 text-xs uppercase tracking-wide">
-                <span>{t('cookies.banner.settings')}</span>
-                <ChevronDown size={14} id="settings-chevron" class="transition-transform" />
-              </button>
-            </div>
-          </div>
+    <div class="flex items-start gap-4">
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-coral-pale text-coral-deep" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z" /><path d="M8.5 8.5h.01M16 15.5h.01M11 17h.01M7 14h.01" stroke-width="2.4" /></svg>
+      </span>
+      <div class="min-w-0">
+        <p id="cookie-title" class="font-display text-xl text-ocean-900">{t('cookies.banner.title')}</p>
+        <p id="cookie-desc" class="mt-1.5 text-[13.5px] leading-relaxed text-slate-600">
+          {t('cookies.banner.desc')}
+          <a href={pathFor('cookies', lang)} class="font-semibold text-accent underline underline-offset-2">{t('footer.legal.cookies')}</a>
+        </p>
+      </div>
+    </div>
+
+    <div id="cookie-settings" class="mt-5 hidden space-y-2.5">
+      <div class="flex items-start gap-3 rounded-2xl bg-sand p-4">
+        <span class="mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full bg-accent p-0.5" aria-hidden="true"><span class="ml-auto h-4 w-4 rounded-full bg-white"></span></span>
+        <div>
+          <p class="text-sm font-semibold text-ocean-900">{t('cookies.settings.essential.title')}</p>
+          <p class="mt-0.5 text-[12.5px] leading-snug text-slate-500">{t('cookies.settings.essential.desc')}</p>
         </div>
       </div>
+      <div class="flex items-start gap-3 rounded-2xl bg-sand/60 p-4 opacity-70">
+        <span class="mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 p-0.5" aria-hidden="true"><span class="h-4 w-4 rounded-full bg-white"></span></span>
+        <div>
+          <p class="text-sm font-semibold text-ocean-900">{t('cookies.settings.marketing.title')}</p>
+          <p class="mt-0.5 text-[12.5px] leading-snug text-slate-500">{t('cookies.settings.marketing.desc')}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 flex flex-wrap items-center gap-2">
+      <button id="cookie-accept" type="button" class="btn btn-dark flex-1 !px-5 !py-3 text-sm">{t('cookies.banner.accept')}</button>
+      <button id="cookie-decline" type="button" class="btn btn-outline flex-1 !px-5 !py-3 text-sm">{t('cookies.banner.decline')}</button>
+      <button id="toggle-settings" type="button" class="flex w-full items-center justify-center gap-1.5 pt-1 text-[13px] font-semibold text-slate-500 hover:text-accent" aria-expanded="false" aria-controls="cookie-settings">
+        {t('cookies.banner.settings')}
+        <svg id="settings-chevron" width="12" height="12" viewBox="0 0 12 12" class="transition-transform" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+      </button>
     </div>
   </div>
 </div>
 
-<script>
-  function initCookieBanner() {
-    const banner = document.getElementById('cookie-banner');
-    const acceptBtn = document.getElementById('cookie-accept');
-    const declineBtn = document.getElementById('cookie-decline');
-    const settingsBtn = document.getElementById('toggle-settings');
-    const settingsPanel = document.getElementById('cookie-settings');
-    const chevron = document.getElementById('settings-chevron');
-    
-    if (!banner || !acceptBtn || !declineBtn || !settingsBtn || !settingsPanel || !chevron) return;
-
-    // Check if user has already made a choice
-    const cookieChoice = localStorage.getItem('cookie-consent');
-    if (!cookieChoice) {
-      setTimeout(() => {
-        banner.classList.remove('translate-y-full', 'opacity-0');
-      }, 1500);
-    }
-
-    function hideBanner() {
-      banner.classList.add('translate-y-full', 'opacity-0');
-    }
-
-    acceptBtn.addEventListener('click', () => {
-      localStorage.setItem('cookie-consent', 'all');
-      hideBanner();
-    });
-
-    declineBtn.addEventListener('click', () => {
-      localStorage.setItem('cookie-consent', 'necessary');
-      hideBanner();
-    });
-
-    settingsBtn.addEventListener('click', () => {
-      settingsPanel.classList.toggle('hidden');
-      chevron.classList.toggle('rotate-180');
-    });
+<style is:global>
+  .cookie-banner {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.7s var(--ease-out-expo), visibility 0s linear 0.7s;
   }
-
-  // Handle both initial load and view transitions
-  initCookieBanner();
-  document.addEventListener('astro:after-swap', initCookieBanner);
-</script>
-
-<style>
-  .glass {
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.85);
+  .cookie-banner[data-show='true'] {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.5s ease, transform 0.7s var(--ease-out-expo), visibility 0s;
   }
 </style>
+
+<script>
+  const banner = document.getElementById('cookie-banner');
+  const accept = document.getElementById('cookie-accept');
+  const decline = document.getElementById('cookie-decline');
+  const toggle = document.getElementById('toggle-settings');
+  const panel = document.getElementById('cookie-settings');
+  const chevron = document.getElementById('settings-chevron');
+
+  if (banner && accept && decline && toggle && panel) {
+    let choice: string | null = null;
+    try {
+      choice = localStorage.getItem('cookie-consent');
+    } catch {
+      choice = null;
+    }
+    if (!choice) window.setTimeout(() => (banner.dataset.show = 'true'), 1600);
+
+    const save = (value: string) => {
+      try {
+        localStorage.setItem('cookie-consent', value);
+      } catch {
+        /* storage unavailable: just hide */
+      }
+      banner.dataset.show = 'false';
+    };
+    accept.addEventListener('click', () => save('all'));
+    decline.addEventListener('click', () => save('necessary'));
+    toggle.addEventListener('click', () => {
+      const open = panel.classList.toggle('hidden') === false;
+      toggle.setAttribute('aria-expanded', String(open));
+      chevron?.classList.toggle('rotate-180', open);
+    });
+  }
+</script>

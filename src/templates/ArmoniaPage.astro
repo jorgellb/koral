@@ -3,252 +3,468 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
 import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import RelatedTreatments from '../components/ui/RelatedTreatments.astro';
+import CtaBand from '../components/ui/CtaBand.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
+import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
+import { TEAM } from '../data/team';
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { 
-  Sparkles, 
-  Droplets, 
-  Heart, 
-  ShieldCheck, 
-  Smile, 
-  CheckCircle2, 
-  HelpCircle, 
-  Zap,
-  Target,
-  Sun
-} from 'lucide-astro';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const definitionTitle = t('armonia.definition.title').replace('<br/>', '<br/>');
+// Short UI labels that only exist on this page.
+const copy = ({
+  es: {
+    analysis: 'Análisis facial',
+    thirds: 'Tercios faciales',
+    points: 'Puntos de microinyección',
+    axis: 'Eje de simetría',
+    before: 'Antes',
+    after: 'Después',
+    ha: 'Ácido hialurónico',
+    collagen: 'Colágeno',
+    benefits: 'Ventajas',
+    goodToKnow: 'Bueno saberlo',
+    smileQuestion: '¿Quieres cuidar también el color y la forma de tus dientes?',
+    ortho: 'La posición de los dientes también influye en el soporte de los labios y en el perfil.',
+    budget: 'Te explicamos el precio de tu tratamiento y las opciones de financiación.',
+    team: 'Conoce a la Dra. Ana Padilla y al resto del equipo que te atenderá.',
+  },
+  en: {
+    analysis: 'Facial analysis',
+    thirds: 'Facial thirds',
+    points: 'Micro-injection points',
+    axis: 'Symmetry axis',
+    before: 'Before',
+    after: 'After',
+    ha: 'Hyaluronic acid',
+    collagen: 'Collagen',
+    benefits: 'Benefits',
+    goodToKnow: 'Good to know',
+    smileQuestion: 'Would you also like to improve the colour and shape of your teeth?',
+    ortho: 'The position of your teeth also shapes lip support and your profile.',
+    budget: 'We explain the price of your treatment and the financing options.',
+    team: 'Meet Dr Ana Padilla and the rest of the team who will look after you.',
+  },
+  de: {
+    analysis: 'Gesichtsanalyse',
+    thirds: 'Gesichtsdrittel',
+    points: 'Mikroinjektionspunkte',
+    axis: 'Symmetrieachse',
+    before: 'Vorher',
+    after: 'Nachher',
+    ha: 'Hyaluronsäure',
+    collagen: 'Kollagen',
+    benefits: 'Vorteile',
+    goodToKnow: 'Gut zu wissen',
+    smileQuestion: 'Möchten Sie auch Farbe und Form Ihrer Zähne verbessern?',
+    ortho: 'Auch die Zahnstellung beeinflusst die Stütze der Lippen und das Profil.',
+    budget: 'Wir erklären Ihnen den Preis Ihrer Behandlung und die Finanzierungsmöglichkeiten.',
+    team: 'Lernen Sie Dr. Ana Padilla und das Team kennen, das Sie betreuen wird.',
+  },
+  nl: {
+    analysis: 'Gezichtsanalyse',
+    thirds: 'Gezichtsderden',
+    points: 'Micro-injectiepunten',
+    axis: 'Symmetrie-as',
+    before: 'Voor',
+    after: 'Na',
+    ha: 'Hyaluronzuur',
+    collagen: 'Collageen',
+    benefits: 'Voordelen',
+    goodToKnow: 'Goed om te weten',
+    smileQuestion: 'Wilt u ook de kleur en vorm van uw tanden verbeteren?',
+    ortho: 'Ook de stand van uw tanden beïnvloedt de steun van de lippen en het profiel.',
+    budget: 'Wij leggen de prijs van uw behandeling en de financieringsmogelijkheden uit.',
+    team: 'Maak kennis met Dr. Ana Padilla en het team dat u zal behandelen.',
+  },
+  fr: {
+    analysis: 'Analyse faciale',
+    thirds: 'Tiers du visage',
+    points: 'Points de micro-injection',
+    axis: 'Axe de symétrie',
+    before: 'Avant',
+    after: 'Après',
+    ha: 'Acide hyaluronique',
+    collagen: 'Collagène',
+    benefits: 'Avantages',
+    goodToKnow: 'Bon à savoir',
+    smileQuestion: 'Vous souhaitez aussi améliorer la couleur et la forme de vos dents ?',
+    ortho: 'La position des dents influence aussi le soutien des lèvres et le profil.',
+    budget: 'Nous vous expliquons le prix de votre traitement et les options de financement.',
+    team: 'Découvrez la Dre Ana Padilla et l’équipe qui vous accompagnera.',
+  },
+} as const)[lang];
 
+const unquote = (s: string) => s.replace(/^["“]|["”]$/g, '');
+/** "Ácido Hialurónico: El Secreto…" → title + italic accent. */
+const splitTitle = (s: string) => {
+  const i = s.indexOf(':');
+  return i < 0 ? { title: s, accent: undefined } : { title: s.slice(0, i).trim(), accent: s.slice(i + 1).trim() };
+};
+
+// "Rejuvenecimiento y <br/> Modificación Natural" → plain title + italic second line.
+const [definitionLead, definitionAccent] = t('armonia.definition.title').split(/<br\s*\/?>/i).map((s) => s.trim());
+const hyaluronicTitle = splitTitle(t('armonia.hylauronic.title'));
+
+const doctor = TEAM.find((m) => m.image === '/equipo/Ana-padilla.jpg')!;
+
+const definitionCards = [
+  { title: t('armonia.definition.card1.title'), desc: t('armonia.definition.card1.desc'), icon: 'lips' },
+  { title: t('armonia.definition.card2.title'), desc: t('armonia.definition.card2.desc'), icon: 'lift' },
+];
+
+// Bespoke 48×48 icons for each benefit (teal strokes, coral detail).
 const benefits = [
-  t('armonia.hylauronic.benefits.1'),
-  t('armonia.hylauronic.benefits.2'),
-  t('armonia.hylauronic.benefits.3'),
-  t('armonia.hylauronic.benefits.4'),
-  t('armonia.hylauronic.benefits.5'),
-  t('armonia.hylauronic.benefits.6')
+  {
+    text: t('armonia.hylauronic.benefits.1'),
+    icon: '<path d="M24 4 40 10v12c0 10-7 18-16 22-9-4-16-12-16-22V10Z"/><path d="M17 30c0-7.4 5.2-12.6 13.6-12.6 0 8.4-5.2 13.6-13.6 13.6Z" stroke="#F2617A"/><path d="m17 31 8-8" stroke="#F2617A"/>',
+  },
+  {
+    text: t('armonia.hylauronic.benefits.2'),
+    icon: '<path d="M38.5 19A15.5 15.5 0 0 0 11 14M9.5 29A15.5 15.5 0 0 0 37 34"/><path d="M10.5 7.5V14h6.5M37.5 40.5V34H31"/><path d="M24 16.5c3 4 5 6.6 5 9a5 5 0 0 1-10 0c0-2.4 2-5 5-9Z" stroke="#F2617A"/>',
+  },
+  {
+    text: t('armonia.hylauronic.benefits.3'),
+    icon: '<path d="M22 6l3.4 10.6L36 20l-10.6 3.4L22 34l-3.4-10.6L8 20l10.6-3.4Z"/><path d="M37 30l1.8 5.2L44 37l-5.2 1.8L37 44l-1.8-5.2L30 37l5.2-1.8Z" stroke="#F2617A"/>',
+  },
+  {
+    text: t('armonia.hylauronic.benefits.4'),
+    icon: '<path d="M24 5c7 9.5 12 15.6 12 21.5a12 12 0 0 1-24 0C12 20.6 17 14.5 24 5Z"/><path d="M17 29.5c2.4 1.6 4.6 1.6 7 0s4.6-1.6 7 0M18.5 35c1.8 1.2 3.7 1.2 5.5 0s3.7-1.2 5.5 0" stroke="#F2617A"/>',
+  },
+  {
+    text: t('armonia.hylauronic.benefits.5'),
+    icon: '<path d="M6 16c9 0 9 16 18 16s9-16 18-16"/><path d="M6 32c9 0 9-16 18-16s9 16 18 16" stroke="#F2617A"/><path d="M12 19v10M24 16v16M36 19v10" stroke-opacity=".35"/>',
+  },
+  {
+    text: t('armonia.hylauronic.benefits.6'),
+    icon: '<path d="M12.5 35.5 31 17l4.5-1-1 4.5L16 39Z"/><path d="m28 20 4 4"/><circle cx="24" cy="24" r="19" stroke="#F2617A"/><path d="m10.5 10.5 27 27" stroke="#F2617A"/>',
+  },
 ];
 
-const faqs = [
-  {
-    question: t('armonia.faq.q1.q'),
-    answer: t('armonia.faq.q1.a')
-  },
-  {
-    question: t('armonia.faq.q2.q'),
-    answer: t('armonia.faq.q2.a')
-  },
-  {
-    question: t('armonia.faq.q3.q'),
-    answer: t('armonia.faq.q3.a')
-  },
-  {
-    question: t('armonia.faq.q4.q'),
-    answer: t('armonia.faq.q4.a')
-  },
-  {
-    question: t('armonia.faq.q5.q'),
-    answer: t('armonia.faq.q5.a')
-  }
+const tips = [
+  { href: pathFor('ortodoncia', lang), label: t('nav.treatments.ortodoncia'), text: copy.ortho, icon: 'ortodoncia' as const },
+  { href: pathFor('pricing', lang), label: t('nav.pricing'), text: copy.budget, icon: 'pricing' as const },
+  { href: pathFor('team', lang), label: t('team.cta'), text: copy.team, icon: 'team' as const },
 ];
 
-const slug = lang === 'es' ? '/armonia-orofacial' : `/${lang}/armonia-orofacial`;
+/* ---------- Skin cross-section (hyaluronic acid) ---------- */
+const wave = (x0: number, x1: number, y: number, amp: number, step: number) => {
+  let d = `M${x0} ${y}`;
+  for (let x = x0, i = 0; x < x1; x += step, i++) d += `Q${x + step / 2} ${y + (i % 2 ? -amp : amp)} ${x + step} ${y}`;
+  return d;
+};
+const skin = {
+  surface: 'M16 66C50 66 76 66 92 66L102 86 112 66C140 66 160 68 184 66L192 80 200 66C220 66 240 66 260 64C330 56 420 54 504 56',
+  junctionAged: wave(16, 260, 96, 2.5, 22),
+  junctionYoung: wave(260, 504, 92, 7, 16),
+  collagenAged: [wave(40, 110, 126, 3, 14), wave(150, 230, 150, 3, 16), wave(70, 140, 176, 3, 14), wave(180, 240, 196, 2, 12)],
+  collagenYoung: [118, 138, 158, 178, 198].map((y, i) => wave(276 + (i % 2) * 10, 496, y, 4, 18)),
+  droplets: [
+    { x: 300, y: 128, r: 9 }, { x: 336, y: 160, r: 12 }, { x: 378, y: 122, r: 8 }, { x: 410, y: 166, r: 10 },
+    { x: 448, y: 132, r: 7 }, { x: 470, y: 184, r: 9 }, { x: 312, y: 194, r: 7 }, { x: 362, y: 202, r: 6 }, { x: 438, y: 208, r: 6 },
+  ],
+  fat: [40, 104, 168, 232, 296, 360, 424, 488].map((x, i) => ({ x, y: 252 + (i % 2) * 12, rx: 30, ry: 20 })),
+};
+
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  question: t(`armonia.faq.q${n}.q` as any),
+  answer: t(`armonia.faq.q${n}.a` as any),
+}));
+
+const url = absoluteUrl(pathFor('armonia', lang));
 const pageSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "MedicalWebPage",
-      "name": t('armonia.meta.title'),
-      "description": t('armonia.meta.description'),
-      "url": `https://clinicadentalkoral.es${slug}`,
-      "isPartOf": { "@id": "https://clinicadentalkoral.es/#website" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": faqs.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": `https://clinicadentalkoral.es${lang === 'es' ? '/' : '/' + lang + '/'}` },
-        { "@type": "ListItem", "position": 2, "name": t('nav.treatments.armonia'), "item": `https://clinicadentalkoral.es${slug}` }
-      ]
-    }
-  ]
+  '@context': 'https://schema.org',
+  '@type': 'MedicalWebPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: t('armonia.meta.title'),
+  description: t('armonia.meta.description'),
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: {
+    '@type': 'MedicalProcedure',
+    name: t('nav.treatments.armonia'),
+    procedureType: 'https://schema.org/PercutaneousProcedure',
+    bodyLocation: 'Lips and face',
+  },
+  provider: { '@id': `${SITE_URL}/#dentist` },
+  lastReviewed: '2026-11-11',
 });
 ---
 
 <Layout title={t('armonia.meta.title')} description={t('armonia.meta.description')} lang={lang} schema={pageSchema}>
   <Navigation />
-  
-  <main>
-    <!-- Hero Section: Premium Aesthetics -->
-    <section class="relative pt-32 pb-24 bg-white overflow-hidden">
-       <!-- Gradient decoration -->
-       <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-pink-50/50 via-blue-50/30 to-transparent pointer-events-none"></div>
-       <div class="absolute -top-24 -right-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse"></div>
-       
-       <div class="container mx-auto px-6 relative z-10">
-          <div class="grid lg:grid-cols-2 gap-16 items-center">
-             <div class="fade-up">
-                <span class="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-500 rounded-full text-[10px] font-black tracking-widest uppercase mb-8 border border-pink-100 shadow-sm">
-                   <Sparkles size={14} /> {t('armonia.hero.badge')}
+
+  <main id="main">
+    <PageHero
+      badge={t('armonia.hero.badge')}
+      title={t('nav.treatments.armonia')}
+      accent={t('hero.in.vera')}
+      subtitle={t('armonia.hero.desc')}
+      breadcrumbs={[{ label: t('nav.treatments.armonia') }]}
+      illustration="armonia"
+      illustrationTitle={t('nav.treatments.armonia')}
+      highlights={[t('armonia.hero.safe'), t('armonia.hero.natural'), t('armonia.hylauronic.immediate')]}
+    />
+
+    <!-- Facial balance -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-6 lg:pt-6">
+            <SectionHeading eyebrow={t('armonia.definition.badge')} title={definitionLead} accent={definitionAccent} />
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600" data-reveal style="--d:.08s">
+              <p>{t('armonia.definition.p1')}</p>
+              <p>{t('armonia.definition.p2')}</p>
+            </div>
+
+            <div class="mt-10 grid gap-5 sm:grid-cols-2">
+              {definitionCards.map((card, i) => (
+                <div class="surface-card group p-7" data-reveal style={`--d:${0.1 + i * 0.08}s`}>
+                  <span class:list={['mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-colors duration-500', i === 0 ? 'bg-coral-pale text-coral-deep group-hover:bg-coral-deep group-hover:text-white' : 'bg-aqua-pale text-accent group-hover:bg-accent group-hover:text-white']}>
+                    {card.icon === 'lips' ? (
+                      <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 25c4.6-5.6 9-9.6 13-10 2.8-.3 5 1.4 7 3 2-1.6 4.2-3.3 7-3 4 .4 8.4 4.4 13 10-6 7.6-12.4 11-20 11S10 32.6 4 25Z" /><path d="M4 25c6.6 1.4 13.4 2 20 2s13.4-.6 20-2" /><path d="M24 6v4M17 8.5l1.6 3M31 8.5l-1.6 3" stroke="#0B7C86" /></svg>
+                    ) : (
+                      <svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 6c-4 5-6 11-6 18 0 10 7 18 16 18s16-8 16-18c0-7-2-13-6-18" /><path d="M14 30c3 3.4 6.4 5 10 5s7-1.6 10-5" stroke-opacity=".5" /><path d="M24 26V12M18.5 17.5 24 12l5.5 5.5" stroke="#F2617A" /></svg>
+                    )}
+                  </span>
+                  <h3 class="font-sans text-xl font-semibold tracking-tight">{card.title}</h3>
+                  <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{card.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <p class="mt-8 text-[15px] leading-relaxed text-slate-600" data-reveal>
+              {copy.smileQuestion}{' '}
+              <a href={pathFor('estetica', lang)} class="prose-link whitespace-nowrap">{t('nav.treatments.estetica')} →</a>
+            </p>
+          </div>
+
+          <div class="lg:col-span-6" data-reveal="right">
+            <figure class="relative overflow-hidden rounded-[2rem] bg-sand p-5 ring-1 ring-ocean-900/5 md:p-8">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="eyebrow">{copy.analysis}</p>
+                <span class="font-display rounded-full bg-white px-3.5 py-1.5 text-sm italic text-accent shadow-[var(--shadow-soft)]">1 : 1 : 1</span>
+              </div>
+
+              <div class="mt-5 overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-ocean-900/5" aria-hidden="true">
+                <svg viewBox="0 0 360 440" class="mx-auto block h-auto w-full max-w-[440px]" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <defs>
+                    <pattern id="arm-canvas" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" stroke="#0B7C86" stroke-opacity=".06" /></pattern>
+                    <linearGradient id="arm-skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" /><stop offset="1" stop-color="#FBF1EC" /></linearGradient>
+                    <linearGradient id="arm-lip-up" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7A8B5" /><stop offset="1" stop-color="#EC7489" /></linearGradient>
+                    <linearGradient id="arm-lip-low" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0798D" /><stop offset="1" stop-color="#FDBDC7" /></linearGradient>
+                  </defs>
+                  <rect width="360" height="440" fill="url(#arm-canvas)" />
+                  <!-- face -->
+                  <path d="M140 398C142 418 140 430 136 440M220 398C218 418 220 430 224 440" stroke="#0A1F33" stroke-opacity=".3" stroke-width="1.4" />
+                  <path d="M180 34C246 34 292 86 294 160C296 222 284 280 262 330C244 372 214 404 180 408C146 404 116 372 98 330C76 280 64 222 66 160C68 86 114 34 180 34Z" fill="url(#arm-skin)" stroke="#0A1F33" stroke-opacity=".35" stroke-width="1.5" />
+                  <g stroke="#0A1F33" stroke-opacity=".45" stroke-width="1.5">
+                    <path d="M104 182Q128 166 158 176M202 176Q232 166 256 182" />
+                    <path d="M108 200Q132 214 156 200M204 200Q228 214 252 200" /><path d="M114 205.5l-3 4M122 209l-1.6 4.4M131 210.6v4.6M140 209.8l1.4 4.4M148 207l2.6 3.8M212 207l-2.6 3.8M220 209.8l-1.4 4.4M229 210.6v4.6M238 209l1.6 4.4M246 205.5l3 4" stroke-opacity=".3" stroke-width="1.2" />
+                    <path d="M174 186C172 220 170 246 166 266" stroke-opacity=".35" />
+                    <path d="M162 279q-5-11 6-14M198 279q5-11-6-14M162 279Q171 290 180 286Q189 290 198 279" />
+                    <path d="M156 276C146 292 142 306 144 320M204 276C214 292 218 306 216 320" stroke-opacity=".22" />
+                    <path d="M88 236Q100 256 118 262M272 236Q260 256 242 262" stroke-opacity=".2" />
+                    <path d="M162 380Q180 390 198 380" stroke-opacity=".25" />
+                  </g>
+                  <path d="M144 326C152 316 162 308 170 307Q176 306 180 312Q184 306 190 307C198 308 208 316 216 326C204 328 192 329 180 329S156 328 144 326Z" fill="url(#arm-lip-up)" />
+                  <path d="M144 326C156 330 168 331 180 331S204 330 216 326C208 342 196 350 180 350S152 342 144 326Z" fill="url(#arm-lip-low)" />
+                  <path d="M168 340Q180 344 192 340" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2.4" />
+                  <!-- proportion guides -->
+                  <path d="M180 14V430" stroke="#0B7C86" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="4 5" />
+                  {[58, 172, 288, 404].map((y) => (
+                    <path d={`M28 ${y}H318`} stroke="#0B7C86" stroke-opacity=".4" stroke-width="1.1" stroke-dasharray="2 4" />
+                  ))}
+                  <path d="M318 58V404" stroke="#0B7C86" stroke-opacity=".7" stroke-width="1.2" pathLength="1" class="draw-me" />
+                  {[58, 172, 288, 404].map((y) => (
+                    <path d={`M313 ${y}H323`} stroke="#0B7C86" stroke-width="1.2" />
+                  ))}
+                  {[{ y: 120, l: 'I' }, { y: 235, l: 'II' }, { y: 351, l: 'III' }].map((n) => (
+                    <text x="332" y={n.y} fill="#F2617A" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="15">{n.l}</text>
+                  ))}
+                  {[[170, 308], [190, 308], [148, 326], [212, 326], [180, 344], [150, 298], [210, 298]].map(([x, y]) => (
+                    <g>
+                      <circle cx={x} cy={y} r="7" stroke="#F2617A" stroke-opacity=".55" stroke-dasharray="2 2.4" />
+                      <circle cx={x} cy={y} r="2.4" fill="#F2617A" />
+                    </g>
+                  ))}
+                  <path d="M58 118l2.2 6 6 2.2-6 2.2-2.2 6-2.2-6-6-2.2 6-2.2Z" fill="#2CC5D2" class="animate-twinkle" />
+                </svg>
+              </div>
+
+              <figcaption class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+                <span class="inline-flex items-center gap-2"><svg width="24" height="10" aria-hidden="true"><path d="M1 5h22" stroke="#0B7C86" stroke-width="1.4" stroke-dasharray="2 3" /></svg>{copy.thirds}</span>
+                <span class="inline-flex items-center gap-2"><svg width="24" height="10" aria-hidden="true"><path d="M1 5h22" stroke="#0B7C86" stroke-width="1.4" stroke-dasharray="4 4" /></svg>{copy.axis}</span>
+                <span class="inline-flex items-center gap-2"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="none" stroke="#F2617A" stroke-dasharray="2 2" /><circle cx="7" cy="7" r="2" fill="#F2617A" /></svg>{copy.points}</span>
+              </figcaption>
+            </figure>
+
+            <figure class="relative mt-9 rounded-[1.75rem] bg-white p-7 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 md:p-8" data-reveal style="--d:.15s">
+              <svg class="absolute -top-4 left-8 h-8 w-10 text-coral" viewBox="0 0 100 80" fill="currentColor" aria-hidden="true"><path d="M0 80V48C0 20 14 4 40 0l4 10C28 16 22 26 22 40h18v40Zm56 0V48C56 20 70 4 96 0l4 10C84 16 78 26 78 40h18v40Z" /></svg>
+              <blockquote class="font-display text-xl italic leading-relaxed text-ocean-900 md:text-2xl">{unquote(t('armonia.hero.quote'))}</blockquote>
+              <figcaption class="mt-6 flex items-center gap-3 text-sm">
+                <img src={doctor.image} alt={t('armonia.hero.image.alt')} width="48" height="48" class="h-12 w-12 rounded-full object-cover ring-2 ring-sand" loading="lazy" decoding="async" />
+                <span>
+                  <span class="block font-semibold text-ocean-900">{t('armonia.hero.philosophy')}</span>
+                  <span class="block text-slate-500">{doctor.name} · {t(doctor.role)}</span>
                 </span>
-                <h1 class="text-5xl md:text-8xl font-black text-primary leading-[0.9] tracking-tighter mb-8">
-                   {t('armonia.hero.title')} <br/> <span class="text-accent italic font-serif">{t('armonia.hero.title.span')}</span>
-                </h1>
-                <p class="text-xl text-slate-600 leading-relaxed max-w-xl mb-10">
-                   {t('armonia.hero.desc')}
-                </p>
-                <div class="flex flex-wrap gap-4">
-                   <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                      <ShieldCheck size={18} class="text-accent" />
-                      <span class="text-xs font-black text-primary uppercase tracking-tighter">{t('armonia.hero.safe')}</span>
-                   </div>
-                   <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                      <Target size={18} class="text-accent" />
-                      <span class="text-xs font-black text-primary uppercase tracking-tighter">{t('armonia.hero.natural')}</span>
-                   </div>
-                </div>
-             </div>
-             
-             <div class="relative fade-up" style="transition-delay: 0.2s">
-                <div class="aspect-[4/5] rounded-[3.5rem] overflow-hidden shadow-2xl relative group">
-                   <img src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg" alt={t('armonia.hero.image.alt')} class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" />
-                   <div class="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
-                   
-                   <!-- Floating Quote -->
-                   <div class="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-xl">
-                      <p class="text-primary font-black italic text-lg leading-tight mb-2">{t('armonia.hero.quote')}</p>
-                      <div class="flex items-center gap-2">
-                         <div class="w-6 h-0.5 bg-accent"></div>
-                         <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('armonia.hero.philosophy')}</p>
-                      </div>
-                   </div>
-                </div>
-             </div>
+              </figcaption>
+            </figure>
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Definition Section -->
-    <section class="py-24 bg-slate-50 relative overflow-hidden">
-       <div class="container mx-auto px-6">
-          <div class="grid lg:grid-cols-2 gap-20 items-center">
-             <div class="fade-up">
-                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-6">{t('armonia.definition.badge')}</h2>
-                <h3 class="text-4xl md:text-5xl font-black text-primary mb-8 leading-tight" set:html={definitionTitle}></h3>
-                <div class="space-y-6 text-slate-600 text-lg leading-relaxed">
-                   <p>
-                      {t('armonia.definition.p1')}
-                   </p>
-                   <p>
-                      {t('armonia.definition.p2')}
-                   </p>
-                </div>
-             </div>
-             
-             <div class="grid grid-cols-2 gap-6 fade-up" style="transition-delay: 0.2s">
-                <div class="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-                   <div class="w-12 h-12 bg-pink-50 text-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Heart /></div>
-                   <h4 class="font-black text-primary mb-3 text-sm uppercase">{t('armonia.definition.card1.title')}</h4>
-                   <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{t('armonia.definition.card1.desc')}</p>
-                </div>
-                <div class="p-8 bg-primary rounded-[2.5rem] p-8 text-white shadow-xl hover:-translate-y-2 transition-transform group">
-                   <div class="w-12 h-12 bg-white/10 text-accent rounded-xl flex items-center justify-center mb-6"><Sun /></div>
-                   <h4 class="font-black text-white mb-3 text-sm uppercase">{t('armonia.definition.card2.title')}</h4>
-                   <p class="text-[10px] text-white/60 font-bold uppercase tracking-widest leading-relaxed">{t('armonia.definition.card2.desc')}</p>
-                </div>
-             </div>
+    <!-- Hyaluronic acid (dark) -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#ffffff" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#FBF8F4" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={14} seed={91} />
+        <CoralBranch seed={163} color="duo" class="absolute -left-14 bottom-8 h-[190px] w-auto opacity-20" />
+        <CoralBranch seed={29} depth={4} color="white" class="absolute -right-6 top-24 h-[180px] w-auto opacity-[0.07]" />
+      </div>
+
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <!-- Title and subtitle come from one string ("Title: subtitle"), so the accent always gets its own line. -->
+            <div data-reveal>
+              <p class="eyebrow eyebrow-light mb-5">{t('armonia.hylauronic.badge')}</p>
+              <h2 class="text-[2.35rem] leading-[1.06] text-white sm:text-5xl lg:text-[3.4rem]">
+                {hyaluronicTitle.title}
+                {hyaluronicTitle.accent && <span class="accent-italic block">{hyaluronicTitle.accent}</span>}
+              </h2>
+              <p class="mt-6 text-lg leading-relaxed text-white/70">{t('armonia.hylauronic.desc')}</p>
+            </div>
+            <div class="mt-10 grid grid-cols-2 gap-4" data-reveal style="--d:.1s">
+              <div class="rounded-2xl border border-white/10 bg-white/[0.05] p-5">
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 5c7 9.5 12 15.6 12 21.5a12 12 0 0 1-24 0C12 20.6 17 14.5 24 5Z" /><path d="M18.5 28a6 6 0 0 0 5.5 5.5" stroke="#FF9AAA" /></svg>
+                <p class="mt-4 font-semibold leading-snug text-white">{t('armonia.hylauronic.hydration')}</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/[0.05] p-5">
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="25" r="18" /><path d="M24 3v4M20 3h8" /><path d="m26 13-7 13h6.5L22 37l9-14h-6.5Z" stroke="#FF9AAA" /></svg>
+                <p class="mt-4 font-semibold leading-snug text-white">{t('armonia.hylauronic.immediate')}</p>
+              </div>
+            </div>
           </div>
-       </div>
+
+          <div class="lg:col-span-7" data-reveal="right">
+            <figure class="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur-xl md:p-8">
+              <div class="overflow-hidden rounded-[1.5rem] bg-ocean-950/40 ring-1 ring-white/10" aria-hidden="true">
+                <svg viewBox="0 0 520 300" class="block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <defs>
+                    <radialGradient id="arm-drop" cx=".35" cy=".35" r=".75"><stop offset="0" stop-color="#D5F6F8" /><stop offset=".6" stop-color="#2CC5D2" /><stop offset="1" stop-color="#0B7C86" /></radialGradient>
+                    <linearGradient id="arm-dermis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9AAA" stop-opacity=".16" /><stop offset="1" stop-color="#FF9AAA" stop-opacity=".04" /></linearGradient>
+                    <linearGradient id="arm-needle" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" /><stop offset="1" stop-color="#8FE3EA" /></linearGradient>
+                  </defs>
+                  <path d={`${skin.surface}V300H16Z`} fill="url(#arm-dermis)" />
+                  {skin.fat.map((f) => (
+                    <ellipse cx={f.x} cy={f.y} rx={f.rx} ry={f.ry} stroke="#FFFFFF" stroke-opacity=".1" fill="#FFFFFF" fill-opacity=".02" />
+                  ))}
+                  <path d="M16 226H504" stroke="#FFFFFF" stroke-opacity=".1" stroke-dasharray="3 5" />
+                  {skin.collagenAged.map((d) => <path d={d} stroke="#8FE3EA" stroke-opacity=".28" stroke-width="1.4" />)}
+                  {skin.collagenYoung.map((d) => <path d={d} stroke="#8FE3EA" stroke-opacity=".55" stroke-width="1.5" />)}
+                  {skin.droplets.map((p) => (
+                    <g>
+                      <circle cx={p.x} cy={p.y} r={p.r} fill="url(#arm-drop)" fill-opacity=".9" />
+                      <circle cx={p.x - p.r * 0.35} cy={p.y - p.r * 0.35} r={p.r * 0.22} fill="#FFFFFF" fill-opacity=".8" />
+                    </g>
+                  ))}
+                  <path d={skin.junctionAged} stroke="#FF9AAA" stroke-opacity=".45" stroke-width="1.2" />
+                  <path d={skin.junctionYoung} stroke="#FF9AAA" stroke-opacity=".6" stroke-width="1.2" />
+                  <path d={skin.surface} stroke="#FF9AAA" stroke-width="2.2" pathLength="1" class="draw-me" />
+                  <path d="M260 22V290" stroke="#FFFFFF" stroke-opacity=".3" stroke-dasharray="3 5" />
+                  <text x="138" y="36" text-anchor="middle" fill="#FFFFFF" fill-opacity=".65" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" letter-spacing="2.4">{copy.before.toUpperCase()}</text>
+                  <text x="382" y="32" text-anchor="middle" fill="#8FE3EA" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" letter-spacing="2.4">{copy.after.toUpperCase()}</text>
+                  <g transform="rotate(-36 404 150)">
+                    <rect x="404" y="146" width="120" height="8" rx="2" fill="url(#arm-needle)" />
+                    <rect x="500" y="142" width="40" height="16" rx="4" fill="#F2617A" />
+                    <path d="M404 150H372" stroke="#D5F6F8" stroke-width="2" />
+                  </g>
+                </svg>
+              </div>
+
+              <figcaption class="mt-6 flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <span class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/75">
+                  <span class="inline-flex items-center gap-2"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="#2CC5D2" /></svg>{copy.ha}</span>
+                  <span class="inline-flex items-center gap-2"><svg width="26" height="10" aria-hidden="true"><path d="M1 5q3-4 6 0t6 0 6 0 6 0" fill="none" stroke="#8FE3EA" stroke-width="1.5" /></svg>{copy.collagen}</span>
+                </span>
+              </figcaption>
+              <p class="mt-5 flex items-start gap-3 rounded-2xl bg-white/[0.06] p-4 text-sm leading-relaxed text-white/80">
+                <svg class="mt-0.5 shrink-0" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8FE3EA" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 7 4-2.3L12 7v4.6l-4 2.3-4-2.3Z" /><path d="m12 11.6 4-2.3 4 2.3v4.6l-4 2.3-4-2.3Z" /><circle cx="8" cy="4.7" r="1.3" fill="#FF9AAA" stroke="#FF9AAA" /><circle cx="16" cy="18.5" r="1.3" fill="#FF9AAA" stroke="#FF9AAA" /></svg>
+                {t('armonia.hylauronic.note')}
+              </p>
+            </figure>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Hyaluronic Acid Section -->
-    <section class="py-24 bg-white">
-       <div class="container mx-auto px-6">
-          <div class="max-w-6xl mx-auto bg-slate-900 rounded-[4rem] overflow-hidden shadow-3xl flex flex-col lg:flex-row text-white">
-             <div class="lg:w-1/2 p-12 md:p-20 flex flex-col justify-center">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-accent text-white rounded-full text-[10px] font-black tracking-widest uppercase mb-8">{t('armonia.hylauronic.badge')}</div>
-                <h3 class="text-4xl md:text-6xl font-black mb-8 italic text-white">{t('armonia.hylauronic.title')}</h3>
-                <p class="text-slate-300 text-lg leading-relaxed mb-10">
-                   {t('armonia.hylauronic.desc')}
-                </p>
-                <div class="grid grid-cols-2 gap-4">
-                   <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
-                      <div class="text-accent mb-2"><Droplets size={24} /></div>
-                      <p class="text-xs font-black uppercase tracking-widest">{t('armonia.hylauronic.hydration')}</p>
-                   </div>
-                   <div class="p-6 bg-white/5 rounded-3xl border border-white/10">
-                      <div class="text-accent mb-2"><Zap size={24} /></div>
-                      <p class="text-xs font-black uppercase tracking-widest">{t('armonia.hylauronic.immediate')}</p>
-                   </div>
-                </div>
-             </div>
-             <div class="lg:w-1/2 bg-slate-100 p-12 md:p-20 text-primary">
-                <h4 class="text-3xl font-black mb-10 leading-tight">{t('armonia.hylauronic.why_choose')}</h4>
-                <div class="space-y-4">
-                   {benefits.map(benefit => (
-                      <div class="flex items-center gap-4 group">
-                         <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 size={16} /></div>
-                         <span class="font-bold text-sm tracking-tight text-slate-700">{benefit}</span>
-                      </div>
-                   ))}
-                </div>
-                <!-- Mini Tag -->
-                <div class="mt-12 p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
-                   <Smile class="text-accent" size={32} />
-                   <p class="text-xs text-slate-500 font-medium leading-relaxed italic">{t('armonia.hylauronic.note')}</p>
-                </div>
-             </div>
+    <!-- Why choose it -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <CoralBranch seed={74} color="coral" class="pointer-events-none absolute -right-12 top-10 h-[260px] w-auto opacity-[0.1]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={copy.benefits} title={t('armonia.hylauronic.why_choose')} align="center" />
+
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {benefits.map((b, i) => (
+            <li class="surface-card group flex items-center gap-5 p-6 md:p-7" data-reveal style={`--d:${(i % 3) * 0.08}s`}>
+              <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale/70 text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-white">
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={b.icon} />
+              </span>
+              <p class="font-medium leading-snug text-ocean-900">{b.text}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div class="mt-16" data-reveal>
+          <p class="eyebrow">{copy.goodToKnow}</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            {tips.map((tip, i) => (
+              <a href={tip.href} class="group flex items-start gap-4 rounded-[1.5rem] border border-ocean-900/[0.07] bg-white/70 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-accent/25 hover:bg-white hover:shadow-[var(--shadow-soft)]" data-reveal style={`--d:${i * 0.08}s`}>
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-aqua-pale/60 text-accent ring-1 ring-accent/10">
+                  {tip.icon === 'ortodoncia' && <TreatmentIcon name="ortodoncia" size={28} strokeWidth={1.8} />}
+                  {tip.icon === 'pricing' && (
+                    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="24" r="18" /><path d="M30.5 16.6a9.5 9.5 0 1 0 0 14.8" /><path d="M13 21.5h12M13 26.5h12" stroke="#F2617A" /></svg>
+                  )}
+                  {tip.icon === 'team' && (
+                    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="16" r="7" /><path d="M5 40c0-7.2 5.8-13 13-13s13 5.8 13 13" /><circle cx="34" cy="18" r="5" stroke="#F2617A" /><path d="M33 27.2c5.6.6 10 5.4 10 11.2" stroke="#F2617A" /></svg>
+                  )}
+                </span>
+                <span>
+                  <span class="block text-[15px] leading-relaxed text-slate-600">{tip.text}</span>
+                  <span class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                    {tip.label}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </span>
+                </span>
+              </a>
+            ))}
           </div>
-       </div>
+        </div>
+      </div>
     </section>
 
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-50">
-       <div class="container mx-auto px-6 max-w-4xl">
-          <div class="text-center mb-16 fade-up">
-             <h2 class="text-xs font-black uppercase tracking-[0.4em] text-accent mb-4">{t('armonia.faq.badge')}</h2>
-             <h3 class="text-4xl md:text-5xl font-black text-primary">{t('armonia.faq.title')}</h3>
-          </div>
+    <div class="bg-white py-10 md:py-14">
+      <CtaBand />
+    </div>
 
-          <div class="space-y-4">
-             {faqs.map((faq, idx) => (
-                <div class="fade-up border border-slate-100 rounded-3xl bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                   <details class="group">
-                      <summary class="flex justify-between items-center p-8 cursor-pointer list-none">
-                         <h4 class="text-lg font-black text-primary pr-8 leading-tight">{faq.question}</h4>
-                         <span class="group-open:rotate-180 transition-transform text-accent"><HelpCircle size={24} /></span>
-                      </summary>
-                      <div class="px-8 pb-8 text-slate-600 leading-relaxed border-t border-slate-50 pt-6">
-                         <p>{faq.answer}</p>
-                      </div>
-                   </details>
-                </div>
-             ))}
-          </div>
-       </div>
-    </section>
+    <FaqSection eyebrow={t('armonia.faq.badge')} title={t('armonia.faq.title')} faqs={faqs} />
 
-    <!-- Final CTA -->
+    <RelatedTreatments current="armonia" />
+
     <Contact />
   </main>
-  
+
   <FooterInfo />
 </Layout>
-
-<style>
-  details summary::-webkit-details-marker {
-    display: none;
-  }
-</style>

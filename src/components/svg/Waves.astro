@@ -1,0 +1,65 @@
+---
+/**
+ * Layered sea waves used as a divider between sections.
+ * Place it at the bottom of a section with `fill` = colour of the next section.
+ * `flip` turns it upside down for the top edge of a section.
+ */
+interface Props {
+  fill?: string;
+  flip?: boolean;
+  animated?: boolean;
+  class?: string;
+}
+
+const { fill = '#ffffff', flip = false, animated = true, class: className = '' } = Astro.props;
+
+// Periods divide 1440 so the 2880-wide paths loop seamlessly while drifting.
+const wave = (baseline: number, amplitude: number, period: number, phase = 0, closed = true) => {
+  const half = period / 2;
+  const k = amplitude * 1.333;
+  let d = `M0 ${baseline}`;
+  for (let i = 0, x = 0; x < 2880; i++, x += half) {
+    const sign = (i + phase) % 2 === 0 ? 1 : -1;
+    const y = baseline - sign * k;
+    d += `C${x + half * 0.36} ${y} ${x + half * 0.64} ${y} ${x + half} ${baseline}`;
+  }
+  return closed ? `${d}L2880 120L0 120Z` : d;
+};
+
+// Two hairline "currents" above one solid wave.
+const lines = [
+  { d: wave(44, 11, 720, 0, false), stroke: '#2CC5D2', opacity: 0.55, width: 1.4, duration: 34 },
+  { d: wave(58, 9, 480, 1, false), stroke: '#F2617A', opacity: 0.4, width: 1.2, duration: 24 },
+];
+const solid = { d: wave(76, 10, 1440), duration: 48 };
+---
+
+<div class:list={['waves pointer-events-none select-none leading-[0]', { 'waves-flip': flip }, className]} aria-hidden="true">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="block h-[56px] w-full md:h-[88px]" focusable="false">
+    {lines.map((line) => (
+      <path
+        d={line.d}
+        fill="none"
+        stroke={line.stroke}
+        stroke-opacity={line.opacity}
+        stroke-width={line.width}
+        vector-effect="non-scaling-stroke"
+        class:list={{ 'wave-drift': animated }}
+        style={`animation-duration:${line.duration}s`}
+      />
+    ))}
+    <path d={solid.d} fill={fill} class:list={{ 'wave-drift': animated }} style={`animation-duration:${solid.duration}s`} />
+  </svg>
+</div>
+
+<style is:global>
+  .waves-flip { transform: scaleY(-1); }
+  .wave-drift {
+    animation-name: wave-drift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wave-drift { animation: none; }
+  }
+</style>

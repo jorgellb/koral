@@ -1,0 +1,46 @@
+---
+/** Compact call-to-action card: free first visit + book / call / WhatsApp. */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import CoralBranch from '../svg/CoralBranch.astro';
+import { pathFor } from '../../i18n/routes';
+
+interface Props {
+  title?: string;
+  description?: string;
+  class?: string;
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const { title = t('cta.title'), description = t('cta.desc'), class: className = '' } = Astro.props;
+---
+
+<div class:list={['container-k', className]}>
+  <div class="relative isolate overflow-hidden rounded-[2.25rem] bg-ocean px-7 py-12 text-white shadow-[var(--shadow-premium)] md:px-14 md:py-16" data-reveal="scale">
+    <CoralBranch seed={8} color="duo" class="pointer-events-none absolute -bottom-2 right-[-30px] -z-10 h-[200px] w-auto opacity-25 md:h-[260px]" />
+    <CoralBranch seed={31} depth={4} color="white" class="pointer-events-none absolute -top-8 left-[38%] -z-10 hidden h-[160px] w-auto rotate-180 opacity-[0.06] lg:block" />
+    <svg class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-24 w-full opacity-20" viewBox="0 0 1200 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 60c100-30 200-30 300 0s200 30 300 0 200-30 300 0 200 30 300 0" fill="none" stroke="#8FE3EA" />
+      <path d="M0 80c100-24 200-24 300 0s200 24 300 0 200-24 300 0 200 24 300 0" fill="none" stroke="#8FE3EA" stroke-opacity=".6" />
+    </svg>
+
+    <div class="grid items-center gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <p class="eyebrow eyebrow-light mb-4">{t('nav.mega.promo.title')}</p>
+        <p class="font-display text-4xl leading-[1.05] text-white md:text-5xl">{title}</p>
+        <p class="mt-5 max-w-xl text-white/70">{description}</p>
+        <a href={pathFor('pricing', lang)} class="link-u mt-5 inline-block text-sm font-semibold text-aqua-soft">{t('nav.pricing')} →</a>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:flex-col xl:flex-row lg:justify-end">
+        <a href="#appointment" class="btn btn-coral shine-effect">
+          {t('nav.appointment')}
+          <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-ghost-light">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5 5.2-1.4A9.9 9.9 0 1 0 12.04 2Zm5.8 14.1c-.25.7-1.45 1.33-2 1.4-.52.08-1.17.11-1.88-.12a17 17 0 0 1-1.7-.63c-2.99-1.29-4.94-4.3-5.09-4.5-.15-.2-1.22-1.62-1.22-3.09s.77-2.2 1.05-2.5a1.1 1.1 0 0 1 .79-.37h.57c.18 0 .43-.07.67.51.25.6.84 2.06.92 2.2.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.39-.45.52-.15.15-.3.31-.13.6.17.3.77 1.27 1.65 2.06 1.14 1.01 2.1 1.33 2.39 1.48.3.15.47.12.64-.07.18-.2.75-.87.94-1.17.2-.3.4-.25.67-.15.27.1 1.73.82 2.03.97.3.15.5.22.57.35.07.12.07.72-.18 1.42Z" /></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

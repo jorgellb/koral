@@ -1,0 +1,1062 @@
+---
+/**
+ * Hero illustrations for treatment / info pages ("Coral & Mediterranean").
+ * One inline SVG (viewBox 480×480): a shared backdrop (halo, blob, rings, coral
+ * sprigs, rising bubbles) plus one subject group per `name`.
+ * Every id is prefixed `ti-${name}-` so several illustrations can share a page.
+ */
+type Name =
+  | 'implantes'
+  | 'ortodoncia'
+  | 'estetica'
+  | 'endodoncia'
+  | 'odontopediatria'
+  | 'periodoncia'
+  | 'rehabilitacion'
+  | 'cirugia'
+  | 'armonia'
+  | 'team'
+  | 'pricing'
+  | 'contact'
+  | 'legal';
+
+interface Props {
+  name: Name;
+  class?: string;
+  /** Accessible title; when absent the SVG is decorative (aria-hidden). */
+  title?: string;
+}
+
+const { name, class: className, title } = Astro.props;
+
+const id = (s: string) => `ti-${name}-${s}`;
+const url = (s: string) => `url(#${id(s)})`;
+const ref = (s: string) => `#${id(s)}`;
+const titleId = id('title');
+
+type Pt = [number, number];
+const f = (n: number) => Math.round(n * 10) / 10;
+const rad = (deg: number) => (deg * Math.PI) / 180;
+
+const rotPt = ([x, y]: Pt, deg: number, [px, py]: Pt = [0, 0]): Pt => {
+  const c = Math.cos(rad(deg));
+  const s = Math.sin(rad(deg));
+  return [px + (x - px) * c - (y - py) * s, py + (x - px) * s + (y - py) * c];
+};
+
+/** Catmull-Rom → cubic Bézier through the given points. */
+const smooth = (pts: Pt[]) => {
+  let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    d += `C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
+  }
+  return d;
+};
+
+/** Four-point sparkle star. */
+const star4 = (cx: number, cy: number, r: number) => {
+  const k = r * 0.14;
+  return `M${cx} ${cy - r}Q${f(cx + k)} ${f(cy - k)} ${cx + r} ${cy}Q${f(cx + k)} ${f(cy + k)} ${cx} ${cy + r}Q${f(cx - k)} ${f(cy + k)} ${cx - r} ${cy}Q${f(cx - k)} ${f(cy - k)} ${cx} ${cy - r}Z`;
+};
+
+/** Five-point star. */
+const star5 = (cx: number, cy: number, r: number) =>
+  Array.from({ length: 10 }, (_, i) => {
+    const a = rad(-90 + i * 36);
+    const rr = i % 2 ? r * 0.46 : r;
+    return `${i ? 'L' : 'M'}${f(cx + rr * Math.cos(a))} ${f(cy + rr * Math.sin(a))}`;
+  }).join('') + 'Z';
+
+/** Scalloped seal / badge outline. */
+const scallop = (cx: number, cy: number, r: number, n: number) => {
+  const pts = Array.from({ length: n }, (_, i): Pt => {
+    const a = rad(-90 + (i * 360) / n);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  });
+  const br = f(r * Math.sin(Math.PI / n) * 1.08);
+  return `M${f(pts[0][0])} ${f(pts[0][1])}${pts
+    .map((_, i) => {
+      const p = pts[(i + 1) % n];
+      return `A${br} ${br} 0 0 1 ${f(p[0])} ${f(p[1])}`;
+    })
+    .join('')}Z`;
+};
+
+/** Implant screw: tapered body with triangular threads; returns outline + crest lines. */
+const screw = (cx: number, y0: number, y1: number, r0: number, r1: number, p: number, t: number) => {
+  const rAt = (y: number) => r0 + (r1 - r0) * ((y - y0) / (y1 - y0));
+  const n = Math.floor((y1 - 12 - y0 - 6 - p * 1.3) / p) + 1;
+  let right = '';
+  let left = '';
+  let crests = '';
+  for (let i = 0; i < n; i++) {
+    const y = y0 + 6 + i * p;
+    right += `L${f(cx + rAt(y))} ${f(y)}L${f(cx + rAt(y) + t)} ${f(y + p * 0.4)}L${f(cx + rAt(y + p * 0.8))} ${f(y + p * 0.8)}`;
+    const yl = y + p / 2;
+    crests += `M${f(cx - rAt(yl) - t + 1)} ${f(yl + p * 0.4)}L${f(cx + rAt(y) + t - 1)} ${f(y + p * 0.4)}`;
+  }
+  for (let i = n - 1; i >= 0; i--) {
+    const y = y0 + 6 + p / 2 + i * p;
+    left += `L${f(cx - rAt(y + p * 0.8))} ${f(y + p * 0.8)}L${f(cx - rAt(y) - t)} ${f(y + p * 0.4)}L${f(cx - rAt(y))} ${f(y)}`;
+  }
+  const outline = `M${f(cx - r0)} ${y0}L${f(cx + r0)} ${y0}${right}L${f(cx + r1)} ${y1 - 12}C${f(cx + r1)} ${y1 + 2} ${f(cx - r1)} ${y1 + 2} ${f(cx - r1)} ${y1 - 12}${left}Z`;
+  return { outline, crests };
+};
+
+/** Front-view lower incisor crown: incisal edge at y=0, cervical at y=h. */
+const lowerIncisor = (w: number, h: number) => {
+  const a = w / 2;
+  return `M${f(-a * 0.9)} 2Q0 -3 ${f(a * 0.9)} 2C${f(a)} 3 ${f(a * 1.04)} 9 ${f(a * 1.02)} 16C${f(a * 0.98)} ${f(h * 0.5)} ${f(a * 0.72)} ${f(h * 0.9)} ${f(a * 0.56)} ${f(h)}Q0 ${f(h * 1.06)} ${f(-a * 0.56)} ${f(h)}C${f(-a * 0.72)} ${f(h * 0.9)} ${f(-a * 0.98)} ${f(h * 0.5)} ${f(-a * 1.02)} 16C${f(-a * 1.04)} 9 ${f(-a)} 3 ${f(-a * 0.9)} 2Z`;
+};
+
+/** Side-view posterior crown with `cusps` bumps on top. */
+const crownSide = (cx: number, w: number, top: number, bot: number, cusps: number) => {
+  const h = bot - top;
+  const xl = cx - w * 0.46;
+  const xr = cx + w * 0.46;
+  const yv = top + h * 0.14;
+  const step = (xr - xl) / cusps;
+  let d = `M${f(cx - w * 0.36)} ${bot}C${f(cx - w * 0.5)} ${f(bot - h * 0.2)} ${f(cx - w * 0.52)} ${f(top + h * 0.42)} ${f(xl)} ${f(yv)}`;
+  for (let i = 0; i < cusps; i++) {
+    const x0 = xl + i * step;
+    d += `C${f(x0 + step * 0.12)} ${f(top - h * 0.05)} ${f(x0 + step * 0.88)} ${f(top - h * 0.05)} ${f(x0 + step)} ${f(yv)}`;
+  }
+  return `${d}C${f(cx + w * 0.52)} ${f(top + h * 0.42)} ${f(cx + w * 0.5)} ${f(bot - h * 0.2)} ${f(cx + w * 0.36)} ${bot}Q${cx} ${f(bot + h * 0.06)} ${f(cx - w * 0.36)} ${bot}Z`;
+};
+
+/* Molar (two roots), local origin at the cervical centre; crown up to y≈-112, roots to y≈128. */
+const MOLAR =
+  'M-60 0C-68 -16 -78 -38 -77 -62C-76 -90 -62 -110 -40 -112C-24 -113 -14 -100 0 -100C14 -100 24 -113 40 -112C62 -110 76 -90 77 -62C78 -38 68 -16 60 0C57 36 54 84 45 116C42 128 29 130 25 118C18 84 13 58 0 48C-13 58 -18 84 -25 118C-29 130 -42 128 -45 116C-54 84 -57 36 -60 0Z';
+const MOLAR_ENAMEL =
+  'M-60 0C-68 -16 -78 -38 -77 -62C-76 -90 -62 -110 -40 -112C-24 -113 -14 -100 0 -100C14 -100 24 -113 40 -112C62 -110 76 -90 77 -62C78 -38 68 -16 60 0L52 -6C58 -22 64 -42 63 -62C62 -84 52 -96 38 -97C26 -98 16 -86 0 -86C-16 -86 -26 -98 -38 -97C-52 -96 -62 -84 -63 -62C-64 -42 -58 -22 -52 -6Z';
+const MOLAR_PULP =
+  'M-30 -14C-34 -32 -33 -56 -27 -68C-24 -75 -17 -73 -15 -64C-10 -56 10 -56 15 -64C17 -73 24 -75 27 -68C33 -56 34 -32 30 -14C30 -10 28 -8 26 -6C34 24 39 76 37 121L33 121C32 80 24 34 12 -4C6 -8 -6 -8 -12 -4C-24 34 -32 80 -33 121L-37 121C-39 76 -34 24 -26 -6C-28 -8 -30 -10 -30 -14Z';
+const MOLAR_GLOSS = 'M-62 -34C-68 -60 -60 -88 -42 -100';
+/* Front-view upper central incisor / canine crowns, local origin at the cervical centre (≈124×186). */
+const INCISOR =
+  'M-40 6C-22 -10 22 -10 40 6C52 14 60 50 62 100C63 130 62 156 56 168C52 176 44 178 34 178C18 180 -18 180 -34 178C-46 178 -54 174 -58 166C-62 150 -63 128 -62 100C-60 50 -52 14 -40 6Z';
+const CANINE =
+  'M-40 6C-22 -10 22 -10 40 6C52 14 60 50 62 96C63 120 58 140 46 156C34 170 14 182 0 186C-14 182 -34 170 -46 156C-58 140 -63 120 -62 96C-60 50 -52 14 -40 6Z';
+/* Baby molar: plumper crown, short splayed roots. */
+const BABY =
+  'M-58 0C-72 -14 -82 -40 -80 -64C-78 -92 -60 -108 -38 -108C-22 -108 -14 -98 0 -98C14 -98 22 -108 38 -108C60 -108 78 -92 80 -64C82 -40 72 -14 58 0C56 24 52 48 42 64C36 72 28 70 26 60C22 44 14 34 0 32C-14 34 -22 44 -26 60C-28 70 -36 72 -42 64C-52 48 -56 24 -58 0Z';
+
+/* Coral sprig growing upward from (0,0); tips are zero-length round-capped dots. */
+const SPRIG =
+  'M0 0C1 -14 -3 -28 1 -42C4 -52 3 -62 -1 -72M0 -20C-8 -24 -14 -32 -16 -44M-11 -30C-19 -32 -24 -37 -26 -44M2 -38C10 -41 16 -48 18 -58M2 -54C-4 -58 -8 -62 -10 -68';
+const SPRIG_DOTS = 'M-1 -72h0M-16 -44h0M-26 -44h0M18 -58h0M-10 -68h0';
+
+/* ---------- gradients (only the ones a variant uses are emitted) ---------- */
+type Stop = [offset: number, color: string, opacity?: number];
+type Grad = { stops: Stop[]; radial?: boolean; dir?: 'h' | 'd'; cy?: number; r?: number };
+const GRADIENTS: Record<string, Grad> = {
+  halo: { radial: true, stops: [[0, '#2CC5D2', 0.3], [0.55, '#2CC5D2', 0.1], [1, '#2CC5D2', 0]] },
+  glow: { radial: true, stops: [[0, '#F2617A', 0.22], [1, '#F2617A', 0]] },
+  shadow: { radial: true, stops: [[0, '#0A1F33', 0.7], [1, '#0A1F33', 0]] },
+  blob: { dir: 'd', stops: [[0, '#1C5175', 0.55], [1, '#143B5C', 0.1]] },
+  enamel: { stops: [[0, '#FFFFFF'], [0.55, '#F4FAFB'], [1, '#E3EEF1']] },
+  shade: { dir: 'h', stops: [[0.55, '#1C5175', 0], [1, '#1C5175', 0.26]] },
+  coral: { stops: [[0, '#FF9AAA'], [1, '#F2617A']] },
+  aqua: { stops: [[0, '#8FE3EA'], [1, '#2CC5D2']] },
+  bone: { stops: [[0, '#F3ECE3'], [1, '#E6D8C6']] },
+  metal: { dir: 'h', stops: [[0, '#1C5175'], [0.3, '#D5F6F8'], [0.44, '#FFFFFF'], [0.66, '#E3EEF1'], [1, '#1C5175']] },
+  pink: { stops: [[0, '#FFE4E8'], [1, '#FF9AAA']] },
+  lipUp: { stops: [[0, '#F2617A'], [1, '#FF9AAA']] },
+  gumFade: { stops: [[0, '#FF9AAA', 0], [0.5, '#FF9AAA', 0.9], [1, '#F2617A']] },
+  veneer: { dir: 'd', stops: [[0, '#FFFFFF', 0.8], [0.5, '#D5F6F8', 0.35], [1, '#8FE3EA', 0.2]] },
+  frame: { radial: true, cy: 0.35, r: 0.7, stops: [[0, '#1C5175'], [1, '#0E2B45']] },
+};
+const TOOTH = ['enamel', 'shade'];
+const NEEDS: Record<Name, string[]> = {
+  implantes: [...TOOTH, 'coral', 'bone', 'metal'],
+  ortodoncia: [...TOOTH, 'coral', 'metal'],
+  estetica: [...TOOTH, 'gumFade', 'veneer'],
+  endodoncia: [...TOOTH, 'bone', 'aqua'],
+  odontopediatria: [...TOOTH, 'coral'],
+  periodoncia: [...TOOTH, 'coral', 'bone'],
+  rehabilitacion: [...TOOTH, 'coral', 'bone', 'metal', 'pink'],
+  cirugia: [...TOOTH, 'coral', 'bone', 'metal'],
+  armonia: ['coral', 'aqua', 'lipUp'],
+  team: ['enamel', 'coral', 'aqua', 'frame'],
+  pricing: ['enamel', 'coral', 'aqua', 'bone'],
+  contact: ['enamel', 'coral', 'aqua'],
+  legal: ['enamel', 'aqua'],
+};
+const grads = ['halo', 'glow', 'shadow', 'blob', ...NEEDS[name]].map((key) => ({ key, ...GRADIENTS[key] }));
+
+/* ---------- shared backdrop config ---------- */
+type Sprig = { x: number; y: number; r: number; s: number; c: 'coral' | 'aqua' };
+const DEFAULT_SPRIGS: Sprig[] = [
+  { x: 84, y: 426, r: -16, s: 1, c: 'coral' },
+  { x: 404, y: 432, r: 14, s: 0.76, c: 'aqua' },
+];
+const SCENE: Record<Name, { blob: number; sprigs?: Sprig[] }> = {
+  implantes: { blob: 0 },
+  ortodoncia: { blob: 40 },
+  estetica: { blob: 80 },
+  endodoncia: { blob: 120 },
+  odontopediatria: { blob: 160, sprigs: [{ x: 74, y: 418, r: -20, s: 0.9, c: 'aqua' }, { x: 108, y: 430, r: 8, s: 0.6, c: 'coral' }] },
+  periodoncia: { blob: 200 },
+  rehabilitacion: { blob: 240 },
+  cirugia: { blob: 280, sprigs: [{ x: 66, y: 448, r: -18, s: 0.85, c: 'coral' }, { x: 420, y: 450, r: 16, s: 0.66, c: 'aqua' }] },
+  armonia: { blob: 320 },
+  team: { blob: 20, sprigs: [{ x: 92, y: 384, r: -26, s: 1.05, c: 'coral' }, { x: 388, y: 384, r: 24, s: 1, c: 'aqua' }, { x: 312, y: 142, r: 36, s: 0.62, c: 'coral' }] },
+  pricing: { blob: 100 },
+  contact: { blob: 60 },
+  legal: { blob: 140, sprigs: [{ x: 150, y: 384, r: -28, s: 1, c: 'coral' }, { x: 404, y: 432, r: 14, s: 0.7, c: 'aqua' }] },
+};
+const scene = SCENE[name];
+const sprigs = scene.sprigs ?? DEFAULT_SPRIGS;
+
+const BUBBLES = [
+  { x: 92, y: 152, r: 4, o: -2, fill: false },
+  { x: 66, y: 292, r: 6.5, o: -6, fill: true },
+  { x: 132, y: 412, r: 3, o: -1, fill: false },
+  { x: 390, y: 90, r: 5, o: -4, fill: false },
+  { x: 418, y: 232, r: 3.5, o: -3, fill: true },
+  { x: 404, y: 352, r: 7, o: -7, fill: false },
+  { x: 318, y: 440, r: 3, o: -5, fill: true },
+  { x: 170, y: 62, r: 2.5, o: -2.5, fill: true },
+];
+const bubbleStyle = (b: (typeof BUBBLES)[number]) => `animation-delay:${b.o}s`;
+
+/* ---------- variant geometry ---------- */
+
+// implantes
+const implantScrew = screw(240, 262, 388, 21, 14, 15, 8);
+const IMPLANT_PORES: [number, number, number][] = [
+  [160, 312, 6], [186, 336, 4], [162, 356, 4.5], [192, 374, 3.5], [196, 306, 2.5],
+  [300, 316, 5], [324, 338, 6], [318, 302, 3], [298, 366, 4], [320, 368, 3], [290, 346, 2.5],
+];
+
+// ortodoncia — lower incisors, slightly mis-aligned, with brackets + wire
+const ORTHO_SHAPES = { ta: lowerIncisor(52, 110), tb: lowerIncisor(56, 122) };
+const ORTHO = [
+  { cx: 158, top: 222, w: 52, h: 110, rot: -6, k: 'ta' },
+  { cx: 213, top: 210, w: 56, h: 122, rot: 3.5, k: 'tb' },
+  { cx: 268, top: 213, w: 56, h: 122, rot: -2.5, k: 'tb' },
+  { cx: 323, top: 224, w: 52, h: 110, rot: 5, k: 'ta' },
+];
+const orthoTeeth = ORTHO.map((t) => {
+  const by = f(t.h * 0.4);
+  const [lx, ly] = rotPt([0, by], t.rot, [0, t.h / 2]);
+  return { ...t, by, gx: t.cx + lx, gy: t.top + ly };
+});
+const orthoWire = smooth([
+  [orthoTeeth[0].gx - 20, orthoTeeth[0].gy + 2],
+  ...orthoTeeth.map((t): Pt => [t.gx, t.gy]),
+  [orthoTeeth[3].gx + 20, orthoTeeth[3].gy + 2],
+]);
+const orthoGuideY = f(orthoTeeth.reduce((s, t) => s + t.gy, 0) / orthoTeeth.length);
+const TRAY = 'M128.5 125.9A116 44 0 1 0 351.5 125.9A18 18 0 0 0 316.9 131.4A80 24 0 1 1 163.1 131.4A18 18 0 0 0 128.5 125.9Z';
+const trayTicks = [28, 50, 72, 90, 108, 130, 152]
+  .map((a) => {
+    const c = Math.cos(rad(a));
+    const s = Math.sin(rad(a));
+    return `M${f(240 + 86 * c)} ${f(138 + 28 * s)}L${f(240 + 110 * c)} ${f(138 + 40 * s)}`;
+  })
+  .join('');
+
+// estetica — smile arc of six upper front teeth
+const SMILE = [
+  { cx: 116, top: 200, w: 42, h: 98, canine: true, depth: 0.1 },
+  { cx: 160, top: 206, w: 46, h: 90, canine: false, depth: 0.05 },
+  { cx: 210, top: 196, w: 58, h: 114, canine: false, depth: 0 },
+  { cx: 270, top: 196, w: 58, h: 114, canine: false, depth: 0 },
+  { cx: 320, top: 206, w: 46, h: 90, canine: false, depth: 0.05 },
+  { cx: 364, top: 200, w: 42, h: 98, canine: true, depth: 0.1 },
+].map((t) => ({
+  ...t,
+  k: t.canine ? 'k' : 'i',
+  tf: `translate(${t.cx} ${t.top}) scale(${(t.w / 124).toFixed(3)} ${(t.h / 186).toFixed(3)})`,
+}));
+const smileGum = (() => {
+  let d = 'M88 230';
+  SMILE.forEach((t, i) => {
+    const y0 = t.top + 0.09 * t.h;
+    const lx = t.cx - 0.36 * t.w;
+    const rx = t.cx + 0.36 * t.w;
+    const c = t.top - 0.02 * t.h;
+    if (i === 0) d += `L${f(lx)} ${f(y0)}`;
+    d += `C${f(t.cx - 0.2 * t.w)} ${f(c)} ${f(t.cx + 0.2 * t.w)} ${f(c)} ${f(rx)} ${f(y0)}`;
+    const n = SMILE[i + 1];
+    if (n) {
+      const nx = n.cx - 0.36 * n.w;
+      const ny = n.top + 0.09 * n.h;
+      d += `Q${f((rx + nx) / 2)} ${f(Math.max(y0, ny) + 16)} ${f(nx)} ${f(ny)}`;
+    }
+  });
+  return `${d}L392 230C394 186 332 146 240 144C148 146 86 186 88 230Z`;
+})();
+const SHADES = ['#FFFFFF', '#F4FAFB', '#E3EEF1', '#F3ECE3', '#E6D8C6'];
+const shadeTabs = [100, 95, 90, 85, 80].map((a, i) => ({
+  tf: `translate(${f(184 + 236 * Math.cos(rad(a)))} ${f(132 + 236 * Math.sin(rad(a)))}) rotate(${a - 90})`,
+  fill: SHADES[i],
+}));
+
+// rehabilitacion — implant-supported bridge; shapes built at x=0 and placed with translate
+const REHAB_CROWNS = { m: crownSide(0, 64, 112, 200, 3), p: crownSide(0, 56, 112, 200, 2) };
+const REHAB_CROWN_POS = [
+  { x: 152, k: 'cm' },
+  { x: 212, k: 'cp' },
+  { x: 268, k: 'cp' },
+  { x: 328, k: 'cm' },
+];
+const rehabScrew = screw(0, 280, 384, 17, 11, 14, 7);
+
+// pricing
+const receipt = (() => {
+  const x0 = 158;
+  const x1 = 322;
+  const y = 366;
+  const n = 9;
+  const step = (x1 - x0) / n;
+  let d = `M${x0 + 14} 108L${x1 - 14} 108Q${x1} 108 ${x1} 122L${x1} ${y}`;
+  for (let i = 0; i < n; i++) d += `L${f(x1 - step * (i + 0.5))} ${y + 9}L${f(x1 - step * (i + 1))} ${y}`;
+  return `${d}L${x0} 122Q${x0} 108 ${x0 + 14} 108Z`;
+})();
+const BADGE = scallop(336, 124, 44, 16);
+const COINS = [384, 371, 358];
+---
+
+<svg
+  viewBox="0 0 480 480"
+  width="100%"
+  xmlns="http://www.w3.org/2000/svg"
+  class:list={['ti', `ti--${name}`, className]}
+  role={title ? 'img' : undefined}
+  aria-labelledby={title ? titleId : undefined}
+  aria-hidden={title ? undefined : 'true'}
+  focusable={title ? undefined : 'false'}
+>
+  {title && <title id={titleId}>{title}</title>}
+  <defs>
+    {grads.map((g) => {
+      const stops = g.stops.map(([o, c, op]) => <stop offset={o} stop-color={c} stop-opacity={op} />);
+      return g.radial ? (
+        <radialGradient id={id(g.key)} cy={g.cy} r={g.r}>{stops}</radialGradient>
+      ) : (
+        <linearGradient id={id(g.key)} x2={g.dir ? undefined : '0'} y2={g.dir === 'h' ? undefined : '1'}>{stops}</linearGradient>
+      );
+    })}
+    <g id={id('sprig')} fill="none" stroke-linecap="round">
+      <path d={SPRIG} stroke="currentColor" stroke-width="2.4" />
+      <path d={SPRIG_DOTS} stroke-width="6" />
+    </g>
+  </defs>
+
+  {/* ── backdrop: halo, coral glow, organic blob, rings, sprigs ── */}
+  <circle cx="240" cy="240" r="212" fill={url('halo')} />
+  <circle cx="338" cy="168" r="150" fill={url('glow')} />
+  <path
+    d="M240 92C318 88 384 140 392 218C400 300 348 380 262 390C176 400 100 352 90 268C80 182 160 96 240 92Z"
+    fill={url('blob')}
+    transform={`rotate(${scene.blob} 240 240)`}
+  />
+  <g fill="none" stroke="#8FE3EA">
+    <circle cx="240" cy="240" r="172" stroke-opacity=".12" />
+    <circle cx="240" cy="240" r="196" stroke-opacity=".28" stroke-width="1.6" stroke-linecap="round" stroke-dasharray=".1 9" />
+  </g>
+  {sprigs.map((s) => (
+    <use
+      href={ref('sprig')}
+      transform={`translate(${s.x} ${s.y}) rotate(${s.r}) scale(${s.s})`}
+      color={s.c === 'coral' ? '#F2617A' : '#2CC5D2'}
+      stroke={s.c === 'coral' ? '#FF9AAA' : '#8FE3EA'}
+      opacity=".85"
+    />
+  ))}
+
+  {/* ── subject ── */}
+  <g class="ti-float">
+    {name === 'implantes' && (
+      <g>
+        <defs>
+          <path id={id('b')} d="M126 276Q126 262 140 262L340 262Q354 262 354 276L350 350C346 390 318 412 284 412L196 412C162 412 134 390 130 350Z" />
+          <path id={id('c')} d="M200 184C186 176 172 154 170 126C168 96 180 74 204 72C220 70 228 84 240 84C252 84 260 70 276 72C300 74 312 96 310 126C308 154 294 176 280 184C266 190 214 190 200 184Z" />
+          <path id={id('k')} d={implantScrew.crests} />
+        </defs>
+        <ellipse cx="240" cy="424" rx="124" ry="10" fill={url('shadow')} />
+        <path d="M240 54V414" stroke="#8FE3EA" stroke-opacity=".3" stroke-dasharray="2 6" stroke-linecap="round" />
+        {/* bone ridge: cortical shell, trabecular core, pores */}
+        <use href={ref('b')} fill="#0A1F33" fill-opacity=".35" transform="translate(6 7)" />
+        <use href={ref('b')} fill={url('bone')} />
+        <path d="M141 288L339 288L336 348C333 380 310 398 282 398L198 398C170 398 147 380 144 348Z" fill="#E6D8C6" />
+        <g fill="#F3ECE3">{IMPLANT_PORES.map(([x, y, r]) => <ellipse cx={x} cy={y} rx={r} ry={f(r * 0.75)} />)}</g>
+        {/* titanium screw */}
+        <path d={implantScrew.outline} fill={url('metal')} stroke="#143B5C" stroke-opacity=".35" stroke-linejoin="round" />
+        <g fill="none" stroke-linecap="round">
+          <use href={ref('k')} stroke="#FFFFFF" stroke-opacity=".7" stroke-width="1.3" />
+          <use href={ref('k')} stroke="#143B5C" stroke-opacity=".3" stroke-width="1.2" transform="translate(0 3)" />
+        </g>
+        <g fill="#2CC5D2">
+          {[[206, 300], [276, 322], [204, 348], [278, 362], [212, 380]].map(([x, y], i) => (
+            <circle class="ti-sparkle" cx={x} cy={y} r="2" style={`animation-delay:-${f(i * 0.6)}s`} />
+          ))}
+        </g>
+        {/* gum */}
+        <path d="M131 336C119 312 117 278 129 262C136 252 150 246 168 246L204 246C212 246 216 244 219 240L261 240C264 244 268 246 276 246L312 246C330 246 344 252 351 262C363 278 361 312 349 336L354 276Q354 262 340 262L140 262Q126 262 126 276Z" fill={url('coral')} />
+        <path d="M134 270C139 258 150 250 168 250L204 250M276 250L312 250C330 250 341 258 346 270" fill="none" stroke="#FFE4E8" stroke-opacity=".8" stroke-width="1.5" stroke-linecap="round" />
+        {/* abutment */}
+        <g fill={url('metal')}>
+          <path d="M229 198L251 198Q255 198 255.5 202L260 240L220 240L224.5 202Q225 198 229 198Z" />
+          <path d="M216 236L264 236L260 250L220 250Z" />
+        </g>
+        <path d="M226 212H254M225 224H255" stroke="#143B5C" stroke-opacity=".25" stroke-linecap="round" />
+        {/* crown, lifted */}
+        <path d="M186 196L198 236M294 196L282 236" stroke="#8FE3EA" stroke-opacity=".6" stroke-dasharray="2 4" stroke-linecap="round" />
+        <use href={ref('c')} fill="#0A1F33" fill-opacity=".3" transform="translate(6 8)" />
+        <use href={ref('c')} fill={url('enamel')} />
+        <use href={ref('c')} fill={url('shade')} />
+        <path d="M225 187L229 164Q240 158 251 164L255 187Q240 189 225 187Z" fill="#E3EEF1" stroke="#1C5175" stroke-opacity=".18" />
+        <path d="M184 150C180 124 186 100 202 86" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
+        <path d="M226 92Q240 100 254 92" fill="none" stroke="#1C5175" stroke-opacity=".15" stroke-width="1.5" stroke-linecap="round" />
+        {/* dimension line */}
+        <path class="ti-draw" pathLength="1" d="M384 262V388M377 262H391M377 388H391" fill="none" stroke="#8FE3EA" stroke-width="1.4" stroke-linecap="round" />
+        <circle cx="384" cy="325" r="3" fill="#2CC5D2" />
+      </g>
+    )}
+
+    {name === 'ortodoncia' && (
+      <g>
+        <defs>
+          <path id={id('ta')} d={ORTHO_SHAPES.ta} />
+          <path id={id('tb')} d={ORTHO_SHAPES.tb} />
+          <path id={id('tr')} d={TRAY} />
+          <path id={id('g')} d="M106 318C112 304 122 298 132 297Q158 330 186 296Q213 330 241 295Q268 330 296 296Q323 330 348 297C358 298 368 304 374 318C366 340 334 356 296 360L184 360C146 356 114 340 106 318Z" />
+          <g id={id('br')}>
+            <rect x="-11" y="-9" width="22" height="18" rx="4" fill={url('metal')} stroke="#143B5C" stroke-opacity=".4" />
+            <rect x="-11" y="-2" width="22" height="4" fill="#143B5C" fill-opacity=".45" />
+            <path d="M-4 -9V9M4 -9V9" stroke="#143B5C" stroke-opacity=".25" />
+          </g>
+        </defs>
+        <ellipse cx="240" cy="388" rx="132" ry="9" fill={url('shadow')} />
+        {/* clear aligner, floating above */}
+        <g class="ti-hover">
+          <g transform="translate(0 -14)">
+            <use href={ref('tr')} transform="translate(0 10)" fill="#2CC5D2" fill-opacity=".1" stroke="#8FE3EA" stroke-opacity=".35" />
+            <use href={ref('tr')} fill="#8FE3EA" fill-opacity=".16" stroke="#8FE3EA" stroke-width="1.6" stroke-dasharray="5 4" stroke-linejoin="round" />
+            <g fill="none" stroke-linecap="round">
+              <path d={trayTicks} stroke="#D5F6F8" stroke-opacity=".5" />
+              <path d="M156 160C186 178 216 184 240 184C264 184 294 178 324 160" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.4" />
+              <path d="M233 200L240 207L247 200" stroke="#8FE3EA" stroke-opacity=".8" stroke-width="1.6" stroke-linejoin="round" />
+            </g>
+          </g>
+        </g>
+        {/* alignment guideline */}
+        <path d={`M112 ${orthoGuideY}H368`} stroke="#8FE3EA" stroke-opacity=".45" stroke-dasharray="2 6" stroke-linecap="round" />
+        {/* teeth with brackets */}
+        {orthoTeeth.map((t) => (
+          <g transform={`translate(${t.cx} ${t.top}) rotate(${t.rot} 0 ${t.h / 2})`}>
+            <use href={ref(t.k)} fill="#0A1F33" fill-opacity=".3" transform="translate(4 5)" />
+            <use href={ref(t.k)} fill={url('enamel')} />
+            <use href={ref(t.k)} fill={url('shade')} />
+            <path d={`M${f(-t.w * 0.3)} 12C${f(-t.w * 0.36)} 30 ${f(-t.w * 0.34)} 52 ${f(-t.w * 0.26)} 70`} fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+            <use href={ref('br')} y={t.by} />
+          </g>
+        ))}
+        <g fill="none" stroke-linecap="round">
+          <path d={orthoWire} stroke="#143B5C" stroke-opacity=".45" stroke-width="3.6" transform="translate(0 1.5)" />
+          <path class="ti-draw" pathLength="1" d={orthoWire} stroke="#D5F6F8" stroke-width="2.4" />
+        </g>
+        {/* gum */}
+        <use href={ref('g')} fill="#0A1F33" fill-opacity=".3" transform="translate(4 7)" />
+        <use href={ref('g')} fill={url('coral')} />
+        <g fill="none" stroke-width="1.4" stroke-linecap="round">
+          <path d="M136 302Q158 332 184 300M190 300Q213 332 238 299M244 299Q268 332 292 300M300 300Q323 332 344 302" stroke="#FFE4E8" stroke-opacity=".65" />
+          <path d="M128 330C150 344 196 352 240 352C284 352 330 344 352 330" stroke="#F2617A" stroke-opacity=".5" />
+        </g>
+      </g>
+    )}
+
+    {name === 'estetica' && (
+      <g transform="translate(0 -8)">
+        <defs>
+          <path id={id('i')} d={INCISOR} />
+          <path id={id('k')} d={CANINE} />
+          <path id={id('g')} d={smileGum} />
+          <g id={id('tab')}>
+            <rect x="-3" y="-8" width="6" height="10" rx="2" fill="#8FE3EA" fill-opacity=".75" stroke="none" />
+            <path d="M-10 2H10V22C10 32 5 38 0 38C-5 38 -10 32 -10 22Z" />
+          </g>
+        </defs>
+        <ellipse cx="240" cy="344" rx="140" ry="8" fill={url('shadow')} />
+        {/* smile arc: six upper front teeth */}
+        <g fill="#0A1F33" fill-opacity=".3">
+          {SMILE.map((t) => <use href={ref(t.k)} x="7" y="11" transform={t.tf} />)}
+        </g>
+        {SMILE.map((t, i) => (
+          <g transform={t.tf}>
+            <use href={ref(t.k)} fill={url('enamel')} />
+            <use href={ref(t.k)} fill={url('shade')} />
+            {t.depth > 0 && <use href={ref(t.k)} fill="#1C5175" fill-opacity={t.depth} />}
+            {i === 3 && <use href={ref('i')} fill="#E6D8C6" fill-opacity=".45" />}
+          </g>
+        ))}
+        <g fill="none" stroke-linecap="round">
+          <path d="M193 222C188 246 188 270 192 294M253 222C248 246 248 270 252 294" stroke="#FFFFFF" stroke-width="4" />
+          <path d="M150 228C147 244 147 262 150 276M310 228C307 244 307 262 310 276" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="2.4" />
+          <path d="M186 306C200 311 220 311 234 306" stroke="#8FE3EA" stroke-opacity=".55" stroke-width="2" />
+        </g>
+        {/* gum, fading upward */}
+        <use href={ref('g')} fill="#0A1F33" fill-opacity=".18" transform="translate(0 5)" />
+        <use href={ref('g')} fill={url('gumFade')} />
+        {/* veneer shell floating off the right central incisor */}
+        <path class="ti-draw" pathLength="1" d="M284 322C294 334 304 340 314 342" fill="none" stroke="#8FE3EA" stroke-width="1.6" stroke-linecap="round" />
+        <g class="ti-hover">
+          <g transform="translate(342 300) rotate(12) scale(.52 .56)">
+            <use href={ref('i')} fill="#0A1F33" fill-opacity=".25" transform="translate(8 10)" />
+            <use href={ref('i')} fill={url('veneer')} stroke="#FFFFFF" stroke-opacity=".95" stroke-width="2.8" />
+            <use href={ref('i')} fill="none" stroke="#8FE3EA" stroke-opacity=".55" stroke-width="2" transform="translate(6 7) scale(.9)" />
+            <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
+              <path d="M-34 178C-46 178 -54 174 -58 166C-62 150 -63 128 -62 100C-60 50 -52 14 -40 6" stroke-opacity=".9" stroke-width="5.6" />
+              <path d="M-38 50C-44 80 -44 110 -38 136" stroke-width="4.4" />
+            </g>
+          </g>
+        </g>
+        {/* shade guide */}
+        <path class="ti-draw" pathLength="1" d="M128.4 355.2A230 230 0 0 0 239.6 355.2" fill="none" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round" />
+        <g stroke="#FFFFFF" stroke-opacity=".45">
+          {shadeTabs.map((t, i) =>
+            i === 0 ? (
+              <use href={ref('tab')} transform={t.tf} fill={t.fill} stroke="#2CC5D2" stroke-opacity="1" stroke-width="2" />
+            ) : (
+              <use href={ref('tab')} transform={t.tf} fill={t.fill} />
+            ),
+          )}
+        </g>
+        {/* sparkles */}
+        <path class="ti-sparkle" d={star4(222, 230, 9)} fill="#FFFFFF" />
+        <path class="ti-sparkle" d={star4(384, 140, 15)} fill="#FFFFFF" style="animation-delay:-1.6s" />
+        <path class="ti-sparkle" d={star4(96, 168, 8)} fill="#D5F6F8" style="animation-delay:-1.2s" />
+        <path class="ti-sparkle" d={star4(398, 330, 6)} fill="#8FE3EA" style="animation-delay:-2s" />
+      </g>
+    )}
+
+    {name === 'endodoncia' && (
+      <g>
+        <defs>
+          <path id={id('m')} d={MOLAR} />
+        </defs>
+        <ellipse cx="240" cy="408" rx="96" ry="8" fill={url('shadow')} />
+        {/* tooth cross-section: dentin, enamel cap, pulp + canals */}
+        <g transform="translate(240 252) scale(1.05)">
+          <use href={ref('m')} fill="#0A1F33" fill-opacity=".3" transform="translate(6 7)" />
+          <use href={ref('m')} fill={url('bone')} />
+          <path d={MOLAR_ENAMEL} fill={url('enamel')} />
+          <use href={ref('m')} fill={url('shade')} />
+          <path d={MOLAR_GLOSS} fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
+          <path d={MOLAR_PULP} fill={url('aqua')} stroke="#D5F6F8" stroke-opacity=".6" />
+          <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
+            <path class="ti-draw" pathLength="1" d="M-19 -4C-28 34 -35 80 -35 120M19 -4C28 34 35 80 35 120" stroke-width="2.2" />
+            <path d="M-20 -50Q0 -60 20 -50" stroke-opacity=".7" stroke-width="2" />
+          </g>
+        </g>
+        {/* microscope reticle at the apex */}
+        <g fill="none" stroke="#8FE3EA" stroke-width="1.5">
+          <circle cx="277" cy="379" r="22" fill="#8FE3EA" fill-opacity=".08" />
+          <circle cx="277" cy="379" r="31" stroke-opacity=".35" stroke-width="1" stroke-dasharray="2 4" />
+          <path d="M277 348V358M277 400V410M246 379H256M298 379H308" stroke-linecap="round" />
+        </g>
+        <circle class="ti-sparkle" cx="277" cy="379" r="3" fill="#FFFFFF" />
+        <path class="ti-sparkle" d={star4(330, 150, 9)} fill="#D5F6F8" style="animation-delay:-1.4s" />
+      </g>
+    )}
+
+    {name === 'odontopediatria' && (
+      <g>
+        <defs>
+          <path id={id('t')} d={BABY} />
+        </defs>
+        <circle cx="220" cy="240" r="130" fill={url('glow')} />
+        <ellipse cx="216" cy="384" rx="92" ry="8" fill={url('shadow')} />
+        {/* baby tooth */}
+        <g transform="translate(212 288) rotate(-6)">
+          <use href={ref('t')} fill="#0A1F33" fill-opacity=".3" transform="translate(6 7)" />
+          <use href={ref('t')} fill={url('enamel')} />
+          <use href={ref('t')} fill={url('shade')} />
+          <path d="M-62 -40C-66 -64 -56 -88 -38 -98" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" />
+          <circle cx="-30" cy="-74" r="4" fill="#FFFFFF" />
+          <path d="M-24 -98C-14 -94 -6 -92 0 -92" fill="none" stroke="#E3EEF1" stroke-width="2" stroke-linecap="round" />
+        </g>
+        {/* toothbrush */}
+        <g transform="translate(430 360) rotate(-124) scale(.86)">
+          <rect y="-9" width="150" height="18" rx="9" fill={url('coral')} />
+          <path d="M14 -3H120" stroke="#FFE4E8" stroke-opacity=".7" stroke-width="2" stroke-linecap="round" />
+          <path d="M146 -5L176 -4V4L146 5Z" fill="#F2617A" />
+          <rect x="172" y="-10" width="60" height="20" rx="9" fill="#F4FAFB" />
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <rect x={f(178 + i * 8.6)} y="-32" width="5.4" height="24" rx="2.7" fill={i % 2 ? '#D5F6F8' : '#8FE3EA'} />
+          ))}
+        </g>
+        {/* foam */}
+        <g fill="#FFFFFF" fill-opacity=".85" stroke="#D5F6F8">
+          {[[300, 176, 7], [314, 160, 4.5], [286, 160, 3.5], [324, 182, 3], [296, 196, 3]].map(([x, y, r]) => (
+            <circle cx={x} cy={y} r={r} />
+          ))}
+        </g>
+        <path class="ti-sparkle" d={star5(118, 156, 13)} fill="#FF9AAA" stroke="#FF9AAA" stroke-width="2" stroke-linejoin="round" />
+        <path class="ti-sparkle" d={star5(366, 104, 9)} fill="#8FE3EA" stroke="#8FE3EA" stroke-width="2" stroke-linejoin="round" style="animation-delay:-1.5s" />
+        <path class="ti-sparkle" d={star4(150, 236, 8)} fill="#FFFFFF" style="animation-delay:-.8s" />
+        <path class="ti-sparkle" d={star4(240, 132, 10)} fill="#FFE4E8" style="animation-delay:-2.2s" />
+        <path class="ti-draw" pathLength="1" d="M112 330C100 300 104 262 126 236" fill="none" stroke="#FF9AAA" stroke-opacity=".7" stroke-width="1.6" stroke-linecap="round" />
+      </g>
+    )}
+
+    {name === 'periodoncia' && (
+      <g>
+        <defs>
+          <path id={id('b')} d="M104 294Q104 280 118 280L306 280Q320 280 320 294L317 350C314 386 290 410 258 410L166 410C134 410 110 386 107 350Z" />
+          <path id={id('m')} d={MOLAR} />
+          <clipPath id={id('lens')}>
+            <circle cx="364" cy="136" r="60" />
+          </clipPath>
+        </defs>
+        <ellipse cx="212" cy="424" rx="118" ry="9" fill={url('shadow')} />
+        {/* bone ridge */}
+        <use href={ref('b')} fill="#0A1F33" fill-opacity=".35" transform="translate(6 7)" />
+        <use href={ref('b')} fill={url('bone')} />
+        <path d="M118 304L306 304L303 348C300 378 282 396 256 396L168 396C142 396 124 378 121 348Z" fill="#E6D8C6" />
+        <g fill="#F3ECE3">
+          {[[132, 326, 5], [138, 356, 4], [146, 380, 3], [292, 324, 4.5], [288, 354, 5], [274, 380, 3], [212, 372, 4], [212, 352, 2.5]].map(([x, y, r]) => (
+            <ellipse cx={x} cy={y} rx={r} ry={f(r * 0.75)} />
+          ))}
+        </g>
+        {/* tooth with periodontal ligament outline */}
+        <g transform="translate(212 262)">
+          <use href={ref('m')} fill={url('enamel')} />
+          <use href={ref('m')} fill={url('shade')} stroke="#2CC5D2" stroke-opacity=".55" stroke-width="1.4" />
+          <path d={MOLAR_GLOSS} fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
+        </g>
+        {/* gum */}
+        <path d="M107 338C98 318 98 288 108 274C116 264 128 258 138 252C142 248 144 240 146 234C162 250 186 260 212 260C238 260 262 250 278 234C280 240 282 248 286 252C296 258 308 264 316 274C326 288 326 318 317 338L320 294Q320 280 306 280L118 280Q104 280 104 294Z" fill={url('coral')} />
+        <path d="M148 238C164 253 188 263 212 263C236 263 260 253 276 238M112 296C114 282 122 272 134 264M290 264C302 272 310 282 312 296" fill="none" stroke="#FFE4E8" stroke-opacity=".8" stroke-width="1.5" stroke-linecap="round" />
+        {/* magnified callout of the gum pocket */}
+        <path class="ti-draw" pathLength="1" d="M283.5 232L324 183.5" fill="none" stroke="#8FE3EA" stroke-width="1.4" stroke-linecap="round" />
+        <circle cx="280" cy="236" r="5" fill="#0E2B45" stroke="#8FE3EA" stroke-width="1.8" />
+        <circle cx="364" cy="136" r="70" fill="none" stroke="#8FE3EA" stroke-opacity=".3" stroke-dasharray="2 5" />
+        <circle cx="364" cy="136" r="60" fill="#0E2B45" />
+        <g clip-path={url('lens')} stroke-linecap="round">
+          <path d="M296 70H338C334 110 333 150 336 200H296Z" fill={url('enamel')} />
+          <path d="M338 168C356 160 390 158 430 162V200H336Z" fill={url('bone')} />
+          <path d="M354 98C374 90 402 88 430 92V172C400 166 366 168 337 174C338 150 344 124 354 98Z" fill={url('coral')} />
+          <path d="M353 102C346 124 340 148 338 170" fill="none" stroke="#F2617A" stroke-width="3" />
+          <path d="M356 104C376 96 400 94 428 98" fill="none" stroke="#FFE4E8" stroke-opacity=".8" stroke-width="1.4" />
+          <path d="M393 58L344 166" stroke="#E3EEF1" stroke-width="4" />
+          <path d="M374.6 98.5L371.3 105.8M366.3 116.7L363 124" stroke="#143B5C" stroke-width="4.6" stroke-linecap="butt" />
+          <path d="M314 102H326M314 172H326M320 106V168" stroke="#8FE3EA" stroke-width="1.4" />
+        </g>
+        <circle cx="364" cy="136" r="60" fill="none" stroke="#8FE3EA" stroke-width="2" />
+      </g>
+    )}
+
+    {name === 'rehabilitacion' && (
+      <g transform="translate(0 -14)">
+        <defs>
+          <path id={id('b')} d="M104 298Q104 284 118 284L362 284Q376 284 376 298L372 352C369 386 344 406 312 406L168 406C136 406 111 386 108 352Z" />
+          <path id={id('p')} d="M118 210C118 198 126 192 138 192L342 192C354 192 362 198 362 210C362 222 352 230 338 230L142 230C128 230 118 222 118 210Z" />
+          <path id={id('cm')} d={REHAB_CROWNS.m} />
+          <path id={id('cp')} d={REHAB_CROWNS.p} />
+          <g id={id('s')}>
+            <path d={rehabScrew.outline} fill={url('metal')} stroke="#143B5C" stroke-opacity=".35" stroke-linejoin="round" />
+            <path d={rehabScrew.crests} fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="1.2" stroke-linecap="round" />
+          </g>
+          <g id={id('a')} fill={url('metal')}>
+            <path d="M-9 244H9L13 276H-13Z" />
+            <path d="M-15 270H15L12 282H-12Z" />
+          </g>
+        </defs>
+        <ellipse cx="240" cy="426" rx="136" ry="10" fill={url('shadow')} />
+        {/* bone ridge with two implants */}
+        <use href={ref('b')} fill="#0A1F33" fill-opacity=".35" transform="translate(6 7)" />
+        <use href={ref('b')} fill={url('bone')} />
+        <path d="M118 310L362 310L359 350C356 376 338 392 312 392L168 392C142 392 124 376 121 350Z" fill="#E6D8C6" />
+        <g fill="#F3ECE3">
+          {[[134, 330, 4.5], [140, 358, 4], [240, 330, 6], [226, 358, 4], [256, 370, 3.5], [242, 384, 2.5], [346, 330, 4.5], [340, 358, 4]].map(([x, y, r]) => (
+            <ellipse cx={x} cy={y} rx={r} ry={f(r * 0.75)} />
+          ))}
+        </g>
+        <use href={ref('s')} x="176" />
+        <use href={ref('s')} x="304" />
+        {/* gum */}
+        <path d="M110 346C98 322 98 292 110 280C118 272 130 268 146 268L156 268Q164 268 166 262L186 262Q188 268 196 268L284 268Q292 268 294 262L314 262Q316 268 324 268L334 268C350 268 362 272 370 280C382 292 382 322 370 346L376 298Q376 284 362 284L118 284Q104 284 104 298Z" fill={url('coral')} />
+        <path d="M114 300C116 286 126 274 146 272L156 272M196 272L284 272M324 272L334 272C354 274 364 286 366 300" fill="none" stroke="#FFE4E8" stroke-opacity=".75" stroke-width="1.4" stroke-linecap="round" />
+        <use href={ref('a')} x="176" />
+        <use href={ref('a')} x="304" />
+        <path class="ti-draw" pathLength="1" d="M176 242V228M304 242V228" stroke="#8FE3EA" stroke-width="1.6" stroke-linecap="round" />
+        {/* prosthesis (lifted): pink base + four crowns */}
+        <g class="ti-hover">
+          <use href={ref('p')} fill="#0A1F33" fill-opacity=".3" transform="translate(5 7)" />
+          <use href={ref('p')} fill={url('pink')} />
+          <path d="M132 220C170 226 310 226 348 220" fill="none" stroke="#F2617A" stroke-opacity=".4" stroke-width="1.4" stroke-linecap="round" />
+          {REHAB_CROWN_POS.map((c) => (
+            <g>
+              <use href={ref(c.k)} x={c.x} fill={url('enamel')} />
+              <use href={ref(c.k)} x={c.x} fill={url('shade')} />
+            </g>
+          ))}
+          <path d="M128 176C124 156 128 136 138 124M196 176C193 158 196 140 204 130" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" />
+          <g fill="#1C5175" fill-opacity=".35">
+            <rect x="166" y="222" width="20" height="8" rx="2" />
+            <rect x="294" y="222" width="20" height="8" rx="2" />
+          </g>
+          <path d="M176 218V128M304 218V128" stroke="#2CC5D2" stroke-opacity=".5" stroke-width="1.3" stroke-dasharray="3 4" stroke-linecap="round" />
+        </g>
+      </g>
+    )}
+
+    {name === 'cirugia' && (
+      <g>
+        <defs>
+          <path id={id('b')} d="M92 290Q92 276 106 276L374 276Q388 276 388 290L385 346C382 388 352 414 316 414L164 414C128 414 98 388 95 346Z" />
+          <path id={id('m')} d={MOLAR} />
+          <mask id={id('arrow')}>
+            <path class="ti-draw" pathLength="1" d="M296 206C306 174 330 148 368 130" fill="none" stroke="#FFFFFF" stroke-width="8" />
+          </mask>
+          <clipPath id={id('wz')}>
+            <path d="M238 0H480V480H226V282L238 266Z" />
+          </clipPath>
+        </defs>
+        <ellipse cx="240" cy="430" rx="140" ry="10" fill={url('shadow')} />
+        {/* bone ridge */}
+        <use href={ref('b')} fill="#0A1F33" fill-opacity=".35" transform="translate(6 7)" />
+        <use href={ref('b')} fill={url('bone')} />
+        <path d="M106 302L374 302L371 344C368 378 346 400 316 400L164 400C134 400 112 378 109 344Z" fill="#E6D8C6" />
+        <g fill="#F3ECE3">
+          {[[112, 326, 3.5], [240, 350, 5], [236, 386, 3], [366, 318, 3]].map(([x, y, r]) => (
+            <ellipse cx={x} cy={y} rx={r} ry={f(r * 0.75)} />
+          ))}
+        </g>
+        {/* impacted wisdom tooth, then upright neighbour molar */}
+        {['translate(300 300) rotate(-30) scale(.76)', 'translate(170 284) scale(.84)'].map((tf) => (
+          <g transform={tf}>
+            <use href={ref('m')} fill={url('enamel')} />
+            <use href={ref('m')} fill={url('shade')} />
+            <path d={MOLAR_GLOSS} fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" />
+          </g>
+        ))}
+        {/* gum */}
+        <path d="M96 340C86 316 86 288 98 278C104 270 112 266 118 262C122 258 124 252 126 248C142 266 156 276 170 276C184 276 200 266 214 248C220 254 226 258 236 260C270 262 320 256 352 258C366 260 376 266 382 276C392 290 392 318 384 340L388 290Q388 276 374 276L106 276Q92 276 92 290Z" fill={url('coral')} />
+        <path d="M128 253C144 270 156 279 170 279C184 279 198 270 212 253M240 263C272 265 320 259 352 261C364 262 372 268 377 276" fill="none" stroke="#FFE4E8" stroke-opacity=".75" stroke-width="1.5" stroke-linecap="round" />
+        {/* x-ray outline of the impacted tooth */}
+        <g clip-path={url('wz')}>
+          <use href={ref('m')} transform="translate(300 300) rotate(-30) scale(.8)" fill="none" stroke="#2CC5D2" stroke-opacity=".75" stroke-width="1.8" stroke-dasharray="3 4" />
+        </g>
+        {/* extraction path */}
+        <g fill="none" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round">
+          <path d="M296 206C306 174 330 148 368 130" stroke-dasharray="5 5" mask={url('arrow')} />
+          <path d="M356 129.4L368 130L360.8 139.6" stroke-linejoin="round" />
+        </g>
+        {/* elevator instrument */}
+        <g transform="translate(440 168) rotate(140)">
+          <rect y="-5" width="54" height="10" rx="5" fill={url('metal')} />
+          <path d="M10 -5V5M18 -5V5M26 -5V5M34 -5V5M42 -5V5" stroke="#143B5C" stroke-opacity=".35" />
+          <path d="M54 -2L96 -1V1L54 2Z" fill="#E3EEF1" />
+          <path d="M96 -2.5C104 -3 110 -1 112 0C110 1 104 3 96 2.5Z" fill="#FFFFFF" />
+        </g>
+        <path class="ti-sparkle" d={star4(126, 150, 8)} fill="#D5F6F8" />
+      </g>
+    )}
+
+    {name === 'armonia' && (
+      <g transform="translate(0 16)">
+        <defs>
+          <path id={id('l')} d="M128 302C150 292 178 268 204 262C218 259 230 266 240 272C250 266 262 259 276 262C302 268 330 292 352 302C334 330 296 356 240 358C184 356 146 330 128 302Z" />
+        </defs>
+        {/* symmetrical facial guide: axes, golden-ratio arcs, ogive */}
+        <g fill="none" stroke="#8FE3EA" stroke-linecap="round">
+          <path d="M240 54V404M70 302H410" stroke-opacity=".35" stroke-dasharray="2 6" />
+          <path d="M59 302A181 181 0 0 1 421 302" stroke-opacity=".16" />
+          <path class="ti-draw" pathLength="1" d="M128 302A112 112 0 0 1 352 302" stroke-opacity=".5" />
+          <path d="M171 302A69 69 0 0 1 309 302" stroke-opacity=".3" />
+          <path class="ti-draw" pathLength="1" d="M128 302A200 200 0 0 1 240 160A200 200 0 0 1 352 302" stroke-opacity=".7" stroke-width="1.3" />
+        </g>
+        <g fill="#0E2B45" stroke="#8FE3EA" stroke-width="1.4">
+          {[[240, 190], [240, 233], [240, 160], [128, 302], [352, 302]].map(([x, y]) => (
+            <circle cx={x} cy={y} r="3" />
+          ))}
+        </g>
+        {/* lips */}
+        <use href={ref('l')} fill="#0A1F33" fill-opacity=".3" transform="translate(5 7)" />
+        <path d="M128 302C150 292 178 268 204 262C218 259 230 266 240 272C250 266 262 259 276 262C302 268 330 292 352 302C320 300 292 296 270 297C258 298 250 301 240 301C230 301 222 298 210 297C188 296 160 300 128 302Z" fill={url('lipUp')} />
+        <path d="M128 302C160 304 188 302 210 302C222 303 230 305 240 305C250 305 258 303 270 302C292 302 320 304 352 302C334 330 296 356 240 358C184 356 146 330 128 302Z" fill={url('coral')} />
+        <path d="M196 326C218 318 262 318 284 326C262 336 218 336 196 326Z" fill="#FFFFFF" fill-opacity=".35" />
+        <path d="M184 280C196 270 214 268 226 274" fill="none" stroke="#FFE4E8" stroke-opacity=".8" stroke-width="2" stroke-linecap="round" />
+        <use href={ref('l')} fill="none" stroke="#FFE4E8" stroke-opacity=".6" stroke-width="1.2" stroke-linejoin="round" />
+        {/* hyaluronic acid droplet */}
+        <g class="ti-hover">
+          <path d="M240 70C252 90 266 106 266 124C266 139 254 150 240 150C226 150 214 139 214 124C214 106 228 90 240 70Z" fill={url('aqua')} stroke="#D5F6F8" stroke-opacity=".8" />
+          <path d="M226 122C226 112 230 102 236 94" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" />
+          <circle cx="229" cy="134" r="2.5" fill="#FFFFFF" />
+        </g>
+        <path class="ti-sparkle" d={star4(290, 92, 8)} fill="#FFFFFF" />
+        <path class="ti-sparkle" d={star4(186, 120, 5)} fill="#8FE3EA" style="animation-delay:-1.6s" />
+      </g>
+    )}
+
+    {name === 'team' && (
+      <g>
+        <defs>
+          <clipPath id={id('c1')}><circle cx="150" cy="290" r="64" /></clipPath>
+          <clipPath id={id('c2')}><circle cx="330" cy="290" r="64" /></clipPath>
+          <clipPath id={id('c3')}><circle cx="240" cy="204" r="84" /></clipPath>
+        </defs>
+        <ellipse cx="240" cy="384" rx="156" ry="10" fill={url('shadow')} />
+        {/* three overlapping portrait frames with abstract silhouettes */}
+        {[
+          { cx: 150, cy: 290, r: 64, c: 'c1', ring: '#2CC5D2', fill: url('aqua'), bun: true },
+          { cx: 330, cy: 290, r: 64, c: 'c2', ring: '#FF9AAA', fill: url('coral'), bun: false },
+          { cx: 240, cy: 204, r: 84, c: 'c3', ring: '#FFFFFF', fill: url('enamel'), bun: false },
+        ].map((p) => (
+          <g>
+            <circle cx={p.cx + 5} cy={p.cy + 7} r={p.r + 3} fill="#0A1F33" fill-opacity=".35" />
+            <circle cx={p.cx} cy={p.cy} r={p.r + 3} fill={url('frame')} />
+            <g clip-path={url(p.c)} fill={p.fill}>
+              <circle cx={p.cx} cy={f(p.cy - p.r * 0.14)} r={f(p.r * 0.3)} />
+              {p.bun && <circle cx={p.cx} cy={f(p.cy - p.r * 0.5)} r={f(p.r * 0.13)} />}
+              <path
+                d={`M${f(p.cx - p.r * 0.74)} ${f(p.cy + p.r * 1.05)}C${f(p.cx - p.r * 0.74)} ${f(p.cy + p.r * 0.42)} ${f(p.cx - p.r * 0.38)} ${f(p.cy + p.r * 0.24)} ${p.cx} ${f(p.cy + p.r * 0.24)}C${f(p.cx + p.r * 0.38)} ${f(p.cy + p.r * 0.24)} ${f(p.cx + p.r * 0.74)} ${f(p.cy + p.r * 0.42)} ${f(p.cx + p.r * 0.74)} ${f(p.cy + p.r * 1.05)}Z`}
+              />
+              <path
+                d={`M${f(p.cx - p.r * 0.3)} ${f(p.cy + p.r * 0.3)}L${p.cx} ${f(p.cy + p.r * 0.72)}L${f(p.cx + p.r * 0.3)} ${f(p.cy + p.r * 0.3)}`}
+                fill="none"
+                stroke="#0E2B45"
+                stroke-opacity=".22"
+                stroke-width="2.5"
+                stroke-linejoin="round"
+              />
+            </g>
+            <g fill="none" stroke={p.ring} stroke-width="3">
+              <circle cx={p.cx} cy={p.cy} r={p.r + 3} stroke-opacity=".25" />
+              <circle class="ti-draw" pathLength="1" cx={p.cx} cy={p.cy} r={p.r + 3} stroke-linecap="round" transform={`rotate(-90 ${p.cx} ${p.cy})`} />
+              <circle cx={p.cx} cy={p.cy} r={p.r + 11} stroke-opacity=".3" stroke-width="1" stroke-dasharray="2 5" stroke-linecap="round" />
+            </g>
+          </g>
+        ))}
+        {/* clinic badge */}
+        <circle cx="240" cy="290" r="19" fill={url('aqua')} stroke="#0E2B45" stroke-width="3" />
+        <path d={MOLAR} transform="translate(240 292) scale(.11)" fill="#FFFFFF" />
+        <path class="ti-sparkle" d={star4(124, 196, 8)} fill="#D5F6F8" />
+        <path class="ti-sparkle" d={star4(368, 184, 6)} fill="#FFE4E8" style="animation-delay:-1.4s" />
+      </g>
+    )}
+
+    {name === 'pricing' && (
+      <g>
+        <defs>
+          <path id={id('r')} d={receipt} />
+          <path id={id('s')} d={BADGE} />
+        </defs>
+        <ellipse cx="240" cy="404" rx="120" ry="9" fill={url('shadow')} />
+        {/* receipt with instalment tracker */}
+        <g transform="rotate(-6 240 240)">
+          <use href={ref('r')} fill="#0A1F33" fill-opacity=".35" transform="translate(7 9)" />
+          <use href={ref('r')} fill={url('enamel')} />
+          <circle cx="240" cy="148" r="22" fill={url('aqua')} />
+          <path d={MOLAR} transform="translate(240 152) scale(.13)" fill="#FFFFFF" />
+          <g fill="#143B5C" fill-opacity=".2">
+            <rect x="190" y="186" width="100" height="7" rx="3.5" fill-opacity=".55" />
+            <rect x="206" y="200" width="68" height="5" rx="2.5" />
+            <rect x="176" y="284" width="64" height="5" rx="2.5" />
+            <rect x="270" y="284" width="34" height="5" rx="2.5" />
+            <rect x="176" y="300" width="50" height="5" rx="2.5" />
+            <rect x="278" y="300" width="26" height="5" rx="2.5" />
+            <rect x="176" y="334" width="48" height="8" rx="4" fill-opacity=".55" />
+          </g>
+          <path d="M176 224H304" stroke="#1C5175" stroke-opacity=".3" stroke-dasharray="3 4" />
+          <path d="M176 320H304" stroke="#1C5175" stroke-opacity=".3" />
+          <path d="M190 254H290" stroke="#8FE3EA" stroke-width="3" />
+          <path class="ti-draw" pathLength="1" d="M190 254H257" stroke="#2CC5D2" stroke-width="3" />
+          {[190, 223, 257, 290].map((x, i) => (
+            <g>
+              <circle cx={x} cy="254" r="10" fill={i < 3 ? url('aqua') : '#FFFFFF'} stroke="#2CC5D2" stroke-width="2" />
+              {i < 3 && <path d={`M${x - 4.5} 254L${x - 1} 257.5L${x + 5} 250.5`} fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />}
+            </g>
+          ))}
+          <rect x="262" y="333" width="42" height="10" rx="5" fill={url('coral')} />
+        </g>
+        {/* coin stack */}
+        {COINS.map((y, i) => (
+          <g>
+            <path d={`M108 ${y}V${y + 8}A34 11 0 0 0 176 ${y + 8}V${y}Z`} fill="#E6D8C6" />
+            <ellipse cx="142" cy={y} rx="34" ry="11" fill={url('bone')} stroke="#FFFFFF" stroke-opacity=".7" />
+            {i === 2 && <ellipse cx="142" cy={y} rx="24" ry="7" fill="none" stroke="#E6D8C6" stroke-width="1.5" />}
+          </g>
+        ))}
+        {/* 0% badge */}
+        <g class="ti-hover">
+          <use href={ref('s')} fill="#0A1F33" fill-opacity=".3" transform="translate(5 7)" />
+          <use href={ref('s')} fill={url('coral')} />
+          <circle cx="336" cy="124" r="34" fill="none" stroke="#FFE4E8" stroke-opacity=".7" stroke-dasharray="2 3" />
+          <text x="336" y="136" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="32" fill="#FFFFFF">0%</text>
+        </g>
+        <path class="ti-sparkle" d={star4(392, 196, 8)} fill="#FFE4E8" />
+      </g>
+    )}
+
+    {name === 'contact' && (
+      <g>
+        <defs>
+          <path id={id('p')} d="M356 196C356 196 326 166 326 142C326 125 339 112 356 112C373 112 386 125 386 142C386 166 356 196 356 196Z" />
+        </defs>
+        <ellipse cx="240" cy="404" rx="130" ry="9" fill={url('shadow')} />
+        {/* dashed route linking phone, message and location */}
+        <path class="ti-flow" d="M132 300C74 250 96 150 168 140C230 132 260 176 304 164C330 157 344 148 352 194" fill="none" stroke="#8FE3EA" stroke-opacity=".75" stroke-width="1.6" stroke-dasharray="4 6" stroke-linecap="round" />
+        {/* speech bubble */}
+        <path d="M124 104H200Q212 104 212 116V152Q212 164 200 164H182L170 180L164 164H124Q112 164 112 152V116Q112 104 124 104Z" fill={url('aqua')} />
+        <g fill="#FFFFFF">
+          {[140, 162, 184].map((x, i) => (
+            <circle class="ti-sparkle" cx={x} cy="134" r="4.5" style={`animation-delay:-${f(i * 0.4)}s`} />
+          ))}
+        </g>
+        {/* envelope */}
+        <g transform="rotate(-5 240 262)">
+          <rect x="156" y="212" width="180" height="118" rx="14" fill="#0A1F33" fill-opacity=".35" />
+          <rect x="150" y="204" width="180" height="118" rx="14" fill={url('enamel')} />
+          <path d="M156 314L222 262M324 314L258 262" stroke="#1C5175" stroke-opacity=".18" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M150 220Q150 204 166 204H314Q330 204 330 220L250 274Q240 281 230 274Z" fill="#E3EEF1" />
+          <path class="ti-draw" pathLength="1" d="M152 214L230 270Q240 277 250 270L328 214" fill="none" stroke="#2CC5D2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="240" cy="272" r="15" fill={url('coral')} />
+          <path d={MOLAR} transform="translate(240 274) scale(.085)" fill="#FFFFFF" />
+        </g>
+        {/* location pin */}
+        <ellipse cx="356" cy="200" rx="34" ry="9" fill="none" stroke="#8FE3EA" stroke-opacity=".3" />
+        <ellipse cx="356" cy="200" rx="20" ry="5.5" fill="#2CC5D2" fill-opacity=".2" stroke="#8FE3EA" stroke-opacity=".7" />
+        <g class="ti-hover">
+          <use href={ref('p')} fill="#0A1F33" fill-opacity=".3" transform="translate(4 5)" />
+          <use href={ref('p')} fill={url('coral')} />
+          <circle cx="356" cy="142" r="11" fill="#FFFFFF" />
+          <path d="M336 132C338 124 344 118 352 116" fill="none" stroke="#FFE4E8" stroke-width="2.5" stroke-linecap="round" />
+        </g>
+        {/* phone */}
+        <g transform="rotate(-12 130 350)">
+          <rect x="107" y="307" width="58" height="102" rx="12" fill="#0A1F33" fill-opacity=".35" />
+          <rect x="102" y="300" width="58" height="102" rx="12" fill="#143B5C" stroke="#8FE3EA" stroke-width="1.6" />
+          <rect x="108" y="312" width="46" height="78" rx="6" fill="#2CC5D2" fill-opacity=".22" />
+          <path d="M124 306H138" stroke="#8FE3EA" stroke-width="2" stroke-linecap="round" />
+          <path d="M122 338C122 352 130 362 142 364L146 358L140 352L135 355C131 353 129 349 128 345L131 341L126 334Z" fill="#FFFFFF" />
+        </g>
+      </g>
+    )}
+
+    {name === 'legal' && (
+      <g>
+        <defs>
+          <path id={id('d')} d="M174 100H288L318 130V356Q318 370 304 370H174Q160 370 160 356V114Q160 100 174 100Z" />
+          <path id={id('s')} d="M318 256C340 268 360 272 378 272V314C378 350 352 374 318 386C284 374 258 350 258 314V272C276 272 296 268 318 256Z" />
+        </defs>
+        <ellipse cx="248" cy="404" rx="120" ry="9" fill={url('shadow')} />
+        {/* document stack */}
+        <path d="M184 108H300Q314 108 314 122V360Q314 374 300 374H184Q170 374 170 360V122Q170 108 184 108Z" fill="#D5F6F8" fill-opacity=".35" transform="rotate(7 250 240)" />
+        <use href={ref('d')} fill="#0A1F33" fill-opacity=".35" transform="translate(7 9)" />
+        <use href={ref('d')} fill={url('enamel')} />
+        <path d="M288 100V122Q288 130 296 130H318Z" fill="#E3EEF1" />
+        <g fill="#143B5C" fill-opacity=".18">
+          <rect x="182" y="132" width="78" height="9" rx="4.5" fill-opacity=".6" />
+          {[[160, 112], [176, 96], [200, 112], [216, 104], [232, 112], [248, 70]].map(([y, w]) => (
+            <rect x="182" y={y} width={w} height="5" rx="2.5" />
+          ))}
+        </g>
+        <path class="ti-draw" pathLength="1" d="M184 334C192 318 198 314 200 322C202 332 206 334 212 322C216 314 220 318 222 326C224 332 230 330 238 322" fill="none" stroke="#2CC5D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M182 346H246" stroke="#143B5C" stroke-opacity=".25" />
+        {/* shield with check */}
+        <g class="ti-hover">
+          <use href={ref('s')} fill="#0A1F33" fill-opacity=".35" transform="translate(5 7)" />
+          <use href={ref('s')} fill={url('aqua')} />
+          <path d="M318 268C336 277 352 281 366 282V314C366 342 346 362 318 372C290 362 270 342 270 314V282C284 281 300 277 318 268Z" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1.4" />
+          <path class="ti-draw" pathLength="1" d="M292 318L311 336L346 298" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <path class="ti-sparkle" d={star4(370, 220, 8)} fill="#D5F6F8" />
+      </g>
+    )}
+  </g>
+
+  {/* ── rising bubbles ── */}
+  <g fill="#D5F6F8" fill-opacity=".06" stroke="#8FE3EA" stroke-opacity=".55" stroke-width="1.2">
+    {BUBBLES.filter((b) => !b.fill).map((b) => <circle class="ti-bubble" cx={b.x} cy={b.y} r={b.r} style={bubbleStyle(b)} />)}
+  </g>
+  <g fill="#8FE3EA" fill-opacity=".35">
+    {BUBBLES.filter((b) => b.fill).map((b) => <circle class="ti-bubble" cx={b.x} cy={b.y} r={b.r} style={bubbleStyle(b)} />)}
+  </g>
+</svg>
+
+<style is:global>
+  /* Global but .ti-scoped: avoids Astro stamping a scope attribute on every SVG node. */
+  .ti {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+  .ti .ti-float {
+    animation: ti-float 7s ease-in-out infinite;
+  }
+  .ti .ti-hover {
+    animation: ti-hover 5s ease-in-out infinite;
+  }
+  .ti .ti-bubble {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ti-bubble 9s ease-in-out infinite;
+  }
+  .ti .ti-bubble:nth-child(3n + 1) {
+    animation-duration: 11s;
+  }
+  .ti .ti-bubble:nth-child(3n + 2) {
+    animation-duration: 7.5s;
+  }
+  .ti .ti-sparkle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ti-sparkle 3.2s ease-in-out infinite;
+  }
+  .ti .ti-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: ti-draw 2.4s ease forwards 0.4s;
+  }
+  .ti .ti-flow {
+    animation: ti-flow 1.4s linear infinite;
+  }
+  @keyframes ti-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes ti-hover {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  @keyframes ti-bubble {
+    0% { transform: translateY(16px); opacity: 0; }
+    20% { opacity: 1; }
+    75% { opacity: 0.9; }
+    100% { transform: translateY(-28px); opacity: 0; }
+  }
+  @keyframes ti-sparkle {
+    0%, 100% { transform: scale(0.65); opacity: 0.45; }
+    50% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes ti-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes ti-flow {
+    to { stroke-dashoffset: -20; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ti .ti-float,
+    .ti .ti-hover,
+    .ti .ti-bubble,
+    .ti .ti-sparkle,
+    .ti .ti-flow {
+      animation: none;
+    }
+    .ti .ti-draw {
+      animation: none;
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+    }
+  }
+</style>
