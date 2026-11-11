@@ -4,6 +4,11 @@
  * `es` is the source of truth; every other language must define the same keys.
  */
 const es = {
+  'slider.prev': 'Anterior',
+  'slider.next': 'Siguiente',
+  'slider.pause': 'Pausar el pase automático',
+  'slider.play': 'Reanudar el pase automático',
+  'slider.goto': 'Ir a la reseña',
   'hero.in.vera': 'en Vera',
   'form.reason.other': 'Otros',
   'consent.text': 'He leído y acepto la {privacy} y el {legal}.',
@@ -111,6 +116,11 @@ const es = {
 type Dict = Record<keyof typeof es, string>;
 
 const en: Dict = {
+  'slider.prev': 'Previous',
+  'slider.next': 'Next',
+  'slider.pause': 'Pause autoplay',
+  'slider.play': 'Resume autoplay',
+  'slider.goto': 'Go to review',
   'hero.in.vera': 'in Vera',
   'form.reason.other': 'Other',
   'consent.text': 'I have read and accept the {privacy} and the {legal}.',
@@ -204,6 +214,11 @@ const en: Dict = {
 };
 
 const de: Dict = {
+  'slider.prev': 'Zurück',
+  'slider.next': 'Weiter',
+  'slider.pause': 'Automatisches Weiterblättern anhalten',
+  'slider.play': 'Automatisches Weiterblättern fortsetzen',
+  'slider.goto': 'Zur Bewertung',
   'hero.in.vera': 'in Vera',
   'form.reason.other': 'Sonstiges',
   'consent.text': 'Ich habe die {privacy} und das {legal} gelesen und akzeptiere sie.',
@@ -297,6 +312,11 @@ const de: Dict = {
 };
 
 const nl: Dict = {
+  'slider.prev': 'Vorige',
+  'slider.next': 'Volgende',
+  'slider.pause': 'Automatisch afspelen pauzeren',
+  'slider.play': 'Automatisch afspelen hervatten',
+  'slider.goto': 'Naar recensie',
   'hero.in.vera': 'in Vera',
   'form.reason.other': 'Overig',
   'consent.text': 'Ik heb het {privacy} en de {legal} gelezen en ga ermee akkoord.',
@@ -390,6 +410,11 @@ const nl: Dict = {
 };
 
 const fr: Dict = {
+  'slider.prev': 'Précédent',
+  'slider.next': 'Suivant',
+  'slider.pause': 'Mettre en pause le défilement',
+  'slider.play': 'Reprendre le défilement',
+  'slider.goto': 'Aller à l’avis',
   'hero.in.vera': 'à Vera',
   'form.reason.other': 'Autre',
   'consent.text': 'J’ai lu et j’accepte la {privacy} et les {legal}.',

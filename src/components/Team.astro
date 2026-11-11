@@ -16,19 +16,19 @@ const t = useTranslations(lang);
       <div class="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
         <SectionHeading eyebrow={t('team.factor')} title={t('team.title')} />
         <div class="flex items-center gap-3" data-reveal>
-          <button type="button" class="team-prev flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label="←">
+          <button type="button" class="team-prev flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label={t('slider.prev')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6" /></svg>
           </button>
-          <button type="button" class="team-next flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label="→">
+          <button type="button" class="team-next flex h-14 w-14 items-center justify-center rounded-full border border-ocean-900/15 text-ocean-900 transition-all hover:border-ocean-900 hover:bg-ocean-900 hover:text-white disabled:opacity-30" aria-label={t('slider.next')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="team-track mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-6 [scrollbar-width:none] md:gap-7" tabindex="0" aria-label={t('team.title')}>
+    <div data-reveal><div class="team-track mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-6 [scrollbar-width:none] md:gap-7" tabindex="0" aria-label={t('team.title')}>
       {TEAM.map((m, i) => (
-        <article class="team-card group w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[300px]" data-reveal style={`--d:${Math.min(i, 4) * 0.06}s`}>
+        <article class="team-card group w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[300px]">
           <div class="relative overflow-hidden rounded-[2rem] bg-sand ring-1 ring-ocean-900/5">
             <Picture
               src={m.image}
@@ -45,7 +45,7 @@ const t = useTranslations(lang);
         </article>
       ))}
       <div class="w-px shrink-0" aria-hidden="true"></div>
-    </div>
+    </div></div>
 
     <div class="container-k mt-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
       <div class="h-[3px] w-full max-w-sm overflow-hidden rounded-full bg-ocean-900/10">
