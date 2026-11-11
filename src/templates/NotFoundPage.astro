@@ -1,0 +1,68 @@
+---
+/**
+ * 404 page. Cloudflare Pages serves the nearest 404.html with a real 404
+ * status, so there is one per language folder.
+ */
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
+import { useTranslations } from '../i18n/utils';
+import { pathFor, TREATMENTS, type Lang } from '../i18n/routes';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const copy = ({
+  es: { title: 'Página no encontrada', lead: 'Esta página no existe', desc: 'Puede que el enlace esté mal escrito o que la página se haya movido. Estos enlaces te llevan a lo más buscado:', home: 'Volver al inicio' },
+  en: { title: 'Page not found', lead: 'This page does not exist', desc: 'The link may be mistyped or the page may have moved. These links take you to what people look for most:', home: 'Back to home' },
+  de: { title: 'Seite nicht gefunden', lead: 'Diese Seite gibt es nicht', desc: 'Vielleicht ist der Link falsch geschrieben oder die Seite wurde verschoben. Hier finden Sie das Wichtigste:', home: 'Zur Startseite' },
+  nl: { title: 'Pagina niet gevonden', lead: 'Deze pagina bestaat niet', desc: 'Misschien is de link verkeerd getypt of is de pagina verplaatst. Deze links brengen u naar wat het meest gezocht wordt:', home: 'Terug naar home' },
+  fr: { title: 'Page introuvable', lead: "Cette page n'existe pas", desc: 'Le lien est peut-être mal saisi ou la page a été déplacée. Ces liens vous mènent à l’essentiel :', home: "Retour à l'accueil" },
+} as const)[lang];
+---
+
+<Layout title={`${copy.title} | Clínica Dental Koral`} description={t('meta.default.description')} lang={lang} noindex>
+  <Navigation />
+  <main id="main">
+    <section class="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-ocean text-white noise-overlay">
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={16} seed={404} />
+        <CoralBranch seed={404} color="duo" class="absolute -bottom-4 right-[-40px] h-[380px] w-auto opacity-30" />
+        <CoralBranch seed={44} color="white" class="absolute -left-10 -top-10 h-[300px] w-auto rotate-180 opacity-[0.06]" />
+      </div>
+
+      <div class="container-k relative py-40">
+        <p class="font-display text-[7rem] leading-none text-aqua-soft/30 md:text-[11rem]" aria-hidden="true">404</p>
+        <h1 class="mt-2 text-5xl text-white md:text-6xl">
+          {copy.title}
+          <span class="accent-italic block text-coral-soft">{copy.lead}</span>
+        </h1>
+        <p class="mt-6 max-w-xl text-lg text-white/70">{copy.desc}</p>
+
+        <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+          <a href={pathFor('home', lang)} class="btn btn-coral">{copy.home}</a>
+          <a href={pathFor('contact', lang)} class="btn btn-ghost-light">{t('nav.contact')}</a>
+        </div>
+
+        <ul class="mt-14 grid max-w-3xl gap-2 sm:grid-cols-3">
+          {TREATMENTS.map((tr) => (
+            <li>
+              <a href={pathFor(tr.key, lang)} class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm transition-colors hover:bg-white/10">
+                <span class="shrink-0 text-aqua"><TreatmentIcon name={tr.key} size={24} strokeWidth={1.7} /></span>
+                {t(tr.label as any)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </main>
+  <FooterInfo above="#0A1F33" />
+</Layout>
