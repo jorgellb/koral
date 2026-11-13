@@ -1,0 +1,829 @@
+---
+/**
+ * Local landing page for Mojácar — "Pueblo blanco".
+ * A light, sunlit page (unlike the dark ocean heroes elsewhere): whitewashed
+ * village + Indalo illustration, a language greeting band, the two real routes
+ * (pueblo vs playa), cosmetic dentistry and implants for residents.
+ * The clinic is in Vera: copy never claims a practice in Mojácar.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import TreatmentIcon from '../../components/svg/TreatmentIcon.astro';
+import MojacarVillage from '../../components/towns/MojacarVillage.astro';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey } from '../../i18n/routes';
+import { TOWNS } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.mojacar;
+const [pueblo, playa] = town.routes;
+
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const P = { min: playa.min, km: num(playa.km) };
+const U = { min: pueblo.min, km: num(pueblo.km) };
+const diff = pueblo.min - playa.min;
+
+/** In-body link with descriptive anchor text. */
+const a = (key: RouteKey, text: string) => `<a class="prose-link" href="${pathFor(key, lang)}">${text}</a>`;
+
+/** Road codes never wrap at the hyphen. */
+const nb = (road: string) => road.replace('-', '‑');
+
+/** "la AL-6113, la A-1203 y la A-352" in the page language. */
+const roadList = (roads: string[]) => {
+  const each = { es: 'la ', en: '', de: '', nl: '', fr: 'l’' }[lang];
+  const and = { es: ' y ', en: ' and ', de: ' und ', nl: ' en ', fr: ' et ' }[lang];
+  const items = roads.map((r) => `${each}${nb(r)}`);
+  return items.length > 1 ? `${items.slice(0, -1).join(', ')}${and}${items[items.length - 1]}` : items[0];
+};
+const U_ROADS = roadList(pueblo.roads);
+const P_FIRST = nb(playa.roads[0]);
+const P_REST = roadList(playa.roads.slice(1));
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista Mojácar: clínica dental a ${P.min} min | Clínica Koral`,
+    metaDesc: `Dentista para Mojácar: clínica dental en Vera a ${P.min} min de Mojácar Playa. Estética, implantes Straumann y atención en 5 idiomas. Primera visita gratis.`,
+    serviceName: 'Dentista para Mojácar · Clínica Dental Koral (Vera)',
+    imgTitle: 'Dentista para Mojácar: el pueblo blanco de Mojácar sobre el mar, con el Indalo',
+    eyebrow: 'Pueblo blanco · Levante Almeriense',
+    h1: 'Tu dentista para Mojácar,',
+    h1Accent: `a ${P.min} minutos de la playa`,
+    lead: `¿Buscas dentista en Mojácar? Clínica Dental Koral está en Vera, a ${P.min} minutos en coche de Mojácar Playa y a ${U.min} del pueblo. Una clínica dental cerca de Mojácar con especialistas en implantes, estética dental y ortodoncia, que te atiende en español, inglés, alemán, neerlandés o francés.`,
+    chips: [`A ${P.min} min de Mojácar Playa`, `A ${U.min} min de Mojácar pueblo`],
+    greetLabel: 'Cinco idiomas, una clínica',
+    intro: {
+      eyebrow: 'Mojácar, en tu idioma',
+      title: 'Clínica dental cerca de Mojácar que habla tu idioma',
+      paras: [
+        'Mojácar son en realidad dos lugares: el pueblo blanco que se asoma desde lo alto del cerro y la larga franja de Mojácar Playa junto al Mediterráneo. Y es un pueblo con muchos vecinos llegados de otros países. Ir al dentista ya impone sin barreras de idioma, así que en Koral tu consulta puede ser en español, inglés, alemán, neerlandés o francés: entiendes el diagnóstico, preguntas lo que necesites y firmas el presupuesto sabiendo exactamente qué incluye.',
+        `La primera visita es gratuita: revisamos tu boca, te explicamos las opciones y te damos un presupuesto claro, sin compromiso. ¿Vives entre Mojácar y ${a('turre', 'Turre')} o pasas mucho tiempo en ${a('garrucha', 'Garrucha')}? También nos tienes cerca: consulta todos los trayectos en ${a('areas', 'las zonas que atendemos')}.`,
+      ],
+      yours: 'Tu idioma',
+    },
+    routes: {
+      eyebrow: 'Cómo llegar',
+      title: 'Dos caminos de Mojácar a tu dentista en Vera',
+      desc: 'Desde Mojácar se sale casi siempre del pueblo o de la playa. Las dos rutas se juntan en la A-370 y la A-352 y terminan en la Av. de Baria, 4.',
+      pueblo: { name: 'Desde Mojácar pueblo', text: `Bajas del cerro y sigues por ${U_ROADS}: ${U.km} km y unos ${U.min} minutos hasta la puerta de la clínica.` },
+      playa: { name: 'Desde Mojácar Playa', text: `Desde la playa tomas la ${P_FIRST} y continúas por ${P_REST}. Son ${P.km} km y unos ${P.min} minutos, ${diff} menos que desde el pueblo. Por el camino pasas junto a Garrucha.` },
+      fastest: 'La más corta',
+      note: 'Tiempos en coche sin tráfico, calculados con datos de OpenStreetMap.',
+      maps: 'Abrir la ruta en Google Maps',
+    },
+    smile: {
+      eyebrow: 'Sonrisa de verano',
+      title: 'Estética dental para pacientes de Mojácar',
+      desc: 'Mucha luz, paredes blancas, días largos junto al mar: aquí una sonrisa se nota. Si quieres cambiar el color, la forma o la posición de tus dientes, empezamos con una valoración y te proponemos solo lo que de verdad tiene sentido para ti.',
+      cards: [
+        ['estetica', 'Blanqueamiento dental', 'Aclaramos el tono de los dientes con un tratamiento supervisado, después de comprobar que encías y esmalte están sanos.', 'Estética dental en Vera'],
+        ['estetica', 'Carillas', 'Láminas finas que corrigen la forma, el color o pequeñas separaciones de los dientes delanteros, diseñadas contigo para un resultado natural.', 'Carillas y diseño de sonrisa'],
+        ['ortodoncia', 'Alineadores transparentes', 'Férulas removibles y transparentes que alinean los dientes sin brackets a la vista y que te quitas para comer.', 'Ortodoncia con alineadores transparentes'],
+        ['armonia', 'Armonía orofacial', 'Tratamientos faciales que complementan tu nueva sonrisa, siempre con un enfoque natural.', 'Armonía orofacial'],
+      ],
+      doctor: `La Dra. Ana Padilla, especialista en cirugía, implantología y estética, se ocupa de estos tratamientos. ${a('team', 'Conoce al equipo')}.`,
+      photoAlt: 'Dra. Ana Padilla, estética dental e implantes en Clínica Dental Koral, cerca de Mojácar',
+    },
+    implants: {
+      eyebrow: 'Vivir aquí, todo el año o parte de él',
+      title: 'Implantes dentales para residentes de Mojácar',
+      paras: [
+        'Si repartes el año entre Mojácar y otro país, es normal preguntarse si merece la pena ponerse un implante en España.',
+        `En Koral trabajamos con ${a('implantes', 'implantes dentales Straumann con garantía de por vida')} y planificamos cada caso con un CBCT 3D. En la primera visita te explicamos cuántas citas hacen falta y cómo encajarlas con tus estancias en Mojácar. Si falta hueso o hay varias piezas que reponer, la ${a('cirugia', 'cirugía oral')} y la ${a('rehabilitacion', 'rehabilitación oral')} se hacen en la misma clínica.`,
+        `Y para repartir el coste, la mayoría de tratamientos se puede ${a('pricing', 'financiar al 0 %')}.`,
+      ],
+      steps: [
+        ['Primera visita gratuita', 'Exploración, CBCT 3D si hace falta y un presupuesto claro.'],
+        ['Un plan según tus fechas', 'Ordenamos cada fase según cuándo estás en Mojácar.'],
+        ['Implante Straumann', 'Colocado en la clínica, con garantía de por vida del implante.'],
+        ['Revisiones', 'Seguimiento para que tu implante esté sano, en tu idioma.'],
+      ],
+    },
+    best: {
+      eyebrow: 'Razones concretas',
+      title: '¿Buscas la mejor clínica dental cerca de Mojácar?',
+      desc: 'No vamos a decirte que somos los mejores. Te contamos qué vas a encontrar y decides tú.',
+      reasons: [
+        ['Especialistas en la misma clínica', `Cirugía e implantes con la Dra. Ana Padilla, ortodoncia y odontopediatría con la Dra. Ana Soler, endodoncia con la Dra. Ángeles Parra. ${a('team', 'Ver el equipo')}.`],
+        ['Diagnóstico con CBCT 3D', 'Imagen tridimensional para planificar implantes y casos complejos con precisión.'],
+        ['Endodoncia con microscopio', `${a('endodoncia', 'Tratamientos de conductos')} con microscopio dental, para ver lo que a simple vista no se ve.`],
+        ['Cinco idiomas', 'Te lo explicamos todo en español, inglés, alemán, neerlandés o francés.'],
+        ['Primera visita gratuita', 'Valoración y presupuesto sin compromiso antes de decidir nada.'],
+        ['Financiación al 0 %', `Para la mayoría de tratamientos. ${a('pricing', 'Precios y financiación')}.`],
+      ],
+      hoursTitle: 'Horario de la clínica',
+      hoursSvg: 'Horario de Clínica Dental Koral, de lunes a viernes',
+      days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+      hoursNote: `Pide cita en el +34 950 39 53 19, por WhatsApp en el +34 634 68 36 39 o desde nuestra ${a('contact', 'página de contacto')}.`,
+    },
+    faqTitle: 'Preguntas de pacientes de Mojácar',
+    faqs: [
+      ['¿Cuánto se tarda de Mojácar a la clínica dental?', `Unos ${P.min} minutos desde Mojácar Playa (${P.km} km) y unos ${U.min} desde Mojácar pueblo (${U.km} km), en coche y sin tráfico. La clínica está en la Av. de Baria, 4, en Vera.`],
+      ['¿Hay dentista que hable inglés cerca de Mojácar?', 'Sí. En Clínica Dental Koral atendemos en español, inglés, alemán, neerlandés y francés, así que la consulta y el presupuesto pueden ser en tu idioma.'],
+      ['¿Puedo hacerme un implante si vivo en Mojácar solo parte del año?', 'Sí. En la primera visita valoramos tu caso y te explicamos cuántas citas necesitas, para organizarlas según tus estancias. Trabajamos con implantes Straumann con garantía de por vida.'],
+      ['¿Hacéis blanqueamiento y carillas a pacientes de Mojácar?', `Sí, dentro de nuestra ${a('estetica', 'estética dental')}: blanqueamiento, carillas y ortodoncia con alineadores transparentes, siempre tras una valoración.`],
+      ['¿Tenéis consulta en Mojácar?', `No. Nuestra única clínica está en Vera (Av. de Baria, 4), a unos ${P.min} minutos de Mojácar Playa, y allí hacemos todos los tratamientos.`],
+      ['¿Cuánto cuesta la primera visita?', 'Es gratuita y sin compromiso. Si decides tratarte, la mayoría de tratamientos se puede financiar al 0 %.'],
+    ],
+  },
+  en: {
+    metaTitle: 'Dentist Mojácar: English-speaking dental clinic | Koral',
+    metaDesc: `Dentist for Mojácar: English-speaking dental clinic in Vera, ${P.min} min from Mojácar Playa. Straumann implants, veneers, clear aligners. Free first visit.`,
+    serviceName: 'English-speaking dentist for Mojácar · Koral Dental Clinic (Vera)',
+    imgTitle: 'Dentist for Mojácar: the white village of Mojácar above the sea, with the Indalo',
+    eyebrow: 'Pueblo blanco · Almería coast',
+    h1: 'Your dentist for Mojácar,',
+    h1Accent: `English spoken, ${P.min} minutes from the beach`,
+    lead: `Looking for an English-speaking dentist in Mojácar? Koral Dental Clinic is in Vera, a ${P.min}-minute drive from Mojácar Playa and ${U.min} from the old village. It is a dental clinic near Mojácar with specialists in implants, cosmetic dentistry and orthodontics, where every step is explained in English — or in Spanish, German, Dutch or French.`,
+    chips: [`${P.min} min from Mojácar Playa`, `${U.min} min from Mojácar pueblo`],
+    greetLabel: 'Five languages, one clinic',
+    intro: {
+      eyebrow: 'Mojácar, in your language',
+      title: 'A dental clinic near Mojácar that speaks your language',
+      paras: [
+        'Mojácar is really two places: the whitewashed village perched on its hill, and the long seafront of Mojácar Playa below it. It is also home to a large international community. Dental treatment is daunting enough without a language barrier, so at Koral your appointment can be in English, Spanish, German, Dutch or French. You understand the diagnosis, ask whatever you need and sign your quote knowing exactly what it covers.',
+        `Your first visit is free: we examine your mouth, explain the options and give you a clear quote, with no obligation. Live somewhere between Mojácar and ${a('turre', 'Turre')}, or spend a lot of time in ${a('garrucha', 'Garrucha')}? We are just as close — every drive time is on ${a('areas', 'the areas we serve')}.`,
+      ],
+      yours: 'Your language',
+    },
+    routes: {
+      eyebrow: 'Getting here',
+      title: 'Two ways from Mojácar to your dentist in Vera',
+      desc: 'From Mojácar you will usually set off from the village or from the beach. Both routes join the A-370 and the A-352 and end at Av. de Baria, 4.',
+      pueblo: { name: 'From Mojácar pueblo', text: `Head down the hill and follow the ${U_ROADS}: ${U.km} km and about ${U.min} minutes to the clinic door.` },
+      playa: { name: 'From Mojácar Playa', text: `From the beach, take the ${P_FIRST} and then the ${P_REST}. It is ${P.km} km and roughly ${P.min} minutes, ${diff} minutes less than from the village. On the way you pass Garrucha.` },
+      fastest: 'Shortest',
+      note: 'Driving times without traffic, calculated with OpenStreetMap data.',
+      maps: 'Open directions in Google Maps',
+    },
+    smile: {
+      eyebrow: 'Summer smile',
+      title: 'Cosmetic dentistry for Mojácar residents',
+      desc: 'Bright light, white walls, long days by the sea: a smile gets noticed here. If you would like to change the colour, shape or alignment of your teeth, we start with an assessment and only suggest what genuinely makes sense for you.',
+      cards: [
+        ['estetica', 'Teeth whitening', 'A professionally supervised whitening, once we have checked that your gums and enamel are healthy.', 'Cosmetic dentistry in Vera'],
+        ['estetica', 'Veneers', 'Thin shells that refine the shape, colour or small gaps of your front teeth, designed with you for a natural result.', 'Veneers and smile design'],
+        ['ortodoncia', 'Clear aligners', 'Removable, transparent aligners that straighten teeth without visible brackets, and come out for meals.', 'Orthodontics with clear aligners'],
+        ['armonia', 'Orofacial harmony', 'Facial treatments that complement your new smile, always with a natural approach.', 'Orofacial harmony'],
+      ],
+      doctor: `Dr Ana Padilla, who specialises in surgery, implantology and cosmetic dentistry, looks after these treatments. ${a('team', 'Meet the team')}.`,
+      photoAlt: 'Dr Ana Padilla, cosmetic dentistry and implants at Koral Dental Clinic, near Mojácar',
+    },
+    implants: {
+      eyebrow: 'Living here, all year or part of it',
+      title: 'Dental implants for Mojácar residents',
+      paras: [
+        'If you split the year between Mojácar and another country, it is natural to wonder whether it makes sense to have an implant placed in Spain.',
+        `At Koral we use ${a('implantes', 'Straumann dental implants with a lifetime warranty')} and plan every case with a 3D CBCT scan. At your first visit we explain how many appointments you will need and how to fit them around your time in Mojácar. If bone is missing or several teeth need replacing, ${a('cirugia', 'oral surgery')} and ${a('rehabilitacion', 'full-mouth rehabilitation')} are handled in the same clinic.`,
+        `To spread the cost, most treatments can be ${a('pricing', 'financed at 0%')}.`,
+      ],
+      steps: [
+        ['Free first visit', 'An examination, a 3D CBCT scan when needed, and a clear quote.'],
+        ['A plan around your dates', 'We schedule each phase around the time you spend in Mojácar.'],
+        ['Straumann implant', 'Placed at the clinic, with a lifetime warranty on the implant.'],
+        ['Check-ups', 'Follow-up visits to keep your implant healthy, booked in your language.'],
+      ],
+    },
+    best: {
+      eyebrow: 'Concrete reasons',
+      title: 'Looking for the best dental clinic near Mojácar?',
+      desc: 'We won’t claim to be the best. Here is what you will find when you arrive, and you decide.',
+      reasons: [
+        ['Specialists under one roof', `Surgery and implants with Dr Ana Padilla, orthodontics and children’s dentistry with Dr Ana Soler, root canals with Dr Ángeles Parra. ${a('team', 'See the team')}.`],
+        ['3D CBCT diagnosis', 'Three-dimensional imaging to plan implants and complex cases precisely.'],
+        ['Microscope-assisted root canals', `${a('endodoncia', 'Root canal treatment')} under a dental microscope, to see what the naked eye can’t.`],
+        ['Five languages', 'We explain everything in English, Spanish, German, Dutch or French.'],
+        ['Free first visit', 'An assessment and a no-obligation quote before you decide anything.'],
+        ['0% financing', `Available for most treatments. ${a('pricing', 'Prices and financing')}.`],
+      ],
+      hoursTitle: 'Opening hours',
+      hoursSvg: 'Koral Dental Clinic opening hours, Monday to Friday',
+      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      hoursNote: `Book on +34 950 39 53 19, on WhatsApp at +34 634 68 36 39, or through our ${a('contact', 'contact page')}.`,
+    },
+    faqTitle: 'Questions from patients in Mojácar',
+    faqs: [
+      ['How long does it take to get from Mojácar to the clinic?', `About ${P.min} minutes from Mojácar Playa (${P.km} km) and about ${U.min} from Mojácar pueblo (${U.km} km), by car without traffic. The clinic is at Av. de Baria, 4, in Vera.`],
+      ['Is there an English-speaking dentist near Mojácar?', 'Yes. At Koral Dental Clinic we see patients in English, Spanish, German, Dutch and French, so you can go through your consultation and your quote in your own language.'],
+      ['Can I get an implant if I only live in Mojácar part of the year?', 'Yes. At your first visit we assess your case and explain how many appointments you need, so they can be planned around your stays. We use Straumann implants with a lifetime warranty.'],
+      ['Do you offer whitening and veneers for patients from Mojácar?', `Yes, as part of our ${a('estetica', 'cosmetic dentistry')}: whitening, veneers and orthodontics with clear aligners, always after an assessment.`],
+      ['Do you have a practice in Mojácar?', `No. Our only clinic is in Vera (Av. de Baria, 4), about ${P.min} minutes from Mojácar Playa, and all treatments are carried out there.`],
+      ['How much is the first visit?', 'It is free and with no obligation. If you go ahead, most treatments can be financed at 0%.'],
+    ],
+  },
+  de: {
+    metaTitle: 'Zahnarzt Mojácar: deutschsprachige Zahnklinik | Koral',
+    metaDesc: `Zahnarzt für Mojácar: Zahnklinik in Vera, ${P.min} Min. von Mojácar Playa. Wir sprechen Deutsch. Straumann-Implantate, Veneers, Aligner. Erster Termin gratis.`,
+    serviceName: 'Zahnarzt für Mojácar · Zahnklinik Koral (Vera)',
+    imgTitle: 'Zahnarzt für Mojácar: das weiße Dorf Mojácar über dem Meer, mit dem Indalo',
+    eyebrow: 'Pueblo blanco · Costa de Almería',
+    h1: 'Ihr Zahnarzt für Mojácar,',
+    h1Accent: `auf Deutsch, ${P.min} Minuten vom Strand`,
+    lead: `Sie suchen einen Zahnarzt in Mojácar, mit dem Sie Deutsch sprechen können? Die Zahnklinik Koral liegt in Vera, ${P.min} Autominuten von Mojácar Playa und ${U.min} vom alten Ortskern entfernt. Eine Zahnklinik nahe Mojácar mit Spezialistinnen für Implantate, ästhetische Zahnheilkunde und Kieferorthopädie, in der wir Ihnen jeden Schritt auf Deutsch erklären.`,
+    chips: [`${P.min} Min. von Mojácar Playa`, `${U.min} Min. von Mojácar pueblo`],
+    greetLabel: 'Fünf Sprachen, eine Klinik',
+    intro: {
+      eyebrow: 'Mojácar, in Ihrer Sprache',
+      title: 'Zahnklinik nahe Mojácar, die Ihre Sprache spricht',
+      paras: [
+        'Mojácar besteht eigentlich aus zwei Orten: dem weißen Dorf, das sich an seinen Hügel schmiegt, und dem langen Küstenstreifen von Mojácar Playa darunter. Hier leben besonders viele Menschen aus anderen Ländern. Ein Zahnarztbesuch ist schon ohne Sprachbarriere aufregend genug – deshalb kann Ihr Termin bei uns auf Deutsch, Englisch, Spanisch, Niederländisch oder Französisch stattfinden. Sie verstehen die Diagnose, stellen alle Fragen und unterschreiben den Kostenvoranschlag erst, wenn Sie genau wissen, was er umfasst.',
+        `Der erste Termin ist kostenlos: Wir untersuchen Sie, erklären die Möglichkeiten und erstellen einen klaren, unverbindlichen Kostenvoranschlag. Sie wohnen zwischen Mojácar und ${a('turre', 'Turre')} oder sind oft in ${a('garrucha', 'Garrucha')}? Auch von dort ist es nicht weit – alle Fahrzeiten finden Sie in ${a('areas', 'unserem Einzugsgebiet')}.`,
+      ],
+      yours: 'Ihre Sprache',
+    },
+    routes: {
+      eyebrow: 'Anfahrt',
+      title: 'Zwei Wege von Mojácar zu Ihrem Zahnarzt in Vera',
+      desc: 'Von Mojácar aus starten Sie meist im Ort oder am Strand. Beide Strecken treffen sich auf der A-370 und der A-352 und enden an der Av. de Baria, 4.',
+      pueblo: { name: 'Ab Mojácar pueblo', text: `Vom Hügel hinunter und weiter über die ${U_ROADS}: ${U.km} km und etwa ${U.min} Minuten bis vor die Kliniktür.` },
+      playa: { name: 'Ab Mojácar Playa', text: `Vom Strand nehmen Sie die ${P_FIRST} und fahren weiter über die ${P_REST}. Das sind ${P.km} km und rund ${P.min} Minuten, ${diff} Minuten weniger als vom Ort. Unterwegs kommen Sie an Garrucha vorbei.` },
+      fastest: 'Am kürzesten',
+      note: 'Fahrzeiten ohne Verkehr, berechnet mit Daten von OpenStreetMap.',
+      maps: 'Route in Google Maps öffnen',
+    },
+    smile: {
+      eyebrow: 'Sommerlächeln',
+      title: 'Ästhetische Zahnheilkunde für Mojácar',
+      desc: 'Viel Licht, weiße Fassaden, lange Tage am Meer: Hier fällt ein Lächeln auf. Wenn Sie Farbe, Form oder Stellung Ihrer Zähne verändern möchten, beginnen wir mit einer Untersuchung und schlagen nur vor, was für Sie wirklich sinnvoll ist.',
+      cards: [
+        ['estetica', 'Bleaching', 'Zahnaufhellung unter zahnärztlicher Aufsicht, nachdem wir geprüft haben, dass Zahnfleisch und Zahnschmelz gesund sind.', 'Ästhetische Zahnheilkunde in Vera'],
+        ['estetica', 'Veneers', 'Hauchdünne Schalen, die Form, Farbe oder kleine Lücken der Frontzähne korrigieren – gemeinsam mit Ihnen geplant, für ein natürliches Ergebnis.', 'Veneers und Smile Design'],
+        ['ortodoncia', 'Transparente Aligner', 'Herausnehmbare, durchsichtige Schienen, die Zähne ohne sichtbare Brackets ausrichten und zum Essen herausgenommen werden.', 'Kieferorthopädie mit transparenten Alignern'],
+        ['armonia', 'Orofaziale Harmonie', 'Ergänzende Gesichtsbehandlungen, die zu Ihrem neuen Lächeln passen – immer mit natürlichem Anspruch.', 'Orofaziale Harmonie'],
+      ],
+      doctor: `Dr. Ana Padilla, spezialisiert auf Chirurgie, Implantologie und Ästhetik, betreut diese Behandlungen. ${a('team', 'Lernen Sie das Team kennen')}.`,
+      photoAlt: 'Dr. Ana Padilla, ästhetische Zahnheilkunde und Implantate in der Zahnklinik Koral, nahe Mojácar',
+    },
+    implants: {
+      eyebrow: 'Hier leben, ganzjährig oder zeitweise',
+      title: 'Zahnimplantate für Bewohner von Mojácar',
+      paras: [
+        'Wer das Jahr zwischen Mojácar und einem anderen Land aufteilt, fragt sich oft, ob sich ein Implantat in Spanien lohnt.',
+        `Wir setzen ${a('implantes', 'Straumann-Zahnimplantate mit lebenslanger Garantie')} und planen jeden Fall mit einer 3D-Aufnahme (DVT). Beim ersten Termin erklären wir Ihnen, wie viele Termine nötig sind und wie sie zu Ihren Aufenthalten in Mojácar passen. Fehlt Knochen oder sind mehrere Zähne zu ersetzen, übernehmen wir ${a('cirugia', 'Oralchirurgie')} und ${a('rehabilitacion', 'orale Rehabilitation')} in derselben Klinik.`,
+        `Und damit sich die Kosten verteilen, lassen sich die meisten Behandlungen ${a('pricing', 'mit 0 % finanzieren')}.`,
+      ],
+      steps: [
+        ['Kostenloser Ersttermin', 'Untersuchung, bei Bedarf 3D-DVT, und ein klarer Kostenvoranschlag.'],
+        ['Ein Plan nach Ihren Daten', 'Wir legen jede Phase so, dass sie zu Ihren Zeiten in Mojácar passt.'],
+        ['Straumann-Implantat', 'Eingesetzt in der Klinik, mit lebenslanger Garantie auf das Implantat.'],
+        ['Kontrollen', 'Nachsorge für ein gesundes Implantat, auf Deutsch vereinbart.'],
+      ],
+    },
+    best: {
+      eyebrow: 'Konkrete Gründe',
+      title: 'Sie suchen die beste Zahnklinik nahe Mojácar?',
+      desc: 'Wir behaupten nicht, die Besten zu sein. Wir zeigen Ihnen, was Sie bei uns erwartet – entscheiden Sie selbst.',
+      reasons: [
+        ['Spezialistinnen unter einem Dach', `Chirurgie und Implantate mit Dr. Ana Padilla, Kieferorthopädie und Kinderzahnheilkunde mit Dr. Ana Soler, Wurzelbehandlungen mit Dr. Ángeles Parra. ${a('team', 'Zum Team')}.`],
+        ['3D-Diagnostik mit DVT', 'Dreidimensionale Aufnahmen, um Implantate und komplexe Fälle präzise zu planen.'],
+        ['Wurzelbehandlung unter dem Mikroskop', `${a('endodoncia', 'Endodontie')} mit Dentalmikroskop – für das, was das bloße Auge nicht sieht.`],
+        ['Fünf Sprachen', 'Wir erklären alles auf Deutsch, Englisch, Spanisch, Niederländisch oder Französisch.'],
+        ['Kostenloser Ersttermin', 'Untersuchung und unverbindlicher Kostenvoranschlag, bevor Sie sich entscheiden.'],
+        ['0 % Finanzierung', `Für die meisten Behandlungen. ${a('pricing', 'Preise und Finanzierung')}.`],
+      ],
+      hoursTitle: 'Öffnungszeiten',
+      hoursSvg: 'Öffnungszeiten der Zahnklinik Koral, Montag bis Freitag',
+      days: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'],
+      hoursNote: `Termine unter +34 950 39 53 19, per WhatsApp unter +34 634 68 36 39 oder über unsere ${a('contact', 'Kontaktseite')}.`,
+    },
+    faqTitle: 'Fragen von Patienten aus Mojácar',
+    faqs: [
+      ['Wie lange fährt man von Mojácar zur Zahnklinik?', `Etwa ${P.min} Minuten von Mojácar Playa (${P.km} km) und etwa ${U.min} Minuten von Mojácar pueblo (${U.km} km), mit dem Auto ohne Verkehr. Die Klinik liegt in der Av. de Baria, 4 in Vera.`],
+      ['Gibt es nahe Mojácar einen Zahnarzt, bei dem man Deutsch spricht?', 'Ja. In der Zahnklinik Koral behandeln wir auf Deutsch, Englisch, Spanisch, Niederländisch und Französisch – Beratung und Kostenvoranschlag bekommen Sie in Ihrer Sprache.'],
+      ['Kann ich ein Implantat bekommen, wenn ich nur einen Teil des Jahres in Mojácar lebe?', 'Ja. Beim ersten Termin beurteilen wir Ihren Fall und erklären, wie viele Termine nötig sind, damit wir sie um Ihre Aufenthalte herum planen können. Wir verwenden Straumann-Implantate mit lebenslanger Garantie.'],
+      ['Bieten Sie Bleaching und Veneers für Patienten aus Mojácar an?', `Ja, im Rahmen unserer ${a('estetica', 'ästhetischen Zahnheilkunde')}: Bleaching, Veneers und Kieferorthopädie mit transparenten Alignern – immer nach einer Untersuchung.`],
+      ['Haben Sie eine Praxis in Mojácar?', `Nein. Unsere einzige Klinik ist in Vera (Av. de Baria, 4), etwa ${P.min} Minuten von Mojácar Playa entfernt. Alle Behandlungen finden dort statt.`],
+      ['Was kostet der erste Termin?', 'Er ist kostenlos und unverbindlich. Wenn Sie sich für eine Behandlung entscheiden, lassen sich die meisten mit 0 % finanzieren.'],
+    ],
+  },
+  nl: {
+    metaTitle: 'Tandarts Mojácar: Nederlandstalige tandkliniek | Koral',
+    metaDesc: `Tandarts voor Mojácar: tandkliniek in Vera, ${P.min} min van Mojácar Playa. Wij spreken Nederlands. Straumann-implantaten, facings, aligners. Eerste bezoek gratis.`,
+    serviceName: 'Tandarts voor Mojácar · Tandkliniek Koral (Vera)',
+    imgTitle: 'Tandarts voor Mojácar: het witte dorp Mojácar boven de zee, met de Indalo',
+    eyebrow: 'Pueblo blanco · Costa de Almería',
+    h1: 'Uw tandarts voor Mojácar,',
+    h1Accent: `in het Nederlands, ${P.min} minuten van het strand`,
+    lead: `Op zoek naar een tandarts in Mojácar waar u Nederlands kunt spreken? Tandkliniek Koral ligt in Vera, ${P.min} minuten rijden van Mojácar Playa en ${U.min} van het oude dorp. Een tandkliniek vlak bij Mojácar met specialisten in implantaten, esthetische tandheelkunde en orthodontie, waar we u elke stap in het Nederlands uitleggen.`,
+    chips: [`${P.min} min van Mojácar Playa`, `${U.min} min van Mojácar pueblo`],
+    greetLabel: 'Vijf talen, één kliniek',
+    intro: {
+      eyebrow: 'Mojácar, in uw taal',
+      title: 'Tandkliniek vlak bij Mojácar die uw taal spreekt',
+      paras: [
+        'Mojácar is eigenlijk twee plaatsen: het witte dorp dat tegen de heuvel aan ligt, en de lange kuststrook van Mojácar Playa daaronder. Er wonen bovendien veel mensen uit andere landen. Een tandartsbezoek is al spannend genoeg zonder taalbarrière, dus bij Koral kan uw afspraak in het Nederlands, Engels, Duits, Spaans of Frans. U begrijpt de diagnose, stelt al uw vragen en tekent pas voor de offerte als u precies weet wat erin zit.',
+        `Het eerste bezoek is gratis: we onderzoeken uw gebit, leggen de mogelijkheden uit en geven u een duidelijke, vrijblijvende offerte. Woont u tussen Mojácar en ${a('turre', 'Turre')} of bent u vaak in ${a('garrucha', 'Garrucha')}? Ook dan zit u dichtbij – alle rijtijden vindt u bij ${a('areas', 'de regio’s waar wij patiënten ontvangen')}.`,
+      ],
+      yours: 'Uw taal',
+    },
+    routes: {
+      eyebrow: 'Route',
+      title: 'Twee wegen van Mojácar naar uw tandarts in Vera',
+      desc: 'Vanuit Mojácar vertrekt u meestal vanuit het dorp of vanaf het strand. Beide routes komen samen op de A-370 en de A-352 en eindigen aan de Av. de Baria, 4.',
+      pueblo: { name: 'Vanuit Mojácar pueblo', text: `U rijdt de heuvel af en volgt de ${U_ROADS}: ${U.km} km en ongeveer ${U.min} minuten tot aan de deur van de kliniek.` },
+      playa: { name: 'Vanaf Mojácar Playa', text: `Vanaf het strand neemt u de ${P_FIRST} en daarna de ${P_REST}. Dat is ${P.km} km en zo’n ${P.min} minuten, ${diff} minuten minder dan vanuit het dorp. Onderweg rijdt u langs Garrucha.` },
+      fastest: 'Kortste',
+      note: 'Rijtijden zonder verkeer, berekend met gegevens van OpenStreetMap.',
+      maps: 'Route openen in Google Maps',
+    },
+    smile: {
+      eyebrow: 'Zomerglimlach',
+      title: 'Esthetische tandheelkunde voor Mojácar',
+      desc: 'Veel licht, witte gevels, lange dagen aan zee: hier valt een glimlach op. Wilt u de kleur, vorm of stand van uw tanden veranderen? We beginnen met een onderzoek en stellen alleen voor wat voor u echt zinvol is.',
+      cards: [
+        ['estetica', 'Tanden bleken', 'Bleken onder begeleiding van de tandarts, nadat we hebben gecontroleerd dat tandvlees en glazuur gezond zijn.', 'Esthetische tandheelkunde in Vera'],
+        ['estetica', 'Facings', 'Dunne schildjes die vorm, kleur of kleine spleetjes van de voortanden corrigeren, samen met u ontworpen voor een natuurlijk resultaat.', 'Facings en smile design'],
+        ['ortodoncia', 'Transparante aligners', 'Uitneembare, doorzichtige beugels die tanden rechtzetten zonder zichtbare brackets, en die u uitdoet om te eten.', 'Orthodontie met transparante aligners'],
+        ['armonia', 'Orofaciale harmonie', 'Aanvullende gezichtsbehandelingen die passen bij uw nieuwe glimlach, altijd met een natuurlijke aanpak.', 'Orofaciale harmonie'],
+      ],
+      doctor: `Dr. Ana Padilla, gespecialiseerd in chirurgie, implantologie en esthetiek, verzorgt deze behandelingen. ${a('team', 'Maak kennis met het team')}.`,
+      photoAlt: 'Dr. Ana Padilla, esthetische tandheelkunde en implantaten bij Tandkliniek Koral, vlak bij Mojácar',
+    },
+    implants: {
+      eyebrow: 'Hier wonen, het hele jaar of een deel ervan',
+      title: 'Tandimplantaten voor inwoners van Mojácar',
+      paras: [
+        'Verdeelt u het jaar tussen Mojácar en een ander land? Dan vraagt u zich misschien af of een implantaat in Spanje verstandig is.',
+        `Bij Koral werken we met ${a('implantes', 'Straumann-tandimplantaten met levenslange garantie')} en plannen we elk geval met een 3D-CBCT-scan. Bij het eerste bezoek leggen we uit hoeveel afspraken nodig zijn en hoe die passen bij uw verblijf in Mojácar. Ontbreekt er bot of moeten meerdere tanden vervangen worden, dan gebeuren ${a('cirugia', 'mondchirurgie')} en ${a('rehabilitacion', 'orale rehabilitatie')} in dezelfde kliniek.`,
+        `Om de kosten te spreiden kunt u de meeste behandelingen ${a('pricing', 'tegen 0% financieren')}.`,
+      ],
+      steps: [
+        ['Gratis eerste bezoek', 'Onderzoek, zo nodig een 3D-CBCT-scan, en een duidelijke offerte.'],
+        ['Een plan rond uw data', 'We plannen elke fase rond de periodes dat u in Mojácar bent.'],
+        ['Straumann-implantaat', 'Geplaatst in de kliniek, met levenslange garantie op het implantaat.'],
+        ['Controles', 'Nazorg voor een gezond implantaat, in het Nederlands ingepland.'],
+      ],
+    },
+    best: {
+      eyebrow: 'Concrete redenen',
+      title: 'Op zoek naar de beste tandkliniek bij Mojácar?',
+      desc: 'We gaan niet beweren dat we de beste zijn. Dit vindt u bij ons – u beslist zelf.',
+      reasons: [
+        ['Specialisten onder één dak', `Chirurgie en implantaten bij Dr. Ana Padilla, orthodontie en kindertandheelkunde bij Dr. Ana Soler, wortelkanaalbehandelingen bij Dr. Ángeles Parra. ${a('team', 'Bekijk het team')}.`],
+        ['3D-diagnose met CBCT', 'Driedimensionale beelden om implantaten en complexe gevallen nauwkeurig te plannen.'],
+        ['Wortelkanaal met microscoop', `${a('endodoncia', 'Endodontie')} onder de tandheelkundige microscoop, voor wat het blote oog niet ziet.`],
+        ['Vijf talen', 'We leggen alles uit in het Nederlands, Engels, Duits, Spaans of Frans.'],
+        ['Gratis eerste bezoek', 'Onderzoek en een vrijblijvende offerte voordat u iets beslist.'],
+        ['0% financiering', `Voor de meeste behandelingen. ${a('pricing', 'Prijzen en financiering')}.`],
+      ],
+      hoursTitle: 'Openingstijden',
+      hoursSvg: 'Openingstijden van Tandkliniek Koral, maandag tot vrijdag',
+      days: ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'],
+      hoursNote: `Afspraak via +34 950 39 53 19, WhatsApp +34 634 68 36 39 of onze ${a('contact', 'contactpagina')}.`,
+    },
+    faqTitle: 'Vragen van patiënten uit Mojácar',
+    faqs: [
+      ['Hoe lang rijd je van Mojácar naar de tandkliniek?', `Ongeveer ${P.min} minuten vanaf Mojácar Playa (${P.km} km) en ongeveer ${U.min} minuten vanuit Mojácar pueblo (${U.km} km), met de auto zonder verkeer. De kliniek ligt aan de Av. de Baria, 4 in Vera.`],
+      ['Is er een Nederlandstalige tandarts bij Mojácar?', 'Bij Tandkliniek Koral kunt u in het Nederlands terecht: we ontvangen patiënten in het Nederlands, Engels, Duits, Spaans en Frans, zodat u het consult en de offerte in uw eigen taal krijgt.'],
+      ['Kan ik een implantaat laten plaatsen als ik maar een deel van het jaar in Mojácar woon?', 'Ja. Bij het eerste bezoek beoordelen we uw situatie en leggen we uit hoeveel afspraken nodig zijn, zodat we ze rond uw verblijf kunnen plannen. We werken met Straumann-implantaten met levenslange garantie.'],
+      ['Doen jullie tanden bleken en facings voor patiënten uit Mojácar?', `Ja, binnen onze ${a('estetica', 'esthetische tandheelkunde')}: bleken, facings en orthodontie met transparante aligners, altijd na een onderzoek.`],
+      ['Hebben jullie een praktijk in Mojácar?', `Nee. Onze enige kliniek is in Vera (Av. de Baria, 4), zo’n ${P.min} minuten van Mojácar Playa. Alle behandelingen vinden daar plaats.`],
+      ['Wat kost het eerste bezoek?', 'Het is gratis en vrijblijvend. Kiest u voor een behandeling, dan kunt u de meeste behandelingen tegen 0% financieren.'],
+    ],
+  },
+  fr: {
+    metaTitle: 'Dentiste Mojácar : clinique dentaire francophone | Koral',
+    metaDesc: `Dentiste pour Mojácar : clinique dentaire à Vera, à ${P.min} min de Mojácar Playa. On parle français. Implants Straumann, facettes, aligneurs. 1re visite gratuite.`,
+    serviceName: 'Dentiste pour Mojácar · Clinique Dentaire Koral (Vera)',
+    imgTitle: 'Dentiste pour Mojácar : le village blanc de Mojácar au-dessus de la mer, avec l’Indalo',
+    eyebrow: 'Pueblo blanco · Côte d’Almería',
+    h1: 'Votre dentiste pour Mojácar,',
+    h1Accent: `en français, à ${P.min} minutes de la plage`,
+    lead: `Vous cherchez un dentiste à Mojácar qui parle français ? La Clinique Dentaire Koral se trouve à Vera, à ${P.min} minutes en voiture de Mojácar Playa et à ${U.min} minutes du village. Une clinique dentaire près de Mojácar avec des spécialistes en implants, esthétique dentaire et orthodontie, où l’on vous explique chaque étape en français.`,
+    chips: [`À ${P.min} min de Mojácar Playa`, `À ${U.min} min de Mojácar pueblo`],
+    greetLabel: 'Cinq langues, une clinique',
+    intro: {
+      eyebrow: 'Mojácar, dans votre langue',
+      title: 'Une clinique dentaire près de Mojácar qui parle votre langue',
+      paras: [
+        'Mojácar, ce sont en fait deux lieux : le village blanc accroché à sa colline et, en contrebas, le long front de mer de Mojácar Playa. On y croise aussi beaucoup de résidents venus d’autres pays. Un soin dentaire est déjà assez stressant sans barrière de la langue : chez Koral, votre rendez-vous peut se faire en français, en anglais, en allemand, en néerlandais ou en espagnol. Vous comprenez le diagnostic, posez toutes vos questions et signez le devis en sachant exactement ce qu’il comprend.',
+        `La première visite est gratuite : nous examinons votre bouche, vous expliquons les options et vous remettons un devis clair, sans engagement. Vous vivez entre Mojácar et ${a('turre', 'Turre')}, ou passez souvent à ${a('garrucha', 'Garrucha')} ? Vous êtes tout aussi proche : tous les temps de trajet sont sur ${a('areas', 'notre page des communes desservies')}.`,
+      ],
+      yours: 'Votre langue',
+    },
+    routes: {
+      eyebrow: 'Venir à la clinique',
+      title: 'Deux chemins de Mojácar à votre dentiste à Vera',
+      desc: 'Depuis Mojácar, on part en général du village ou de la plage. Les deux itinéraires se rejoignent sur l’A-370 puis l’A-352 et arrivent Av. de Baria, 4.',
+      pueblo: { name: 'Depuis Mojácar pueblo', text: `Descendez la colline et suivez ${U_ROADS} : ${U.km} km et environ ${U.min} minutes jusqu’à la porte de la clinique.` },
+      playa: { name: 'Depuis Mojácar Playa', text: `Depuis la plage, prenez l’${P_FIRST} puis ${P_REST}. Cela fait ${P.km} km et environ ${P.min} minutes, ${diff} de moins que depuis le village. En chemin, vous passez à côté de Garrucha.` },
+      fastest: 'La plus courte',
+      note: 'Temps de trajet en voiture sans trafic, calculés avec les données d’OpenStreetMap.',
+      maps: 'Ouvrir l’itinéraire dans Google Maps',
+    },
+    smile: {
+      eyebrow: 'Sourire d’été',
+      title: 'Esthétique dentaire pour Mojácar',
+      desc: 'Beaucoup de lumière, des façades blanches, de longues journées au bord de la mer : ici, un sourire se remarque. Si vous souhaitez changer la couleur, la forme ou la position de vos dents, nous commençons par un bilan et ne proposons que ce qui a vraiment du sens pour vous.',
+      cards: [
+        ['estetica', 'Blanchiment', 'Un éclaircissement encadré par le dentiste, après avoir vérifié que gencives et émail sont en bonne santé.', 'Esthétique dentaire à Vera'],
+        ['estetica', 'Facettes', 'De fines pellicules qui corrigent la forme, la couleur ou de petits espaces des dents de devant, conçues avec vous pour un résultat naturel.', 'Facettes et design du sourire'],
+        ['ortodoncia', 'Aligneurs transparents', 'Des gouttières amovibles et transparentes qui alignent les dents sans bagues visibles, et que l’on retire pour manger.', 'Orthodontie par aligneurs transparents'],
+        ['armonia', 'Harmonie orofaciale', 'Des soins du visage complémentaires, en accord avec votre nouveau sourire, toujours dans une approche naturelle.', 'Harmonie orofaciale'],
+      ],
+      doctor: `La Dre Ana Padilla, spécialisée en chirurgie, implantologie et esthétique, s’occupe de ces traitements. ${a('team', 'Découvrir l’équipe')}.`,
+      photoAlt: 'Dre Ana Padilla, esthétique dentaire et implants à la Clinique Dentaire Koral, près de Mojácar',
+    },
+    implants: {
+      eyebrow: 'Vivre ici, toute l’année ou une partie',
+      title: 'Implants dentaires pour les résidents de Mojácar',
+      paras: [
+        'Si vous partagez l’année entre Mojácar et un autre pays, vous vous demandez sans doute s’il est judicieux de poser un implant en Espagne.',
+        `Chez Koral, nous posons des ${a('implantes', 'implants dentaires Straumann garantis à vie')} et planifions chaque cas avec un scanner 3D (CBCT). Dès la première visite, nous vous expliquons combien de rendez-vous sont nécessaires et comment les caler sur vos séjours à Mojácar. S’il manque de l’os ou si plusieurs dents sont à remplacer, la ${a('cirugia', 'chirurgie orale')} et la ${a('rehabilitacion', 'réhabilitation orale')} se font dans la même clinique.`,
+        `Pour étaler le coût, la plupart des traitements peuvent être ${a('pricing', 'financés à 0 %')}.`,
+      ],
+      steps: [
+        ['Première visite gratuite', 'Examen, scanner 3D CBCT si nécessaire, et devis clair.'],
+        ['Un plan selon vos dates', 'Nous organisons chaque étape en fonction de vos séjours à Mojácar.'],
+        ['Implant Straumann', 'Posé à la clinique, avec une garantie à vie sur l’implant.'],
+        ['Contrôles', 'Un suivi pour garder votre implant en bonne santé, en français.'],
+      ],
+    },
+    best: {
+      eyebrow: 'Des raisons concrètes',
+      title: 'Vous cherchez la meilleure clinique dentaire près de Mojácar ?',
+      desc: 'Nous ne prétendons pas être les meilleurs. Voici ce que vous trouverez chez nous ; à vous de juger.',
+      reasons: [
+        ['Des spécialistes au même endroit', `Chirurgie et implants avec la Dre Ana Padilla, orthodontie et soins des enfants avec la Dre Ana Soler, endodontie avec la Dre Ángeles Parra. ${a('team', 'Voir l’équipe')}.`],
+        ['Diagnostic 3D par CBCT', 'Une imagerie en trois dimensions pour planifier implants et cas complexes avec précision.'],
+        ['Endodontie au microscope', `Le ${a('endodoncia', 'traitement de canal')} sous microscope dentaire, pour voir ce que l’œil nu ne voit pas.`],
+        ['Cinq langues', 'Nous vous expliquons tout en français, anglais, allemand, néerlandais ou espagnol.'],
+        ['Première visite gratuite', 'Un bilan et un devis sans engagement avant toute décision.'],
+        ['Financement à 0 %', `Pour la plupart des traitements. ${a('pricing', 'Prix et financement')}.`],
+      ],
+      hoursTitle: 'Horaires',
+      hoursSvg: 'Horaires de la Clinique Dentaire Koral, du lundi au vendredi',
+      days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
+      hoursNote: `Rendez-vous au +34 950 39 53 19, par WhatsApp au +34 634 68 36 39 ou via notre ${a('contact', 'page de contact')}.`,
+    },
+    faqTitle: 'Questions des patients de Mojácar',
+    faqs: [
+      ['Combien de temps faut-il pour aller de Mojácar à la clinique ?', `Environ ${P.min} minutes depuis Mojácar Playa (${P.km} km) et environ ${U.min} minutes depuis Mojácar pueblo (${U.km} km), en voiture et sans trafic. La clinique se trouve Av. de Baria, 4, à Vera.`],
+      ['Y a-t-il un dentiste qui parle français près de Mojácar ?', 'À la Clinique Dentaire Koral, nous recevons les patients en français, anglais, allemand, néerlandais et espagnol : consultation et devis se font dans votre langue.'],
+      ['Puis-je me faire poser un implant si je ne vis à Mojácar qu’une partie de l’année ?', 'Oui. Lors de la première visite, nous évaluons votre cas et vous expliquons combien de rendez-vous sont nécessaires, pour les planifier selon vos séjours. Nous utilisons des implants Straumann garantis à vie.'],
+      ['Proposez-vous blanchiment et facettes aux patients de Mojácar ?', `Oui, dans le cadre de notre ${a('estetica', 'esthétique dentaire')} : blanchiment, facettes et orthodontie par aligneurs transparents, toujours après un bilan.`],
+      ['Avez-vous un cabinet à Mojácar ?', `Non. Notre seule clinique est à Vera (Av. de Baria, 4), à environ ${P.min} minutes de Mojácar Playa. Tous les traitements y sont réalisés.`],
+      ['Combien coûte la première visite ?', 'Elle est gratuite et sans engagement. Si vous décidez de vous faire soigner, la plupart des traitements peuvent être financés à 0 %.'],
+    ],
+  },
+} as const)[lang];
+
+// Greetings band and language tiles: each shown in its own language.
+const GREETINGS = [
+  { code: 'es', hello: 'Hola', line: 'Hablamos español' },
+  { code: 'en', hello: 'Hello', line: 'We speak English' },
+  { code: 'de', hello: 'Hallo', line: 'Wir sprechen Deutsch' },
+  { code: 'nl', hello: 'Hallo', line: 'Wij spreken Nederlands' },
+  { code: 'fr', hello: 'Bonjour', line: 'Nous parlons français' },
+] as const;
+const greetings = [...GREETINGS.filter((g) => g.code === lang), ...GREETINGS.filter((g) => g.code !== lang)];
+
+// Opening hours as arcs along the sun's path (8:00 left → 20:00 right)
+const HOURS: [number, number][] = [[10, 20], [8, 16], [10, 18], [8, 16], [8, 16]];
+const hhmm = (h: number) => `${h}:00`;
+const SC = { x: 170, y: 186 };
+const arcPt = (r: number, h: number) => {
+  const th = Math.PI * (1 - (h - 8) / 12);
+  return `${(SC.x + r * Math.cos(th)).toFixed(1)} ${(SC.y - r * Math.sin(th)).toFixed(1)}`;
+};
+const arc = (r: number, h0: number, h1: number) => `M${arcPt(r, h0)}A${r} ${r} 0 0 1 ${arcPt(r, h1)}`;
+const radii = [152, 128, 104, 80, 56];
+
+const routeCards = [
+  { route: playa, ...copy.routes.playa, fastest: true },
+  { route: pueblo, ...copy.routes.pueblo, fastest: false },
+];
+const mapsUrl = (from: string) =>
+  `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(`${from}, Almería`)}&destination=${encodeURIComponent('Clínica Dental Koral, Av. de Baria 4, Vera')}`;
+
+const indaloGlyph = 'M2 10C2 0 18 0 18 10M2 10h16M10 10v6.5M5.5 23l4.5-6.5 4.5 6.5';
+const indaloHead = { cx: 10, cy: 6.4, r: 1.5 };
+---
+
+<Layout
+  title={copy.metaTitle}
+  description={copy.metaDesc}
+  lang={lang}
+  schema={townSchema({ town: 'mojacar', lang, title: copy.metaTitle, description: copy.metaDesc, serviceName: copy.serviceName })}
+>
+  <Navigation />
+  <main id="main" class="moj-page">
+    <!-- Hero: sunlit, white village -->
+    <section class="moj-hero relative isolate overflow-hidden pt-32 md:pt-40">
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <div class="absolute -right-40 -top-40 h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,rgba(255,206,140,0.45)_0%,transparent_62%)]"></div>
+        <div class="absolute -bottom-24 -left-32 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.14)_0%,transparent_65%)]"></div>
+      </div>
+
+      <div class="container-k relative">
+        <div class="grid items-end gap-6 lg:grid-cols-12 lg:gap-10">
+          <div class="pb-4 lg:col-span-6 lg:pb-28">
+            <div data-reveal><Breadcrumbs items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} tone="light" class="mb-8" /></div>
+            <p class="eyebrow mb-6 !text-[#1D4E89]" data-reveal style="--d:.05s">{copy.eyebrow}</p>
+            <h1 class="text-[2.5rem] leading-[1.03] text-ocean-900 sm:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="mt-1 block font-display text-[0.62em] font-normal italic leading-[1.1] text-[#1D4E89]">{copy.h1Accent}</span>
+            </h1>
+            <p class="mt-7 max-w-xl text-lg leading-relaxed text-slate-600 md:text-[1.2rem]" data-reveal style="--d:.2s">{copy.lead}</p>
+            <ul class="mt-7 flex flex-wrap gap-2.5" data-reveal style="--d:.26s">
+              {[...copy.chips, t('trust.7')].map((c) => (
+                <li class="inline-flex items-center gap-2 rounded-full border border-[#1D4E89]/15 bg-white/70 px-4 py-2 text-sm font-medium text-ocean-900 backdrop-blur">
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="#F5A46B" /><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="#F5A46B" stroke-width="1.3" stroke-linecap="round" /></svg>
+                  {c}
+                </li>
+              ))}
+            </ul>
+            <div class="mt-9 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.32s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-outline tabular">+34 950 39 53 19</a>
+            </div>
+          </div>
+          <div class="relative -mx-5 sm:mx-0 lg:col-span-6">
+            <MojacarVillage title={copy.imgTitle} seaLabel={t('areas.sea')} class="moj-hero-art" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Greeting band -->
+    <div class="moj-band relative overflow-hidden bg-[#1D4E89] py-5 text-white" role="region" aria-label={copy.greetLabel}>
+      <svg width="0" height="0" class="absolute" aria-hidden="true">
+        <symbol id="moj-indalo" viewBox="0 0 20 24"><path d={indaloGlyph} fill="none" stroke="#FFC27A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /><circle cx={indaloHead.cx} cy={indaloHead.cy} r={indaloHead.r} fill="#FFC27A" /></symbol>
+      </svg>
+      <div class="moj-marquee flex w-max">
+        {[0, 1].map((copyIdx) => (
+          <ul class="flex shrink-0 items-center" aria-hidden={copyIdx === 1 ? 'true' : undefined}>
+            {[...GREETINGS, ...GREETINGS].map((g) => (
+              <li class="moj-greet" lang={g.code}>
+                <span class="font-display text-2xl italic md:text-3xl">{g.hello}</span>
+                <span class="moj-code">{g.code}</span>
+                <svg width="18" height="22" aria-hidden="true"><use href="#moj-indalo" /></svg>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+
+    <!-- Intro: languages -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-7">
+            <p class="eyebrow mb-5" data-reveal>{copy.intro.eyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.3rem]" data-reveal>{copy.intro.title}</h2>
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600" data-reveal style="--d:.1s">
+              {copy.intro.paras.map((p) => <p set:html={p} />)}
+            </div>
+          </div>
+          <ul class="grid gap-3 self-center lg:col-span-5">
+            {greetings.map((g, i) => (
+              <li
+                lang={g.code}
+                class:list={['moj-tile flex items-center gap-5 rounded-[1.4rem] border bg-white px-5 py-4', g.code === lang ? 'border-[#1D4E89]/40 shadow-[var(--shadow-card)]' : 'border-ocean-900/[0.07]']}
+                data-reveal="right"
+                style={`--d:${i * 0.07}s`}
+              >
+                <svg width="34" height="44" viewBox="0 0 34 44" aria-hidden="true" class="shrink-0">
+                  <path d="M3 43V17a14 14 0 0 1 28 0v26Z" fill={g.code === lang ? '#1D4E89' : '#E8EFF6'} />
+                  <path d="M17 6v37M3 26h28" stroke={g.code === lang ? '#FFFFFF' : '#1D4E89'} stroke-opacity=".35" />
+                </svg>
+                <span class="min-w-0 flex-1">
+                  <span class="block font-display text-2xl leading-none text-ocean-900">{g.hello}</span>
+                  <span class="mt-1.5 block text-[15px] text-slate-600">{g.line}</span>
+                </span>
+                {g.code === lang ? (
+                  <span class="rounded-full bg-coral-pale px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-coral-deep" lang={lang}>{copy.intro.yours}</span>
+                ) : (
+                  <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{g.code}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two routes -->
+    <section class="section-y relative overflow-hidden bg-[#FBF6EE]">
+      <div class="container-k">
+        <div class="max-w-3xl" data-reveal>
+          <p class="eyebrow mb-5">{copy.routes.eyebrow}</p>
+          <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.3rem]">{copy.routes.title}</h2>
+          <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.routes.desc}</p>
+        </div>
+
+        <div class="mt-14 grid gap-6 lg:grid-cols-12 lg:items-start">
+          <div class="overflow-hidden rounded-[2rem] bg-white p-2 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/5 lg:sticky lg:top-28 lg:col-span-7" data-reveal="scale">
+            <div class="overflow-hidden rounded-[1.6rem]"><TownRouteMap town="mojacar" tone="light" seaLabel={t('areas.sea')} /></div>
+          </div>
+          <div class="grid gap-5 lg:col-span-5">
+            {routeCards.map((c, i) => (
+              <article class:list={['relative rounded-[1.75rem] border bg-white p-7', c.fastest ? 'border-[#1D4E89]/25 shadow-[var(--shadow-card)]' : 'border-ocean-900/[0.07]']} data-reveal style={`--d:${i * 0.1}s`}>
+                <div class="flex items-start justify-between gap-4">
+                  <h3 class="font-sans text-lg font-semibold tracking-tight text-ocean-900">{c.name}</h3>
+                  {c.fastest && <span class="shrink-0 rounded-full bg-[#1D4E89] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">{copy.routes.fastest}</span>}
+                </div>
+                <p class="mt-4 flex items-baseline gap-3">
+                  <span class="font-display text-6xl leading-none text-[#1D4E89] tabular" data-count={String(c.route.min)}>{c.route.min}</span>
+                  <span class="text-lg font-semibold text-ocean-900">min</span>
+                  <span class="text-slate-400">·</span>
+                  <span class="text-lg text-slate-600 tabular">{num(c.route.km)} km</span>
+                </p>
+                <ol class="mt-5 flex flex-wrap items-center gap-1.5" aria-label={c.route.roads.join(', ')}>
+                  {c.route.roads.map((r, j) => (
+                    <li class="flex items-center gap-1.5">
+                      <span class="rounded-md border border-[#1D4E89]/20 bg-[#EEF3F9] px-2 py-1 text-[12px] font-bold tracking-wide text-[#1D4E89] tabular">{r}</span>
+                      {j < c.route.roads.length - 1 && <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" class="text-coral"><path d="M4 2.5 7.5 6 4 9.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>}
+                    </li>
+                  ))}
+                </ol>
+                <p class="mt-5 text-[15px] leading-relaxed text-slate-600">{c.text}</p>
+                <a href={mapsUrl(c.route.from)} target="_blank" rel="noopener" class="link-u mt-4 inline-block text-sm font-semibold text-accent">{copy.routes.maps} ↗</a>
+              </article>
+            ))}
+            <p class="px-2 text-[13px] text-slate-500" data-reveal>{copy.routes.note}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cosmetic dentistry -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <svg class="pointer-events-none absolute -right-24 -top-24 hidden h-[420px] w-[420px] opacity-60 md:block" viewBox="0 0 420 420" fill="none" aria-hidden="true">
+        {[90, 130, 170, 210].map((r, i) => <circle cx="300" cy="120" r={r} stroke="#FFC27A" stroke-opacity={0.5 - i * 0.1} stroke-dasharray={i % 2 ? '2 8' : undefined} />)}
+        <circle cx="300" cy="120" r="46" fill="#FFE3A8" fill-opacity=".5" />
+      </svg>
+      <div class="container-k relative">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <p class="eyebrow mb-5" data-reveal>{copy.smile.eyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.3rem]" data-reveal>{copy.smile.title}</h2>
+            <p class="mt-6 text-lg leading-relaxed text-slate-600" data-reveal>{copy.smile.desc}</p>
+            <figure class="mt-10 flex items-center gap-5 rounded-[1.75rem] bg-[#FBF6EE] p-5" data-reveal style="--d:.1s">
+              <Picture src="/equipo/Ana-padilla.jpg" alt={copy.smile.photoAlt} width={600} height={600} class="h-24 w-24 shrink-0 rounded-full object-cover ring-4 ring-white" />
+              <figcaption class="text-[15px] leading-relaxed text-slate-600" set:html={copy.smile.doctor} />
+            </figure>
+          </div>
+          <ul class="grid gap-5 sm:grid-cols-2 lg:col-span-7">
+            {copy.smile.cards.map(([key, title, text, link], i) => (
+              <li class="surface-card group flex flex-col p-7" data-reveal style={`--d:${i * 0.08}s`}>
+                <span class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF2DE] text-[#1D4E89]"><TreatmentIcon name={key} size={26} strokeWidth={1.6} /></span>
+                <h3 class="font-sans text-xl font-semibold tracking-tight text-ocean-900">{title}</h3>
+                <p class="mt-2 flex-1 text-[15px] leading-relaxed text-slate-600">{text}</p>
+                <a href={pathFor(key, lang)} class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                  <span class="link-u">{link}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implants for residents (deep blue) -->
+    <section class="moj-dark relative isolate overflow-hidden bg-[linear-gradient(160deg,#1D4E89_0%,#153A68_100%)] text-white">
+      <svg class="pointer-events-none absolute -bottom-10 right-[-60px] -z-10 h-[360px] w-auto opacity-[0.08] md:h-[460px]" viewBox="0 0 20 24" fill="none" stroke="#fff" stroke-width=".35" stroke-linecap="round" aria-hidden="true"><path d={indaloGlyph} /><circle cx={indaloHead.cx} cy={indaloHead.cy} r={indaloHead.r} /></svg>
+      <div class="container-k section-y">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-6">
+            <p class="eyebrow eyebrow-light mb-5" data-reveal>{copy.implants.eyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.06] text-white sm:text-5xl lg:text-[3.3rem]" data-reveal>{copy.implants.title}</h2>
+            <div class="mt-8 space-y-5 text-lg leading-relaxed text-white/80" data-reveal style="--d:.1s">
+              {copy.implants.paras.map((p) => <p set:html={p} />)}
+            </div>
+          </div>
+          <ol class="grid gap-4 self-center lg:col-span-6">
+            {copy.implants.steps.map(([title, text], i) => (
+              <li class="flex gap-5 rounded-[1.5rem] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-sm" data-reveal="right" style={`--d:${i * 0.08}s`}>
+                <svg width="46" height="46" viewBox="0 0 46 46" class="shrink-0" aria-hidden="true">
+                  <path d="M23 4 41 13v20L23 42 5 33V13Z" fill="#fff" fill-opacity=".1" />
+                  <path d="M5 13 23 22 41 13 23 4Z" fill="#fff" />
+                  <path d="M23 22v20L41 33V13Z" fill="#fff" fill-opacity=".35" />
+                  <text x="15" y="35" font-family="Fraunces, Georgia, serif" font-size="15" font-style="italic" fill="#fff">{i + 1}</text>
+                </svg>
+                <div>
+                  <h3 class="font-sans text-lg font-semibold tracking-tight text-white">{title}</h3>
+                  <p class="mt-1 text-[15px] leading-relaxed text-white/70">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Best clinic near Mojácar: concrete reasons + hours -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="max-w-3xl" data-reveal>
+          <p class="eyebrow mb-5">{copy.best.eyebrow}</p>
+          <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.3rem]">{copy.best.title}</h2>
+          <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.best.desc}</p>
+        </div>
+        <div class="mt-14 grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-7">
+          <ul class="grid content-start gap-x-10 gap-y-9 sm:grid-cols-2">
+            {copy.best.reasons.map(([title, text], i) => (
+              <li class="relative pl-12" data-reveal style={`--d:${(i % 2) * 0.08}s`}>
+                <svg width="30" height="32" viewBox="0 0 20 24" fill="none" stroke="#1D4E89" stroke-width="1.3" stroke-linecap="round" class="absolute left-0 top-0.5" aria-hidden="true"><path d={indaloGlyph} /><circle cx={indaloHead.cx} cy={indaloHead.cy} r={indaloHead.r} fill="#F2617A" stroke="none" /></svg>
+                <h3 class="font-sans text-lg font-semibold tracking-tight text-ocean-900">{title}</h3>
+                <p class="mt-1.5 text-[15px] leading-relaxed text-slate-600" set:html={text} />
+              </li>
+            ))}
+          </ul>
+          <div class="mt-12 flex flex-col gap-3 border-t border-ocean-900/[0.07] pt-10 sm:flex-row sm:items-center" data-reveal>
+            <a href="#appointment" class="btn btn-coral shine-effect">
+              {t('nav.appointment')}
+              <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+            <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-outline">WhatsApp · +34 634 68 36 39</a>
+          </div>
+          </div>
+          <div class="rounded-[2rem] border border-ocean-900/[0.07] bg-[#FBF6EE] p-7 md:p-8 lg:col-span-5" data-reveal="scale">
+            <h3 class="text-3xl text-ocean-900">{copy.best.hoursTitle}</h3>
+            <svg viewBox="0 0 340 212" class="mt-5 w-full" role="img" aria-labelledby="moj-hours-t">
+              <title id="moj-hours-t">{copy.best.hoursSvg}</title>
+              <path d={`M${SC.x - 24} ${SC.y}a24 24 0 0 1 48 0Z`} fill="#FFC27A" />
+              <g fill="none" stroke-linecap="round" stroke-width="10">
+                {radii.map((r) => <path d={arc(r, 8, 20)} stroke="#0A1F33" stroke-opacity=".06" />)}
+              </g>
+              <g class="draw" fill="none" stroke-linecap="round" stroke-width="10">
+                {radii.map((r, i) => <path d={arc(r, HOURS[i][0], HOURS[i][1])} stroke={i === 0 ? '#F2617A' : '#1D4E89'} pathLength="1" style={`--dd:${0.2 + i * 0.12}s`} />)}
+              </g>
+              <path d={`M${SC.x - radii[0] - 14} ${SC.y + 1}H${SC.x + radii[0] + 14}`} stroke="#0A1F33" stroke-opacity=".15" />
+              <g font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748B" text-anchor="middle">
+                <text x={SC.x - radii[0]} y={SC.y + 20}>8:00</text>
+                <text x={SC.x} y={SC.y - radii[0] - 14}>14:00</text>
+                <text x={SC.x + radii[0]} y={SC.y + 20}>20:00</text>
+              </g>
+            </svg>
+            <dl class="mt-6 divide-y divide-ocean-900/[0.07] text-[15px]">
+              {copy.best.days.map((d, i) => (
+                <div class="flex items-center justify-between py-2.5">
+                  <dt class="flex items-center gap-2.5 font-medium text-ocean-900"><span class:list={['h-2.5 w-2.5 rounded-full', i === 0 ? 'bg-coral' : 'bg-[#1D4E89]']}></span>{d}</dt>
+                  <dd class="tabular text-slate-600">{hhmm(HOURS[i][0])} – {hhmm(HOURS[i][1])}</dd>
+                </div>
+              ))}
+            </dl>
+            <p class="mt-6 text-[14px] leading-relaxed text-slate-600" set:html={copy.best.hoursNote} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow="FAQ" title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="mojacar" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  /* Light hero: the transparent header switches to dark text on this page only */
+  body:has(.moj-hero) .site-header[data-solid='false']:not([data-menu='true']) { color: var(--color-ocean-900); }
+  body:has(.moj-hero) .site-header[data-solid='false']:not([data-menu='true']) .logo-img { filter: none; }
+
+  .moj-hero { background: linear-gradient(180deg, #fffaf2 0%, #fbf3e6 55%, #f6ead9 100%); }
+  .moj-hero-art {
+    margin-bottom: -1px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+  }
+
+  .moj-greet { display: flex; align-items: center; gap: 0.75rem; padding-inline: 1.5rem; }
+  .moj-greet svg { margin-left: 1.5rem; }
+  .moj-code { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
+  .moj-marquee { animation: moj-marquee 30s linear infinite; }
+  .moj-band:hover .moj-marquee { animation-play-state: paused; }
+  @keyframes moj-marquee { to { transform: translateX(-50%); } }
+
+  .moj-tile { transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo); }
+  .moj-tile:hover { transform: translateX(-4px); }
+
+  .moj-dark .prose-link { color: #fff; text-decoration-color: rgba(255, 194, 122, 0.7); }
+  .moj-dark .prose-link:hover { text-decoration-color: #ffc27a; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .moj-marquee { animation: none; }
+  }
+</style>

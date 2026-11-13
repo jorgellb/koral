@@ -1,0 +1,726 @@
+---
+/**
+ * Vera — "Plaza Mayor". The clinic as Vera's neighbourhood dentist: where it is
+ * in town, the two real arrivals (old town and Vera Playa), the team, holiday
+ * visitors and every speciality. Complements the home page (brand + general
+ * "dentista en Vera") instead of competing with it.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import VeraPlaza from '../../components/towns/VeraPlaza.astro';
+import VeraIsoMap from '../../components/towns/VeraIsoMap.astro';
+import { useTranslations, type TranslationKey } from '../../i18n/utils';
+import { pathFor, TREATMENTS, type Lang, type RouteKey, type TreatmentKey } from '../../i18n/routes';
+import { TOWNS } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+import { TEAM } from '../../data/team';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.vera;
+const rc = town.routes[0]; // Vera centro
+const rp = town.routes[1]; // Vera Playa
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const kmC = num(rc.km);
+const kmP = num(rp.km);
+const roadsC = rc.roads.join(' · ');
+const roadsP = rp.roads.join(' · ');
+
+const copy = ({
+  es: {
+    metaTitle: 'Clínica dental en Vera y Vera Playa | Dentista Koral',
+    metaDesc: `Clínica dental en Vera, en la Av. de Baria, 4: a ${rc.min} min de la Plaza Mayor y a ${rp.min} de Vera Playa. Tu dentista de barrio, para vecinos y veraneantes.`,
+    service: 'Dentista en Vera y Vera Playa',
+    eyebrow: 'Vera · Almería · Av. de Baria, 4',
+    h1: 'Dentista en Vera y Vera Playa',
+    accent: 'tu clínica de barrio',
+    lead: `Somos la clínica dental en Vera que tienes a la vuelta de la esquina: en la Av. de Baria, 4, a ${rc.min} minutos en coche de la Plaza Mayor y a ${rp.min} de Vera Playa. Vivas aquí todo el año o vengas a pasar el verano, [[home|Clínica Dental Koral en Vera]] es tu dentista de cercanía, con todas las especialidades bajo el mismo techo.`,
+    signTop: 'Desde la Plaza Mayor',
+    signUnit: 'min',
+    signFoot: 'Av. de Baria, 4 · Vera',
+    plateEyebrow: 'Plano de barrio',
+    plateTitle: 'Dentista en Vera: de la Plaza Mayor y la Iglesia de la Encarnación a Clínica Dental Koral, en la Av. de Baria, 4',
+    plaza: 'Plaza Mayor',
+    church: 'Iglesia de la Encarnación · s. XVI',
+    caption: ['Plaza Mayor e Iglesia de la Encarnación, iglesia-fortaleza del siglo XVI', `${kmC} km · ${rc.min} min por la ${roadsC}`, 'Clínica Dental Koral · Av. de Baria, 4'],
+    arrEyebrow: 'Cómo llegar',
+    arrTitle: 'Dos formas de llegar a tu dentista en Vera',
+    arrIntro: 'Vera tiene dos vidas: el casco urbano, reconstruido en su emplazamiento actual tras el terremoto de 1518, y la costa de Vera Playa, con sus playas y urbanizaciones. Hemos medido el trayecto real desde las dos. Y si parte de la familia vive en [[garrucha|Garrucha]] o en [[antas|Antas]], también tienen su ruta.',
+    c1Label: 'Desde el centro',
+    c1Title: 'Plaza Mayor → Av. de Baria',
+    c1Body: `${kmC} km por la ${roadsC}. Sales del casco histórico, tomas la A-352 y en unos ${rc.min} minutos estás en la puerta: tan cerca que la revisión cabe entre dos recados.`,
+    c2Label: 'Desde la costa',
+    c2Title: 'Vera Playa → Vera',
+    c2Body: `${kmP} km por la ${roadsP}, unos ${rp.min} minutos. Desde la playa y las urbanizaciones de la costa subes por la A-352 hacia el pueblo. En el mapa, la línea punteada es tu ruta.`,
+    isoTitle: `Mapa isométrico de la ruta de ${kmC} km desde el centro de Vera hasta el dentista en la Av. de Baria, 4`,
+    isoFrom: 'Plaza Mayor',
+    isoTo: 'Koral',
+    isoRoad: 'carretera',
+    mapNote: 'Rutas reales calculadas con datos de OpenStreetMap, sin tráfico.',
+    nbEyebrow: 'Tu clínica de barrio',
+    nbTitle: 'Una clínica dental en Vera que te conoce por tu nombre',
+    nb: [
+      'Si vives en Vera, ir al dentista no debería ser un viaje. Debería ser como ir a la farmacia o al mercado: un sitio al que vas sin pensarlo dos veces. Por eso nos importa tanto estar en el pueblo. Aquí atendemos a familias enteras, desde la primera revisión de los niños en [[odontopediatria|odontopediatría]] con la Dra. Ana Soler hasta los [[implantes|implantes dentales Straumann con garantía de por vida]] de los abuelos.',
+      'La continuidad es lo que da sentido a un dentista de barrio: tu historial, tus imágenes 3D y tu plan de tratamiento se quedan en la misma clínica, y cada revisión parte de la anterior. Si un día necesitas una [[endodoncia|endodoncia con microscopio]] o una [[ortodoncia|ortodoncia con alineadores transparentes]], no tienes que empezar de cero con otro equipo.',
+      'La primera visita es gratuita y la mayoría de los tratamientos se pueden pagar con [[pricing|financiación al 0 %]]. ¿Prefieres preguntar antes? Aquí tienes [[contact|cómo contactar con la clínica]].',
+    ],
+    hoursTitle: 'Horario de consulta',
+    hours: [['Lunes', '10:00 – 20:00'], ['Martes', '8:00 – 16:00'], ['Miércoles', '10:00 – 18:00'], ['Jueves', '8:00 – 16:00'], ['Viernes', '8:00 – 16:00']],
+    tile: 'Avda. de Baria',
+    teamEyebrow: 'Quién te atiende',
+    teamTitle: 'El equipo de tu dentista en Vera',
+    teamDesc: 'Cuatro doctoras, con higienistas, auxiliares y una recepción que te atienden en cinco idiomas.',
+    teamCta: 'Conoce a todo el equipo',
+    photoAlt: 'dentista en Vera',
+    holEyebrow: 'De vacaciones en Vera Playa',
+    holTitle: '¿Necesitas un dentista en Vera Playa durante tus vacaciones?',
+    holBody: `Un dolor que no se calma, un diente que se rompe con un hueso de aceituna, una corona que se despega justo en la semana de playa… Si necesitas un dentista durante tu estancia, llámanos o escríbenos por WhatsApp y te diremos cuándo podemos verte. Estamos a ${rp.min} minutos de Vera Playa y te atendemos en español, inglés, alemán, neerlandés y francés.`,
+    holItems: ['Dolor o inflamación', 'Un diente roto o astillado', 'Una corona o un empaste que se cae'],
+    holNote: 'Te damos cita dentro de nuestro horario de consulta.',
+    call: 'Llamar',
+    dirEyebrow: 'Directorio',
+    dirTitle: 'Todas las especialidades, en la Av. de Baria',
+    dirDesc: 'Todo en la misma clínica, a pocos minutos de casa.',
+    dirAfter: 'También atendemos a pacientes de todo el [[areas|Levante Almeriense]]: elige tu pueblo y mira cómo llegar.',
+    faqEyebrow: 'Preguntas frecuentes',
+    faqTitle: 'Dudas sobre nuestra clínica dental en Vera',
+    faqs: [
+      ['¿Dónde está exactamente la clínica dental en Vera?', `En la Av. de Baria, 4 (local), 04620 Vera, Almería. Desde la Plaza Mayor son ${kmC} km por la ${roadsC}, unos ${rc.min} minutos en coche.`],
+      ['¿Hay un dentista cerca de Vera Playa?', `Sí: desde Vera Playa hasta la clínica hay ${kmP} km por la ${roadsP}, unos ${rp.min} minutos. Atendemos a quienes viven en las urbanizaciones de la costa y a quienes pasan allí sus vacaciones.`],
+      ['Estoy de vacaciones en Vera y me duele una muela, ¿qué hago?', 'Llámanos al +34 950 39 53 19 o escríbenos por WhatsApp al +34 634 68 36 39 y te diremos cuándo podemos verte dentro de nuestro horario. Te atendemos en cinco idiomas.'],
+      ['¿Qué horario tiene la clínica?', 'Lunes de 10:00 a 20:00, martes de 8:00 a 16:00, miércoles de 10:00 a 18:00, y jueves y viernes de 8:00 a 16:00.'],
+      ['¿Qué tratamientos hacéis en la clínica de Vera?', 'Todos bajo el mismo techo: implantes Straumann, ortodoncia con alineadores transparentes, endodoncia con microscopio, odontopediatría, periodoncia, estética dental y cirugía oral, con diagnóstico 3D por CBCT. [[team|Conoce a las especialistas]].'],
+      ['¿Cuánto cuesta la primera visita?', 'Es gratuita: valoramos tu caso y te explicamos opciones y presupuesto sin compromiso. Para la mayoría de tratamientos ofrecemos [[pricing|financiación al 0 %]].'],
+    ],
+  },
+  en: {
+    metaTitle: 'Dentist in Vera & Vera Playa | Koral Dental Clinic',
+    metaDesc: `Your dental clinic in Vera, Almería, on Av. de Baria 4: ${rc.min} min from the Plaza Mayor and ${rp.min} from Vera Playa. A local dentist for residents and holidaymakers.`,
+    service: 'Dentist in Vera and Vera Playa',
+    eyebrow: 'Vera · Almería · Av. de Baria, 4',
+    h1: 'Dentist in Vera & Vera Playa',
+    accent: 'your neighbourhood clinic',
+    lead: `We are the dental clinic just around the corner in Vera, Almería: on Av. de Baria, 4, a ${rc.min}-minute drive from the Plaza Mayor and ${rp.min} minutes from Vera Playa. Whether you live here all year or come for the summer, [[home|Koral Dental Clinic in Vera]] is your local, English-speaking dentist, with every speciality under one roof.`,
+    signTop: 'From the Plaza Mayor',
+    signUnit: 'min',
+    signFoot: 'Av. de Baria, 4 · Vera',
+    plateEyebrow: 'Neighbourhood plan',
+    plateTitle: 'Dentist in Vera: from the Plaza Mayor and the Church of the Encarnación to Koral Dental Clinic on Av. de Baria, 4',
+    plaza: 'Plaza Mayor',
+    church: 'Iglesia de la Encarnación · 16th c.',
+    caption: ['Plaza Mayor and the Iglesia de la Encarnación, a 16th-century fortress-church', `${kmC} km · ${rc.min} min on the ${roadsC}`, 'Koral Dental Clinic · Av. de Baria, 4'],
+    arrEyebrow: 'Getting here',
+    arrTitle: 'Two ways to reach your dentist in Vera',
+    arrIntro: 'Vera has two lives: the town itself, rebuilt on its present site after the earthquake of 1518, and Vera Playa on the coast, with its beaches and urbanisations. We measured the real drive from both. And if some of the family live in [[garrucha|Garrucha]] or [[antas|Antas]], their route is mapped too.',
+    c1Label: 'From the old town',
+    c1Title: 'Plaza Mayor → Av. de Baria',
+    c1Body: `${kmC} km on the ${roadsC}. Leave the historic centre, join the A-352 and in about ${rc.min} minutes you are at our door — close enough to fit a check-up between errands.`,
+    c2Label: 'From the coast',
+    c2Title: 'Vera Playa → Vera',
+    c2Body: `${kmP} km on the ${roadsP}, about ${rp.min} minutes. From the beach and the coastal urbanisations you head inland on the A-352 towards the town. On the map, the dotted line is your route.`,
+    isoTitle: `Isometric map of the ${kmC} km drive from Vera old town to the dentist on Av. de Baria, 4`,
+    isoFrom: 'Plaza Mayor',
+    isoTo: 'Koral',
+    isoRoad: 'road',
+    mapNote: 'Real routes calculated with OpenStreetMap data, without traffic.',
+    nbEyebrow: 'Your neighbourhood clinic',
+    nbTitle: 'A dental clinic in Vera that knows you by name',
+    nb: [
+      'If you live in Vera, going to the dentist shouldn’t feel like a trip. It should be like popping into the chemist or the market: somewhere you go without thinking twice. That is why being in town matters so much to us. We look after whole families here, from children’s first check-ups in [[odontopediatria|paediatric dentistry]] with Dr Ana Soler to [[implantes|Straumann dental implants with a lifetime warranty]] for their grandparents.',
+      'Continuity is what makes a neighbourhood dentist worthwhile: your records, your 3D scans and your treatment plan stay in the same clinic, and every check-up builds on the last. If one day you need a [[endodoncia|microscope-assisted root canal]] or [[ortodoncia|orthodontics with clear aligners]], you don’t have to start from scratch with a new team.',
+      'Your first visit is free, and most treatments can be paid with [[pricing|0% financing]]. Rather ask a question first? Here is [[contact|how to contact the clinic]].',
+    ],
+    hoursTitle: 'Opening hours',
+    hours: [['Monday', '10:00 – 20:00'], ['Tuesday', '8:00 – 16:00'], ['Wednesday', '10:00 – 18:00'], ['Thursday', '8:00 – 16:00'], ['Friday', '8:00 – 16:00']],
+    tile: 'Avda. de Baria',
+    teamEyebrow: 'Who will see you',
+    teamTitle: 'Meet the team behind your dentist in Vera',
+    teamDesc: 'Four dentists, plus hygienists, assistants and a front desk who look after you in five languages.',
+    teamCta: 'Meet the whole team',
+    photoAlt: 'dentist in Vera',
+    holEyebrow: 'On holiday in Vera Playa',
+    holTitle: 'Need a dentist in Vera Playa during your holiday?',
+    holBody: `A toothache that won’t settle, a tooth that cracks on an olive stone, a crown that comes loose in the middle of beach week… If you need a dentist during your stay, call us or send a WhatsApp and we will tell you when we can see you. We are ${rp.min} minutes from Vera Playa and speak English, Spanish, German, Dutch and French.`,
+    holItems: ['Pain or swelling', 'A broken or chipped tooth', 'A crown or filling that comes off'],
+    holNote: 'Appointments within our normal opening hours.',
+    call: 'Call',
+    dirEyebrow: 'Directory',
+    dirTitle: 'Every speciality, on Av. de Baria',
+    dirDesc: 'All in the same clinic, a few minutes from home.',
+    dirAfter: 'We also welcome patients from all over the [[areas|Levante Almeriense]]: pick your town and see how to get here.',
+    faqEyebrow: 'FAQ',
+    faqTitle: 'Questions about our dental clinic in Vera',
+    faqs: [
+      ['Where exactly is the dental clinic in Vera?', `At Av. de Baria, 4 (ground floor), 04620 Vera, Almería. From the Plaza Mayor it is ${kmC} km on the ${roadsC}, about a ${rc.min}-minute drive.`],
+      ['Is there an English-speaking dentist near Vera Playa?', `Yes. Our clinic is ${kmP} km from Vera Playa on the ${roadsP}, about ${rp.min} minutes by car, and our team speaks English as well as Spanish, German, Dutch and French.`],
+      ['I’m on holiday in Vera and have toothache — what should I do?', 'Call us on +34 950 39 53 19 or send a WhatsApp to +34 634 68 36 39 and we will tell you when we can see you within our opening hours.'],
+      ['What are the clinic’s opening hours?', 'Monday 10:00–20:00, Tuesday 8:00–16:00, Wednesday 10:00–18:00, Thursday and Friday 8:00–16:00.'],
+      ['Which treatments do you offer in Vera?', 'All of them under one roof: Straumann implants, clear aligners, microscope-assisted root canals, children’s dentistry, gum treatment, cosmetic dentistry and oral surgery, with 3D CBCT diagnosis. [[team|Meet our dentists]].'],
+      ['How much is the first visit?', 'It is free: we assess your case and explain your options and the quote with no obligation. Most treatments can be paid with [[pricing|0% financing]].'],
+    ],
+  },
+  de: {
+    metaTitle: 'Zahnarzt in Vera & Vera Playa | Zahnklinik Koral',
+    metaDesc: `Ihre Zahnklinik in Vera (Almería), Av. de Baria 4: ${rc.min} Min. von der Plaza Mayor, ${rp.min} Min. von Vera Playa. Zahnarzt vor Ort für Anwohner und Urlauber.`,
+    service: 'Zahnarzt in Vera und Vera Playa',
+    eyebrow: 'Vera · Almería · Av. de Baria, 4',
+    h1: 'Zahnarzt in Vera & Vera Playa',
+    accent: 'Ihre Klinik um die Ecke',
+    lead: `Wir sind die Zahnklinik in Vera, Almería, gleich um die Ecke: in der Av. de Baria, 4, ${rc.min} Autominuten von der Plaza Mayor und ${rp.min} Minuten von Vera Playa entfernt. Ob Sie hier wohnen oder den Sommer verbringen – die [[home|Zahnklinik Koral in Vera]] ist Ihr Zahnarzt vor Ort, mit allen Fachbereichen unter einem Dach und einem Team, das Deutsch spricht.`,
+    signTop: 'Ab Plaza Mayor',
+    signUnit: 'Min.',
+    signFoot: 'Av. de Baria, 4 · Vera',
+    plateEyebrow: 'Ortsplan',
+    plateTitle: 'Zahnarzt in Vera: von der Plaza Mayor und der Iglesia de la Encarnación zur Zahnklinik Koral in der Av. de Baria, 4',
+    plaza: 'Plaza Mayor',
+    church: 'Iglesia de la Encarnación · 16. Jh.',
+    caption: ['Plaza Mayor und Iglesia de la Encarnación, eine Wehrkirche aus dem 16. Jahrhundert', `${kmC} km · ${rc.min} Min. über die ${roadsC}`, 'Zahnklinik Koral · Av. de Baria, 4'],
+    arrEyebrow: 'Anfahrt',
+    arrTitle: 'Zwei Wege zu Ihrem Zahnarzt in Vera',
+    arrIntro: 'Vera hat zwei Gesichter: den Ort selbst, der nach dem Erdbeben von 1518 an seiner heutigen Stelle neu errichtet wurde, und Vera Playa an der Küste, mit Stränden und Urbanisationen. Wir haben die echte Fahrstrecke von beiden gemessen. Und wenn ein Teil der Familie in [[garrucha|Garrucha]] oder [[antas|Antas]] wohnt: Auch deren Anfahrt finden Sie bei uns.',
+    c1Label: 'Aus dem Ortskern',
+    c1Title: 'Plaza Mayor → Av. de Baria',
+    c1Body: `${kmC} km über die ${roadsC}. Vom historischen Zentrum auf die A-352, und nach etwa ${rc.min} Minuten stehen Sie vor unserer Tür – nah genug, um die Kontrolle zwischen zwei Besorgungen zu erledigen.`,
+    c2Label: 'Von der Küste',
+    c2Title: 'Vera Playa → Vera',
+    c2Body: `${kmP} km über die ${roadsP}, etwa ${rp.min} Minuten. Vom Strand und den Urbanisationen an der Küste fahren Sie auf der A-352 landeinwärts in den Ort. Auf der Karte ist die gepunktete Linie Ihre Strecke.`,
+    isoTitle: `Isometrische Karte der ${kmC} km langen Strecke vom Ortskern Veras zum Zahnarzt in der Av. de Baria, 4`,
+    isoFrom: 'Plaza Mayor',
+    isoTo: 'Koral',
+    isoRoad: 'Straße',
+    mapNote: 'Echte Routen, berechnet mit OpenStreetMap-Daten, ohne Verkehr.',
+    nbEyebrow: 'Ihre Klinik im Ort',
+    nbTitle: 'Eine Zahnklinik in Vera, die Sie beim Namen kennt',
+    nb: [
+      'Wer in Vera wohnt, sollte für den Zahnarzt keine Reise planen müssen. Er sollte so selbstverständlich sein wie die Apotheke oder der Markt – ein Ort, zu dem man ohne langes Überlegen geht. Deshalb ist es uns so wichtig, mitten im Ort zu sein. Wir betreuen ganze Familien: von der ersten Kontrolle der Kleinen in der [[odontopediatria|Kinderzahnheilkunde]] bei Dr. Ana Soler bis zu [[implantes|Straumann-Zahnimplantaten mit lebenslanger Garantie]] für die Großeltern.',
+      'Kontinuität macht einen Zahnarzt vor Ort wertvoll: Ihre Unterlagen, Ihre 3D-Aufnahmen und Ihr Behandlungsplan bleiben in derselben Klinik, und jede Kontrolle baut auf der vorigen auf. Brauchen Sie eines Tages eine [[endodoncia|Wurzelbehandlung unter dem Mikroskop]] oder eine [[ortodoncia|Zahnkorrektur mit transparenten Alignern]], fangen Sie nicht bei null mit einem neuen Team an.',
+      'Der erste Termin ist kostenlos, und die meisten Behandlungen lassen sich mit [[pricing|0 % Finanzierung]] bezahlen. Lieber vorher etwas fragen? So [[contact|erreichen Sie die Klinik]].',
+    ],
+    hoursTitle: 'Sprechzeiten',
+    hours: [['Montag', '10:00 – 20:00'], ['Dienstag', '8:00 – 16:00'], ['Mittwoch', '10:00 – 18:00'], ['Donnerstag', '8:00 – 16:00'], ['Freitag', '8:00 – 16:00']],
+    tile: 'Avda. de Baria',
+    teamEyebrow: 'Wer Sie behandelt',
+    teamTitle: 'Das Team Ihres Zahnarztes in Vera',
+    teamDesc: 'Vier Zahnärztinnen, dazu Dentalhygiene, Assistenz und Empfang – wir betreuen Sie in fünf Sprachen.',
+    teamCta: 'Das ganze Team kennenlernen',
+    photoAlt: 'Zahnarzt in Vera',
+    holEyebrow: 'Urlaub in Vera Playa',
+    holTitle: 'Zahnarzt in Vera Playa während des Urlaubs gesucht?',
+    holBody: `Zahnschmerzen, die nicht nachlassen, ein Zahn, der an einem Olivenkern abbricht, eine Krone, die sich mitten in der Strandwoche löst … Wenn Sie während Ihres Aufenthalts einen Zahnarzt brauchen, rufen Sie uns an oder schreiben Sie per WhatsApp – wir sagen Ihnen, wann wir Sie sehen können. Wir sind ${rp.min} Minuten von Vera Playa entfernt und sprechen Deutsch, Englisch, Spanisch, Niederländisch und Französisch.`,
+    holItems: ['Schmerzen oder Schwellung', 'Ein abgebrochener Zahn', 'Eine gelöste Krone oder Füllung'],
+    holNote: 'Termine innerhalb unserer regulären Sprechzeiten.',
+    call: 'Anrufen',
+    dirEyebrow: 'Wegweiser',
+    dirTitle: 'Alle Fachbereiche in der Av. de Baria',
+    dirDesc: 'Alles in derselben Klinik, wenige Minuten von zu Hause.',
+    dirAfter: 'Wir behandeln auch Patienten aus dem ganzen [[areas|Levante Almeriense]]: Wählen Sie Ihren Ort und sehen Sie die Anfahrt.',
+    faqEyebrow: 'Häufige Fragen',
+    faqTitle: 'Fragen zu unserer Zahnklinik in Vera',
+    faqs: [
+      ['Wo genau ist die Zahnklinik in Vera?', `In der Av. de Baria, 4 (Ladenlokal), 04620 Vera, Almería. Von der Plaza Mayor sind es ${kmC} km über die ${roadsC}, etwa ${rc.min} Autominuten.`],
+      ['Gibt es einen deutschsprachigen Zahnarzt bei Vera Playa?', `Ja. Unsere Klinik liegt ${kmP} km von Vera Playa entfernt (über die ${roadsP}, etwa ${rp.min} Autominuten), und unser Team spricht Deutsch, Englisch, Spanisch, Niederländisch und Französisch.`],
+      ['Ich habe im Urlaub in Vera Zahnschmerzen – was tun?', 'Rufen Sie uns unter +34 950 39 53 19 an oder schreiben Sie per WhatsApp an +34 634 68 36 39. Wir sagen Ihnen, wann wir Sie innerhalb unserer Sprechzeiten sehen können.'],
+      ['Wie sind die Sprechzeiten?', 'Montag 10–20 Uhr, Dienstag 8–16 Uhr, Mittwoch 10–18 Uhr, Donnerstag und Freitag 8–16 Uhr.'],
+      ['Welche Behandlungen bieten Sie in Vera an?', 'Alle unter einem Dach: Straumann-Implantate, transparente Aligner, Wurzelbehandlung unter dem Mikroskop, Kinderzahnheilkunde, Parodontologie, ästhetische Zahnmedizin und Oralchirurgie, mit 3D-Diagnostik per DVT (CBCT). [[team|Lernen Sie unsere Zahnärztinnen kennen]].'],
+      ['Was kostet der erste Termin?', 'Er ist kostenlos: Wir untersuchen Sie und erklären Ihnen Optionen und Kosten – unverbindlich. Für die meisten Behandlungen bieten wir [[pricing|0 % Finanzierung]].'],
+    ],
+  },
+  nl: {
+    metaTitle: 'Tandarts in Vera & Vera Playa | Tandkliniek Koral',
+    metaDesc: `Uw tandkliniek in Vera (Almería), Av. de Baria 4: ${rc.min} min van de Plaza Mayor en ${rp.min} min van Vera Playa. Een tandarts dichtbij, voor bewoners en vakantiegangers.`,
+    service: 'Tandarts in Vera en Vera Playa',
+    eyebrow: 'Vera · Almería · Av. de Baria, 4',
+    h1: 'Tandarts in Vera & Vera Playa',
+    accent: 'uw kliniek om de hoek',
+    lead: `Wij zijn de tandkliniek in Vera, Almería, om de hoek: aan de Av. de Baria, 4, op ${rc.min} minuten rijden van de Plaza Mayor en ${rp.min} minuten van Vera Playa. Of u hier nu woont of de zomer doorbrengt: [[home|Tandkliniek Koral in Vera]] is uw tandarts in de buurt, met alle specialismen onder één dak en een team dat Nederlands spreekt.`,
+    signTop: 'Vanaf de Plaza Mayor',
+    signUnit: 'min',
+    signFoot: 'Av. de Baria, 4 · Vera',
+    plateEyebrow: 'Buurtplattegrond',
+    plateTitle: 'Tandarts in Vera: van de Plaza Mayor en de Iglesia de la Encarnación naar Tandkliniek Koral aan de Av. de Baria, 4',
+    plaza: 'Plaza Mayor',
+    church: 'Iglesia de la Encarnación · 16e eeuw',
+    caption: ['Plaza Mayor en de Iglesia de la Encarnación, een vestingkerk uit de 16e eeuw', `${kmC} km · ${rc.min} min via de ${roadsC}`, 'Tandkliniek Koral · Av. de Baria, 4'],
+    arrEyebrow: 'Route',
+    arrTitle: 'Twee routes naar uw tandarts in Vera',
+    arrIntro: 'Vera heeft twee gezichten: het stadje zelf, dat na de aardbeving van 1518 op zijn huidige plek werd herbouwd, en Vera Playa aan de kust, met stranden en urbanisaties. We hebben de echte rit vanaf beide gemeten. Woont er familie in [[garrucha|Garrucha]] of [[antas|Antas]]? Ook hun route staat klaar.',
+    c1Label: 'Vanuit het centrum',
+    c1Title: 'Plaza Mayor → Av. de Baria',
+    c1Body: `${kmC} km via de ${roadsC}. Vanuit het historische centrum neemt u de A-352 en in ongeveer ${rc.min} minuten staat u voor de deur – dichtbij genoeg om een controle tussen twee boodschappen door te doen.`,
+    c2Label: 'Vanaf de kust',
+    c2Title: 'Vera Playa → Vera',
+    c2Body: `${kmP} km via de ${roadsP}, ongeveer ${rp.min} minuten. Vanaf het strand en de urbanisaties aan de kust rijdt u over de A-352 landinwaarts naar het stadje. Op de kaart is de stippellijn uw route.`,
+    isoTitle: `Isometrische kaart van de rit van ${kmC} km van het centrum van Vera naar de tandarts aan de Av. de Baria, 4`,
+    isoFrom: 'Plaza Mayor',
+    isoTo: 'Koral',
+    isoRoad: 'weg',
+    mapNote: 'Echte routes, berekend met gegevens van OpenStreetMap, zonder verkeer.',
+    nbEyebrow: 'Uw kliniek in de buurt',
+    nbTitle: 'Een tandkliniek in Vera die u bij naam kent',
+    nb: [
+      'Wie in Vera woont, hoeft voor de tandarts geen uitstapje te plannen. Het hoort net zo vanzelfsprekend te zijn als de apotheek of de markt: een plek waar u zonder nadenken binnenloopt. Daarom vinden we het zo belangrijk om midden in het stadje te zitten. We behandelen hele gezinnen, van de eerste controle van de kinderen bij de [[odontopediatria|kindertandheelkunde]] van dr. Ana Soler tot [[implantes|Straumann-tandimplantaten met levenslange garantie]] voor de grootouders.',
+      'Continuïteit maakt een buurttandarts waardevol: uw dossier, uw 3D-opnamen en uw behandelplan blijven in dezelfde kliniek, en elke controle bouwt voort op de vorige. Heeft u ooit een [[endodoncia|wortelkanaalbehandeling met microscoop]] of [[ortodoncia|orthodontie met transparante aligners]] nodig, dan hoeft u niet opnieuw te beginnen bij een ander team.',
+      'Het eerste bezoek is gratis en de meeste behandelingen kunt u betalen met [[pricing|0% financiering]]. Liever eerst iets vragen? Zo [[contact|neemt u contact op met de kliniek]].',
+    ],
+    hoursTitle: 'Openingstijden',
+    hours: [['Maandag', '10:00 – 20:00'], ['Dinsdag', '8:00 – 16:00'], ['Woensdag', '10:00 – 18:00'], ['Donderdag', '8:00 – 16:00'], ['Vrijdag', '8:00 – 16:00']],
+    tile: 'Avda. de Baria',
+    teamEyebrow: 'Wie u behandelt',
+    teamTitle: 'Het team van uw tandarts in Vera',
+    teamDesc: 'Vier tandartsen, met mondhygiënisten, assistenten en een receptie die u in vijf talen te woord staan.',
+    teamCta: 'Maak kennis met het hele team',
+    photoAlt: 'tandarts in Vera',
+    holEyebrow: 'Op vakantie in Vera Playa',
+    holTitle: 'Tandarts nodig in Vera Playa tijdens uw vakantie?',
+    holBody: `Kiespijn die niet overgaat, een tand die breekt op een olijfpit, een kroon die loslaat midden in de strandweek… Heeft u tijdens uw verblijf een tandarts nodig, bel ons dan of stuur een WhatsApp en we laten u weten wanneer we u kunnen zien. We zitten op ${rp.min} minuten van Vera Playa en spreken Nederlands, Engels, Duits, Spaans en Frans.`,
+    holItems: ['Pijn of zwelling', 'Een gebroken of afgebrokkelde tand', 'Een losgeraakte kroon of vulling'],
+    holNote: 'Afspraken binnen onze gewone openingstijden.',
+    call: 'Bellen',
+    dirEyebrow: 'Wegwijzer',
+    dirTitle: 'Alle specialismen aan de Av. de Baria',
+    dirDesc: 'Alles in dezelfde kliniek, een paar minuten van huis.',
+    dirAfter: 'We ontvangen ook patiënten uit de hele [[areas|Levante Almeriense]]: kies uw plaats en bekijk de route.',
+    faqEyebrow: 'Veelgestelde vragen',
+    faqTitle: 'Vragen over onze tandkliniek in Vera',
+    faqs: [
+      ['Waar is de tandkliniek in Vera precies?', `Aan de Av. de Baria, 4 (begane grond), 04620 Vera, Almería. Vanaf de Plaza Mayor is het ${kmC} km via de ${roadsC}, ongeveer ${rc.min} minuten rijden.`],
+      ['Is er een Nederlandstalige tandarts in de buurt van Vera Playa?', `Ja. Onze kliniek ligt op ${kmP} km van Vera Playa via de ${roadsP}, zo’n ${rp.min} minuten rijden, en ons team spreekt Nederlands, Engels, Duits, Spaans en Frans.`],
+      ['Ik ben op vakantie in Vera en heb kiespijn, wat nu?', 'Bel ons op +34 950 39 53 19 of stuur een WhatsApp naar +34 634 68 36 39. We laten u weten wanneer we u binnen onze openingstijden kunnen zien.'],
+      ['Wat zijn de openingstijden van de kliniek?', 'Maandag 10:00–20:00, dinsdag 8:00–16:00, woensdag 10:00–18:00, donderdag en vrijdag 8:00–16:00.'],
+      ['Welke behandelingen biedt de kliniek in Vera?', 'Alles onder één dak: Straumann-implantaten, transparante aligners, wortelkanaalbehandeling met microscoop, kindertandheelkunde, parodontologie, esthetische tandheelkunde en orale chirurgie, met 3D-diagnose via CBCT. [[team|Maak kennis met onze tandartsen]].'],
+      ['Wat kost het eerste bezoek?', 'Het is gratis: we beoordelen uw situatie en leggen opties en offerte vrijblijvend uit. Voor de meeste behandelingen bieden we [[pricing|0% financiering]].'],
+    ],
+  },
+  fr: {
+    metaTitle: 'Dentiste à Vera et Vera Playa | Clinique Dentaire Koral',
+    metaDesc: `Clinique dentaire à Vera (Almería), Av. de Baria 4 : à ${rc.min} min de la Plaza Mayor et ${rp.min} min de Vera Playa. Votre dentiste de proximité, résidents et vacanciers.`,
+    service: 'Dentiste à Vera et Vera Playa',
+    eyebrow: 'Vera · Almería · Av. de Baria, 4',
+    h1: 'Dentiste à Vera et Vera Playa',
+    accent: 'votre clinique de quartier',
+    lead: `Nous sommes la clinique dentaire de Vera, Almería, au coin de la rue : Av. de Baria, 4, à ${rc.min} minutes en voiture de la Plaza Mayor et à ${rp.min} minutes de Vera Playa. Que vous viviez ici toute l’année ou que vous y passiez l’été, la [[home|Clinique Dentaire Koral à Vera]] est votre dentiste de proximité, avec toutes les spécialités sous un même toit et une équipe qui parle français.`,
+    signTop: 'Depuis la Plaza Mayor',
+    signUnit: 'min',
+    signFoot: 'Av. de Baria, 4 · Vera',
+    plateEyebrow: 'Plan du quartier',
+    plateTitle: 'Dentiste à Vera : de la Plaza Mayor et de l’église de l’Encarnación à la Clinique Dentaire Koral, Av. de Baria, 4',
+    plaza: 'Plaza Mayor',
+    church: 'Iglesia de la Encarnación · XVIe s.',
+    caption: ['Plaza Mayor et Iglesia de la Encarnación, église-forteresse du XVIe siècle', `${kmC} km · ${rc.min} min par l’${roadsC}`, 'Clinique Dentaire Koral · Av. de Baria, 4'],
+    arrEyebrow: 'Venir à la clinique',
+    arrTitle: 'Deux façons de rejoindre votre dentiste à Vera',
+    arrIntro: 'Vera a deux visages : la ville elle-même, reconstruite à son emplacement actuel après le tremblement de terre de 1518, et Vera Playa sur la côte, avec ses plages et ses urbanisations. Nous avons mesuré le trajet réel depuis les deux. Et si une partie de la famille vit à [[garrucha|Garrucha]] ou à [[antas|Antas]], leur itinéraire est prêt aussi.',
+    c1Label: 'Depuis le centre',
+    c1Title: 'Plaza Mayor → Av. de Baria',
+    c1Body: `${kmC} km par l’${roadsC}. Vous quittez le centre historique, prenez l’A-352 et en environ ${rc.min} minutes vous êtes devant notre porte – assez près pour caser un contrôle entre deux courses.`,
+    c2Label: 'Depuis la côte',
+    c2Title: 'Vera Playa → Vera',
+    c2Body: `${kmP} km par l’${roadsP}, environ ${rp.min} minutes. Depuis la plage et les urbanisations du littoral, vous remontez l’A-352 vers la ville. Sur la carte, la ligne pointillée est votre itinéraire.`,
+    isoTitle: `Carte isométrique du trajet de ${kmC} km entre le centre de Vera et le dentiste, Av. de Baria, 4`,
+    isoFrom: 'Plaza Mayor',
+    isoTo: 'Koral',
+    isoRoad: 'route',
+    mapNote: 'Itinéraires réels calculés avec les données d’OpenStreetMap, sans trafic.',
+    nbEyebrow: 'Votre clinique de quartier',
+    nbTitle: 'Une clinique dentaire à Vera qui vous connaît par votre nom',
+    nb: [
+      'Quand on habite Vera, aller chez le dentiste ne devrait pas être une expédition. Cela devrait être aussi simple que passer à la pharmacie ou au marché : un endroit où l’on va sans y réfléchir à deux fois. C’est pour cela que nous tenons tant à être en ville. Nous soignons des familles entières, du premier contrôle des enfants en [[odontopediatria|pédodontie]] avec la Dre Ana Soler aux [[implantes|implants dentaires Straumann garantis à vie]] des grands-parents.',
+      'La continuité fait toute la valeur d’un dentiste de quartier : votre dossier, vos images 3D et votre plan de traitement restent dans la même clinique, et chaque contrôle s’appuie sur le précédent. Si un jour vous avez besoin d’une [[endodoncia|dévitalisation au microscope]] ou d’une [[ortodoncia|orthodontie par aligneurs transparents]], inutile de tout recommencer avec une nouvelle équipe.',
+      'La première visite est gratuite, et la plupart des traitements peuvent être réglés avec un [[pricing|financement à 0 %]]. Vous préférez poser une question avant ? Voici [[contact|comment contacter la clinique]].',
+    ],
+    hoursTitle: 'Horaires de consultation',
+    hours: [['Lundi', '10 h – 20 h'], ['Mardi', '8 h – 16 h'], ['Mercredi', '10 h – 18 h'], ['Jeudi', '8 h – 16 h'], ['Vendredi', '8 h – 16 h']],
+    tile: 'Avda. de Baria',
+    teamEyebrow: 'Qui vous soigne',
+    teamTitle: 'L’équipe de votre dentiste à Vera',
+    teamDesc: 'Quatre dentistes, avec hygiénistes, assistantes et un accueil qui vous reçoivent en cinq langues.',
+    teamCta: 'Découvrir toute l’équipe',
+    photoAlt: 'dentiste à Vera',
+    holEyebrow: 'En vacances à Vera Playa',
+    holTitle: 'Besoin d’un dentiste à Vera Playa pendant vos vacances ?',
+    holBody: `Une rage de dents qui ne passe pas, une dent qui se casse sur un noyau d’olive, une couronne qui se décolle en pleine semaine de plage… Si vous avez besoin d’un dentiste pendant votre séjour, appelez-nous ou écrivez-nous sur WhatsApp : nous vous dirons quand nous pouvons vous recevoir. Nous sommes à ${rp.min} minutes de Vera Playa et parlons français, anglais, allemand, néerlandais et espagnol.`,
+    holItems: ['Douleur ou gonflement', 'Une dent cassée ou ébréchée', 'Une couronne ou un plombage décollé'],
+    holNote: 'Rendez-vous pendant nos horaires d’ouverture habituels.',
+    call: 'Appeler',
+    dirEyebrow: 'Annuaire',
+    dirTitle: 'Toutes les spécialités, avenue de Baria',
+    dirDesc: 'Tout dans la même clinique, à quelques minutes de chez vous.',
+    dirAfter: 'Nous recevons aussi des patients de tout le [[areas|Levante Almeriense]] : choisissez votre commune et voyez comment venir.',
+    faqEyebrow: 'Questions fréquentes',
+    faqTitle: 'Questions sur notre clinique dentaire à Vera',
+    faqs: [
+      ['Où se trouve exactement la clinique dentaire à Vera ?', `Av. de Baria, 4 (local), 04620 Vera, Almería. Depuis la Plaza Mayor, ${kmC} km par l’${roadsC}, environ ${rc.min} minutes en voiture.`],
+      ['Y a-t-il un dentiste francophone près de Vera Playa ?', `Oui. Notre clinique est à ${kmP} km de Vera Playa par l’${roadsP}, environ ${rp.min} minutes en voiture, et notre équipe parle français, anglais, allemand, néerlandais et espagnol.`],
+      ['Je suis en vacances à Vera et j’ai mal aux dents : que faire ?', 'Appelez le +34 950 39 53 19 ou écrivez sur WhatsApp au +34 634 68 36 39 : nous vous dirons quand nous pouvons vous recevoir pendant nos horaires d’ouverture.'],
+      ['Quels sont les horaires de la clinique ?', 'Lundi 10 h–20 h, mardi 8 h–16 h, mercredi 10 h–18 h, jeudi et vendredi 8 h–16 h.'],
+      ['Quels soins proposez-vous à Vera ?', 'Tous, sous un même toit : implants Straumann, aligneurs transparents, endodontie au microscope, pédodontie, parodontologie, esthétique dentaire et chirurgie orale, avec diagnostic 3D par CBCT. [[team|Découvrez nos dentistes]].'],
+      ['Combien coûte la première visite ?', 'Elle est gratuite : nous évaluons votre cas et vous expliquons les options et le devis, sans engagement. La plupart des traitements peuvent bénéficier d’un [[pricing|financement à 0 %]].'],
+    ],
+  },
+} as const)[lang];
+
+/** Turns [[routeKey|anchor]] into an internal link. */
+const linkify = (s: string, cls = 'prose-link') =>
+  s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, (_, k: string, txt: string) => `<a href="${pathFor(k as RouteKey, lang)}" class="${cls}">${txt}</a>`);
+
+const doctors = TEAM.filter((m) => m.doctor);
+const SPECIALIST: Partial<Record<TreatmentKey, string>> = {
+  implantes: 'Dra. Ana Padilla',
+  cirugia: 'Dra. Ana Padilla',
+  estetica: 'Dra. Ana Padilla',
+  ortodoncia: 'Dra. Ana Soler',
+  odontopediatria: 'Dra. Ana Soler',
+  endodoncia: 'Dra. Ángeles Parra',
+};
+
+const faqs = copy.faqs.map(([q, a]) => ({ question: q, answer: linkify(a) }));
+const title = copy.metaTitle;
+const schema = townSchema({ town: 'vera', lang, title, description: copy.metaDesc, serviceName: copy.service });
+---
+
+<Layout title={title} description={copy.metaDesc} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main">
+    <!-- Hero: civic, with an enamel street plaque -->
+    <section class="ver-hero relative isolate overflow-hidden bg-ocean-900 pb-48 pt-36 text-white md:pb-60 md:pt-44">
+      <div class="ver-hero-grid pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12">
+          <div class="lg:col-span-8">
+            <div data-reveal><Breadcrumbs items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} class="mb-8" /></div>
+            <p class="eyebrow eyebrow-light mb-6" data-reveal style="--d:.05s">{copy.eyebrow}</p>
+            <h1 class="text-[2.6rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.6rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="accent-italic block text-coral-soft">{copy.accent}</span>
+            </h1>
+            <p class="ver-lead mt-7 max-w-2xl text-lg leading-relaxed text-white/75 md:text-xl" data-reveal style="--d:.2s" set:html={linkify(copy.lead, 'ver-link-light')} />
+            <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.3s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-ghost-light tabular">+34 950 39 53 19</a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4" data-reveal="scale" style="--d:.25s">
+            <div class="ver-sign mx-auto max-w-[320px]">
+              <p class="ver-sign-top">{copy.signTop}</p>
+              <p class="ver-sign-num"><span>{rc.min}</span><span class="ver-sign-unit">{copy.signUnit}</span></p>
+              <p class="ver-sign-sub tabular">{kmC} km · {roadsC}</p>
+              <p class="ver-sign-foot">{copy.signFoot}</p>
+            </div>
+            <div class="ver-sign ver-sign-sm mx-auto mt-4 max-w-[320px]">
+              <p class="flex items-baseline justify-between gap-3">
+                <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">Vera Playa</span>
+                <span class="font-display text-2xl tabular text-ocean-900">{rp.min} {copy.signUnit} <span class="text-sm text-slate-500">· {kmP} km</span></span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plate: the Plaza Mayor drawing, overlapping the hero -->
+    <section class="relative z-10 bg-sand pb-16 md:pb-24" style="content-visibility:visible">
+      <div class="container-k">
+        <figure class="ver-plate relative -mt-36 md:-mt-44" data-reveal>
+          <div class="flex items-center justify-between gap-4 border-b border-ocean-900/10 px-5 py-3 md:px-8">
+            <p class="eyebrow !tracking-[0.2em]">{copy.plateEyebrow}</p>
+            <p class="hidden text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:block">Vera · 37.24° N · 1.85° W</p>
+          </div>
+          <div class="px-3 pb-2 pt-6 md:px-8 md:pt-10">
+            <VeraPlaza title={copy.plateTitle} plaza={copy.plaza} church={copy.church} clinic="Av. de Baria, 4" route={`${kmC} km · ${rc.min} min`} />
+          </div>
+          <figcaption class="grid gap-px border-t border-ocean-900/10 bg-ocean-900/10 sm:grid-cols-3">
+            {copy.caption.map((c, i) => (
+              <span class="flex items-center gap-3 bg-[#FDFBF8] px-5 py-4 text-[13px] leading-snug text-slate-600 md:px-8">
+                <span class:list={['font-display text-lg italic', i === 2 ? 'text-coral-deep' : 'text-accent']}>{String.fromCharCode(65 + i)}</span>
+                {c}
+              </span>
+            ))}
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Two arrivals -->
+    <section class="section-y relative bg-sand !pt-4">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.arrEyebrow} title={copy.arrTitle} />
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-slate-600" data-reveal set:html={linkify(copy.arrIntro)} />
+
+        <div class="mt-14 grid gap-6 lg:grid-cols-2">
+          <article class="ver-card flex flex-col" data-reveal>
+            <div class="flex flex-wrap items-end justify-between gap-4 p-7 pb-0 md:p-9 md:pb-0">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">{copy.c1Label}</p>
+                <h3 class="mt-2 text-2xl md:text-3xl">{copy.c1Title}</h3>
+              </div>
+              <p class="ver-big tabular" aria-hidden="true">{rc.min}<span>min</span></p>
+            </div>
+            <div class="px-3 md:px-6"><VeraIsoMap title={copy.isoTitle} from={copy.isoFrom} to={copy.isoTo} /></div>
+            <p class="px-7 pb-8 text-[15px] leading-relaxed text-slate-600 md:px-9">{copy.c1Body}</p>
+            <dl class="mt-auto grid grid-cols-3 border-t border-ocean-900/[0.07] bg-sand/60 text-center">
+              {[[kmC, 'km'], [String(rc.min), 'min'], [rc.roads[0], copy.isoRoad]].map(([v, l], i) => (
+                <div class:list={['px-3 py-5', i > 0 && 'border-l border-ocean-900/[0.07]']}>
+                  <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{l}</dt>
+                  <dd class="mt-1 font-display text-2xl tabular text-ocean-900">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+
+          <article class="ver-card" data-reveal style="--d:.1s">
+            <div class="flex flex-wrap items-end justify-between gap-4 p-7 pb-0 md:p-9 md:pb-0">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-coral-deep">{copy.c2Label}</p>
+                <h3 class="mt-2 text-2xl md:text-3xl">{copy.c2Title}</h3>
+              </div>
+              <p class="ver-big ver-big-coral tabular" aria-hidden="true">{rp.min}<span>min</span></p>
+            </div>
+            <div class="m-5 overflow-hidden rounded-[1.25rem] ring-1 ring-ocean-900/[0.07] md:m-7">
+              <TownRouteMap town="vera" tone="light" seaLabel={t('areas.sea')} />
+            </div>
+            <p class="px-7 pb-8 text-[15px] leading-relaxed text-slate-600 md:px-9 md:pb-9">{copy.c2Body}</p>
+          </article>
+        </div>
+        <p class="mt-6 text-[13px] text-slate-500" data-reveal>{copy.mapNote}</p>
+      </div>
+    </section>
+
+    <!-- Neighbourhood clinic -->
+    <section class="section-y relative bg-white">
+      <div class="container-k grid gap-14 lg:grid-cols-12 lg:gap-20">
+        <div class="lg:col-span-7">
+          <SectionHeading eyebrow={copy.nbEyebrow} title={copy.nbTitle} />
+          <div class="mt-8 space-y-5 text-lg leading-relaxed text-slate-600" data-reveal style="--d:.1s">
+            {copy.nb.map((p) => <p set:html={linkify(p)} />)}
+          </div>
+        </div>
+        <aside class="lg:col-span-5" data-reveal="right">
+          <div class="lg:sticky lg:top-32">
+            <div class="ver-tile" aria-hidden="true">
+              <span class="ver-tile-street">{copy.tile}</span>
+              <span class="ver-tile-num">4</span>
+              <span class="ver-tile-town">Vera</span>
+            </div>
+            <div class="mt-6 rounded-[1.75rem] border border-ocean-900/[0.08] bg-sand p-7">
+              <h3 class="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-accent">{copy.hoursTitle}</h3>
+              <dl class="mt-4 divide-y divide-dashed divide-ocean-900/15">
+                {copy.hours.map(([d, h]) => (
+                  <div class="flex items-baseline justify-between gap-4 py-2.5 text-[15px]">
+                    <dt class="text-slate-600">{d}</dt>
+                    <dd class="tabular font-semibold text-ocean-900">{h}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="mt-5 text-sm text-slate-600">Av. de Baria, 4 (local) · 04620 Vera · <a href="tel:+34950395319" class="prose-link tabular">+34 950 39 53 19</a></p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Team: arched portraits -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeading eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDesc} />
+          <a href={pathFor('team', lang)} class="btn btn-outline shrink-0 self-start lg:self-end" data-reveal>{copy.teamCta} →</a>
+        </div>
+        <ul class="ver-arches mt-14 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-4 md:gap-x-7">
+          {doctors.map((m, i) => (
+            <li data-reveal style={`--d:${i * 0.08}s`}>
+              <div class="ver-arch">
+                <Picture src={m.image} alt={`${m.name}, ${t(m.role)} – ${copy.photoAlt}`} width={600} height={600} class="aspect-[3/4] h-full w-full object-cover" />
+              </div>
+              <h3 class="mt-5 font-sans text-lg font-semibold tracking-tight">{m.name}</h3>
+              <p class="mt-1 text-[12px] font-medium uppercase leading-snug tracking-[0.12em] text-accent">{t(m.role)}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Holiday band -->
+    <section class="ver-holiday relative isolate overflow-hidden">
+      <svg class="ver-horizon pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-16 w-full md:h-24" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 80H1440" stroke="#0B7C86" stroke-opacity=".35" />
+        {[110, 150, 200, 260].map((y, i) => (
+          <path d={`M0 ${y}c120-${8 - i} 240-${8 - i} 360 0s240 ${8 - i} 360 0 240-${8 - i} 360 0 240 ${8 - i} 360 0`} fill="none" stroke="#0B7C86" stroke-opacity={0.22 - i * 0.04} />
+        ))}
+      </svg>
+      <div class="container-k section-y grid items-center gap-12 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <p class="eyebrow mb-5" data-reveal>{copy.holEyebrow}</p>
+          <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl" data-reveal style="--d:.05s">{copy.holTitle}</h2>
+          <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-700" data-reveal style="--d:.1s">{copy.holBody}</p>
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.15s">
+            <a href="tel:+34950395319" class="btn btn-coral tabular">{copy.call} · +34 950 39 53 19</a>
+            <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-teal">WhatsApp · +34 634 68 36 39</a>
+          </div>
+        </div>
+        <div class="lg:col-span-5" data-reveal="right">
+          <div class="relative mx-auto max-w-sm">
+            <svg viewBox="0 0 200 120" class="mx-auto mb-6 h-24 w-auto" aria-hidden="true">
+              <circle cx="146" cy="70" r="26" fill="#F2617A" fill-opacity=".15" stroke="#F2617A" stroke-width="1.5" />
+              <path d="M10 96h180" stroke="#0B7C86" stroke-width="1.5" />
+              <path d="M60 96 78 30M38 40c12-14 46-18 62-6-10 0-22 4-22 4s-6-6-20-4c-10 2-20 6-20 6Z" fill="none" stroke="#0A1F33" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" />
+              <path d="M24 108c10-4 20-4 30 0s20 4 30 0M100 108c10-4 20-4 30 0s20 4 30 0" fill="none" stroke="#0B7C86" stroke-opacity=".5" stroke-width="1.4" />
+            </svg>
+            <ul class="space-y-3">
+              {copy.holItems.map((item) => (
+                <li class="flex items-center gap-4 rounded-2xl border border-white bg-white/75 px-5 py-4 text-[15px] font-medium text-ocean-900 shadow-[var(--shadow-soft)] backdrop-blur">
+                  <span class="h-2 w-2 shrink-0 rounded-full bg-coral shadow-[0_0_0_5px_rgba(242,97,122,0.15)]"></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p class="mt-5 text-sm text-slate-600">{copy.holNote}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Directory of specialities -->
+    <section class="section-y relative bg-white">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.dirEyebrow} title={copy.dirTitle} description={copy.dirDesc} split />
+        <ol class="ver-dir mt-12" data-reveal>
+          {TREATMENTS.map((tr, i) => (
+            <li>
+              <a href={pathFor(tr.key, lang)} class="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-4 gap-y-1 border-b border-ocean-900/10 py-5 transition-colors hover:bg-sand md:grid-cols-[3.5rem_1.2fr_1fr_auto] md:px-4">
+                <span class="font-display text-lg italic text-coral tabular">{String(i + 1).padStart(2, '0')}</span>
+                <h3 class="font-sans text-lg font-semibold tracking-tight text-ocean-900 transition-colors group-hover:text-accent md:text-xl">{t(tr.label as TranslationKey)}</h3>
+                <span class="col-start-2 row-start-2 text-[13px] text-slate-500 md:col-start-3 md:row-start-1 md:text-sm">{SPECIALIST[tr.key] ?? 'Clínica Dental Koral'}</span>
+                <svg class="col-start-3 row-span-2 row-start-1 text-accent transition-transform duration-300 group-hover:translate-x-1 md:col-start-4" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <p class="mt-8 text-[15px] text-slate-600" data-reveal set:html={linkify(copy.dirAfter)} />
+      </div>
+    </section>
+
+    <FaqSection eyebrow={copy.faqEyebrow} title={copy.faqTitle} faqs={faqs} />
+
+    <TownNearby current="vera" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  .ver-hero-grid {
+    background-image:
+      radial-gradient(55% 60% at 85% 20%, rgba(44, 197, 210, 0.16), transparent 65%),
+      linear-gradient(rgba(143, 227, 234, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(143, 227, 234, 0.06) 1px, transparent 1px);
+    background-size: auto, 56px 56px, 56px 56px;
+    mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  }
+  .ver-link-light { color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(143, 227, 234, 0.5); text-underline-offset: 4px; }
+  .ver-link-light:hover { text-decoration-color: #8fe3ea; }
+
+  /* Enamel street plaque */
+  .ver-sign {
+    position: relative;
+    background: #fff;
+    color: var(--color-ocean-900);
+    border-radius: 18px;
+    padding: 1.4rem 1.6rem 1.2rem;
+    box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.55), inset 0 0 0 3px #fff, inset 0 0 0 5px var(--color-ocean-900);
+    text-align: center;
+  }
+  .ver-sign::before, .ver-sign::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #c4d3dc;
+    transform: translateY(-50%);
+  }
+  .ver-sign::before { left: 12px; }
+  .ver-sign::after { right: 12px; }
+  .ver-sign-top { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-accent); }
+  .ver-sign-num { font-family: var(--font-serif); font-size: 7.5rem; line-height: 0.95; letter-spacing: -0.04em; margin-top: 0.4rem; }
+  .ver-sign-unit { font-size: 1.6rem; font-style: italic; color: var(--color-coral-deep); margin-left: 0.3rem; letter-spacing: 0; }
+  .ver-sign-sub { font-size: 13px; color: #64748b; margin-top: 0.4rem; }
+  .ver-sign-foot { margin: 1rem -1.6rem -1.2rem; padding: 0.7rem; border-top: 1px solid rgba(10, 31, 51, 0.12); border-radius: 0 0 16px 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; background: var(--color-sand); }
+  .ver-sign-sm { padding: 1rem 1.6rem; text-align: left; }
+  .ver-sign-sm::before, .ver-sign-sm::after { display: none; }
+
+  /* Architectural plate */
+  .ver-plate {
+    background: #fdfbf8;
+    border: 1px solid rgba(10, 31, 51, 0.1);
+    border-radius: 1.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-premium);
+  }
+
+  .ver-card {
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background: #fff;
+    border: 1px solid rgba(10, 31, 51, 0.07);
+    box-shadow: var(--shadow-card);
+  }
+  .ver-big { font-family: var(--font-serif); font-size: 4.2rem; line-height: 0.9; letter-spacing: -0.04em; color: var(--color-accent); }
+  .ver-big span { font-size: 1rem; font-style: italic; margin-left: 0.25rem; letter-spacing: 0; }
+  .ver-big-coral { color: var(--color-coral-deep); }
+
+  /* Ceramic street-name tile */
+  .ver-tile {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.25rem 1.25rem;
+    padding: 1.4rem 1.6rem;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: var(--shadow-card), inset 0 0 0 6px #fff, inset 0 0 0 8px var(--color-accent), inset 0 0 0 11px #fff, inset 0 0 0 12px rgba(11, 124, 134, 0.45);
+  }
+  .ver-tile-street { font-family: var(--font-serif); font-size: 1.9rem; font-style: italic; color: var(--color-ocean-900); padding-left: 0.4rem; }
+  .ver-tile-num { grid-row: span 2; font-family: var(--font-serif); font-size: 3.6rem; line-height: 1; color: var(--color-coral-deep); padding-right: 0.4rem; }
+  .ver-tile-town { font-size: 11px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-accent); padding-left: 0.4rem; }
+
+  /* Arched portraits, echoing the church portal */
+  .ver-arch {
+    overflow: hidden;
+    border-radius: 999px 999px 1.25rem 1.25rem;
+    background: var(--color-sand-200);
+    box-shadow: 0 0 0 1px rgba(10, 31, 51, 0.06), 0 24px 40px -28px rgba(10, 31, 51, 0.5);
+    aspect-ratio: 3 / 4;
+  }
+  .ver-arch img { transition: transform 1.2s var(--ease-out-expo); }
+  .ver-arch:hover img { transform: scale(1.04); }
+
+  .ver-holiday { background: linear-gradient(180deg, #fbf8f4 0%, #e9f8f9 55%, #d5f6f8 100%); }
+  .ver-dir { border-top: 1px solid rgba(10, 31, 51, 0.1); }
+
+  @media (max-width: 640px) {
+    .ver-sign-num { font-size: 6rem; }
+    .ver-big { font-size: 3.2rem; }
+    .ver-tile-street { font-size: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ver-car { display: none; }
+  }
+</style>

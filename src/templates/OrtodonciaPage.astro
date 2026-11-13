@@ -270,7 +270,7 @@ const pageSchema = JSON.stringify({
       breadcrumbs={[{ label: t('nav.treatments.ortodoncia') }]}
       illustration="ortodoncia"
       illustrationTitle={t('nav.treatments.ortodoncia')}
-      highlights={['Invisalign®', t('ortodoncia.study.tech.title'), capitalize(t('ortodoncia.philosophy.p2.strong'))]}
+      highlights={[({ es: 'Alineadores transparentes', en: 'Clear aligners', de: 'Transparente Aligner', nl: 'Transparante aligners', fr: 'Aligneurs transparents' } as Record<string, string>)[lang], t('ortodoncia.study.tech.title'), capitalize(t('ortodoncia.philosophy.p2.strong'))]}
     />
 
     <!-- Philosophy: diagnosis first, digital planning -->

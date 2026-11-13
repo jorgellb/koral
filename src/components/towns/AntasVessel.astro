@@ -1,0 +1,71 @@
+---
+/**
+ * Antas "El Argar" exhibit: line drawing of an Argaric carinated vessel that
+ * draws itself, then slowly morphs into a molar outline and back (SMIL path
+ * morph between two outlines with the same command structure). Paused under
+ * prefers-reduced-motion.
+ */
+interface Props {
+  title: string;
+  class?: string;
+}
+const { title, class: className = '' } = Astro.props;
+const uid = `av-${Math.random().toString(36).slice(2, 7)}`;
+
+// Both outlines: M + 8 cubic segments + Z, starting top-left, counter-clockwise.
+const vessel =
+  'M118 120C110 160 96 200 88 232C96 272 114 300 140 312C160 322 180 326 200 326C220 326 240 322 260 312C286 300 304 272 312 232C304 200 290 160 282 120C256 127 228 130 200 130C172 130 144 127 118 120Z';
+const tooth =
+  'M120 120C100 150 112 195 128 215C130 260 132 320 150 330C170 338 180 250 200 245C220 250 230 338 250 330C268 320 270 260 272 215C288 195 300 150 280 120C262 96 226 96 200 122C174 96 138 96 120 120Z';
+const T = '0;0.36;0.5;0.86;1';
+const ease = '.45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1';
+---
+
+<svg viewBox="0 0 400 420" class:list={['ant-vessel', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <defs>
+    <radialGradient id={`${uid}-g`} cx=".5" cy=".55" r=".5">
+      <stop offset="0" stop-color="#F3D9C4" stop-opacity=".16" />
+      <stop offset="1" stop-color="#F3D9C4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="200" cy="230" rx="170" ry="170" fill={`url(#${uid}-g)`} />
+  <!-- floor shadow -->
+  <ellipse cx="200" cy="356" rx="104" ry="10" fill="#000" fill-opacity=".35" />
+
+  <!-- Measuring marks: a nod to precision -->
+  <g stroke="#E8F2F5" stroke-opacity=".22" fill="none">
+    <path d="M60 120v236M54 120h12M54 232h12M54 326h12" />
+    <path d="M88 380h224M88 374v12M312 374v12" />
+  </g>
+
+  <!-- Vessel-only details (rim back edge, carination highlight) -->
+  <g fill="none" stroke="#D58A62" stroke-width="1.4" stroke-linecap="round" class="ant-v-extra">
+    <path d="M118 120C150 110 250 110 282 120" class="draw-me" pathLength="1" style="--dd:1.4s" />
+    <path d="M96 232C150 246 250 246 304 232" stroke-opacity=".45" stroke-dasharray="2 5" />
+    <animate attributeName="opacity" values="1;1;0;0;1" keyTimes={T} dur="12s" begin="3.2s" repeatCount="indefinite" calcMode="spline" keySplines={ease} />
+  </g>
+
+  <!-- Tooth-only details (cusp groove, enamel line) -->
+  <g fill="none" stroke="#8FE3EA" stroke-width="1.4" stroke-linecap="round" opacity="0" class="ant-t-extra">
+    <path d="M150 132c18 14 32 14 50 4 18 10 32 10 50-4" />
+    <path d="M130 212c46 10 96 10 142 0" stroke-opacity=".5" stroke-dasharray="2 5" />
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes={T} dur="12s" begin="3.2s" repeatCount="indefinite" calcMode="spline" keySplines={ease} />
+  </g>
+
+  <!-- The morphing outline -->
+  <path d={vessel} fill="none" stroke="#D58A62" stroke-width="2.4" stroke-linejoin="round" class="draw-me" pathLength="1" style="--dd:.3s">
+    <animate attributeName="d" values={`${vessel};${vessel};${tooth};${tooth};${vessel}`} keyTimes={T} dur="12s" begin="3.2s" repeatCount="indefinite" calcMode="spline" keySplines={ease} />
+    <animate attributeName="stroke" values="#D58A62;#D58A62;#8FE3EA;#8FE3EA;#D58A62" keyTimes={T} dur="12s" begin="3.2s" repeatCount="indefinite" calcMode="spline" keySplines={ease} />
+  </path>
+</svg>
+
+<script>
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll<SVGSVGElement>('svg.ant-vessel').forEach((s) => s.pauseAnimations());
+  }
+</script>
+
+<style is:global>
+  .ant-vessel { display: block; width: 100%; height: auto; overflow: visible; }
+</style>

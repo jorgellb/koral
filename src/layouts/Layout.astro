@@ -13,6 +13,7 @@ import {
   type Lang,
   type RouteKey,
 } from '../i18n/routes';
+import '../styles/fonts.css';
 import '../styles/global.css';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import CookieBanner from '../components/CookieBanner.astro';
@@ -96,7 +97,7 @@ const siteSchema = {
         name: 'Tratamientos dentales',
         itemListElement: [
           { key: 'implantes', name: 'Implantes dentales Straumann' },
-          { key: 'ortodoncia', name: 'Ortodoncia e Invisalign' },
+          { key: 'ortodoncia', name: 'Ortodoncia con alineadores transparentes y brackets' },
           { key: 'estetica', name: 'Estética dental y carillas' },
           { key: 'endodoncia', name: 'Endodoncia con microscopio' },
           { key: 'odontopediatria', name: 'Odontopediatría' },
@@ -132,8 +133,6 @@ const siteSchema = {
   ],
 };
 
-const fontsHref =
-  'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter:wght@300..800&display=swap';
 ---
 
 <!doctype html>
@@ -161,11 +160,9 @@ const fontsHref =
     <meta name="format-detection" content="telephone=yes" />
     <meta name="generator" content={Astro.generator} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href={fontsHref} />
-    <link href={fontsHref} rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript><link href={fontsHref} rel="stylesheet" /></noscript>
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-normal-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/fraunces-normal-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/fraunces-italic-latin.woff2" crossorigin />
 
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />

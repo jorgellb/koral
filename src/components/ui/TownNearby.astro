@@ -1,0 +1,69 @@
+---
+/**
+ * Internal-linking block for town pages: the neighbouring towns (with real
+ * driving time to the clinic), the other towns as a compact list, and the hub.
+ */
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { pathFor, TOWN_KEYS, type TownKey } from '../../i18n/routes';
+import { TOWNS, fill } from '../../data/towns';
+import SectionHeading from './SectionHeading.astro';
+
+interface Props {
+  current: TownKey;
+  tone?: 'light' | 'sand';
+}
+
+const { current, tone = 'light' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const neighbours = TOWNS[current].neighbours.map((k) => TOWNS[k]);
+const others = TOWN_KEYS.filter((k) => k !== current && !TOWNS[current].neighbours.includes(k)).map((k) => TOWNS[k]);
+
+// Mini sparkline of each route, normalised into a 120×48 box
+const spark = (path: [number, number][]) => {
+  const xs = path.map((p) => p[0]);
+  const ys = path.map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const s = Math.max(x1 - x0, (y1 - y0) * 1.25, 1e-6);
+  return path
+    .map(([px, py], i) => `${i ? 'L' : 'M'}${(8 + ((px - x0) / s) * 104).toFixed(1)} ${(42 - ((py - y0) / s) * 1.25 * 36).toFixed(1)}`)
+    .join('');
+};
+---
+
+<section class:list={['section-y relative overflow-hidden', tone === 'sand' ? 'bg-sand' : 'bg-white']}>
+  <div class="container-k">
+    <SectionHeading eyebrow={t('areas.nearby.eyebrow')} title={t('areas.nearby.title')} description={t('areas.nearby.desc')} split />
+
+    <ul class="mt-14 grid gap-5 md:grid-cols-3">
+      {neighbours.map((n, i) => {
+        const r = n.routes[0];
+        return (
+          <li data-reveal style={`--d:${i * 0.08}s`}>
+            <a href={pathFor(n.key, lang)} class="group glow-border relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[var(--shadow-elevated)]">
+              <svg viewBox="0 0 120 50" class="mb-6 h-14 w-auto" aria-hidden="true">
+                <path d={spark(r.path)} fill="none" stroke="#0A1F33" stroke-opacity=".08" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                <path d={spark(r.path)} fill="none" stroke="#0B7C86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <p class="text-[12px] font-semibold uppercase tracking-[0.16em] text-slate-500">{fill(t('areas.drive'), { min: r.min, km: String(r.km).replace('.', lang === 'en' ? '.' : ',') })}</p>
+              <h3 class="mt-2 text-2xl text-ocean-900">{fill(t('areas.dentist.in'), { town: n.name })}</h3>
+              <span class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                {fill(t('areas.route'), { town: n.name })}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+
+    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-ocean-900/[0.07] pt-8 text-sm" data-reveal>
+      <span class="font-semibold text-slate-500">{t('areas.dentist.list')}:</span>
+      {others.map((o) => (
+        <a href={pathFor(o.key, lang)} class="link-u font-semibold text-ocean-900 hover:text-accent">{o.name}</a>
+      ))}
+      <a href={pathFor('areas', lang)} class="link-u ml-auto font-semibold text-accent">{t('areas.all')} →</a>
+    </div>
+  </div>
+</section>

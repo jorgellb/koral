@@ -1,0 +1,609 @@
+---
+/**
+ * Local landing page for Turre — concept "Curvas de nivel" (Sierra Cabrera).
+ * A topographic sheet in the hero (contours + the real OSM route), an
+ * elevation profile of the trip sierra → sea → clinic, a "one plan, few trips"
+ * trail with waypoints, treatments as map-legend tiles and a contour CTA.
+ * The clinic is in Vera: the copy never claims a practice in Turre.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TreatmentIcon from '../../components/svg/TreatmentIcon.astro';
+import TurreTopo from '../../components/towns/TurreTopo.astro';
+import TurreProfile from '../../components/towns/TurreProfile.astro';
+import { contourRings } from '../../components/towns/TurrePaths';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey, type TreatmentKey } from '../../i18n/routes';
+import { TOWNS, fill } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const town = TOWNS.turre;
+const route = town.routes[0];
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const min = route.min;
+const km = num(route.km);
+const [R0, R1, R2, R3] = route.roads.map((r) => `<span class="whitespace-nowrap">${r}</span>`);
+const roads = route.roads.join(', ');
+const gal = TOWNS.gallardos.routes[0].min;
+const moj = TOWNS.mojacar.routes[0].min;
+
+const a = (key: RouteKey, text: string) => `<a class="prose-link" href="${pathFor(key, lang)}">${text}</a>`;
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista Turre: tu clínica dental a ${min} min | Koral`,
+    metaDesc: `Dentista para Turre y la Sierra Cabrera: clínica dental en Vera a ${min} min. Diagnóstico 3D, implantes Straumann y planes con pocas visitas. 1.ª visita gratis.`,
+    kicker: 'Curvas de nivel · Turre → Vera',
+    h1: 'Dentista para Turre',
+    h1Accent: `de la sierra a la consulta en ${min} minutos`,
+    lead: `¿Buscas <strong>dentista en Turre</strong> o una <strong>clínica dental cerca de Turre</strong>? Clínica Dental Koral está en Vera, a ${km} km por carretera: bajas de la Sierra Cabrera hacia la costa y en unos ${min} minutos estás en la Av. de Baria. Preparamos cada tratamiento para que vengas las veces justas.`,
+    chips: [`${km} km · ${min} min`, t('trust.3'), t('trust.7')],
+    mapTitle: `Mapa topográfico ilustrativo de la Sierra Cabrera con la ruta real en coche de Turre a la Clínica Dental Koral en Vera: ${km} km y ${min} min por ${roads}`,
+    sierra: 'Sierra Cabrera',
+    clinicNote: 'AV. DE BARIA, 4',
+    routeEyebrow: 'La ruta, curva a curva',
+    routeTitle: 'De Turre a tu clínica dental: de la sierra al mar',
+    routeIntro: `Turre se asienta al pie de la Sierra Cabrera, a pocos kilómetros de ${a('mojacar', 'Mojácar')} hacia el interior, con casas y urbanizaciones repartidas por las lomas de la sierra. Desde aquí, ir al dentista significa siempre lo mismo: bajar hacia la costa.`,
+    routeP1: `La ruta sale del pueblo por la ${R0}, enlaza con la ${R1} y va perdiendo altura entre curvas hasta la llanura litoral. Allí toma la ${R2}, pasa cerca de ${a('garrucha', 'Garrucha')} y sube hacia Vera por la ${R3}, que te deja prácticamente en la avenida de la clínica. En total, ${km} km y unos ${min} minutos sin tráfico, según los datos de OpenStreetMap.`,
+    routeP2: `Si vives en una urbanización de la sierra, suma el tramo hasta el pueblo. Y si sueles moverte por el interior, la ruta desde ${a('gallardos', 'Los Gallardos')} por la A-7 son unos ${gal} minutos; desde Mojácar, unos ${moj}.`,
+    profileTitle: `Perfil del trayecto de Turre a la Clínica Dental Koral: de la Sierra Cabrera a la costa y a Vera en ${min} minutos`,
+    profile: { sierra: 'Sierra Cabrera', hills: 'Casas de la sierra', coast: 'Costa', sea: 'Mediterráneo', axis: 'En coche', start: 'Salida', arrive: 'Llegada' },
+    profileNote: 'Alturas ilustrativas, no a escala. Los minutos y kilómetros son los de la ruta real.',
+    scrollHint: 'Desliza para ver el perfil completo',
+    planEyebrow: 'Un plan, pocos viajes',
+    planTitle: 'Dentista cerca de Turre sin subir y bajar la sierra cada semana',
+    planDesc: 'Cuando vives en el monte, cada cita es un viaje. Por eso trabajamos al revés: primero un diagnóstico completo, después un plan cerrado y, por último, citas pensadas para aprovechar cada bajada.',
+    steps: [
+      ['Primera visita gratuita', 'Exploración, todas tus preguntas y un presupuesto claro, sin compromiso. Si hace falta, el escáner CBCT 3D se hace en la propia clínica: no tienes que ir a otro centro a por la prueba.'],
+      ['Un solo plan escrito', `Las especialistas se coordinan en un único plan: qué se hace, en qué orden, cuántas citas y cuánto cuesta, con ${a('pricing', 'financiación al 0 %')} para la mayoría de tratamientos.`],
+      ['Citas que aprovechan el viaje', 'Siempre que es clínicamente posible, juntamos pasos en la misma visita y te damos las fechas con antelación para que organices tus desplazamientos.'],
+      ['Revisiones a tu ritmo', 'Al terminar fijamos revisiones e higiene con calma, para que el mantenimiento encaje con tus días de costa.'],
+    ],
+    teamTitle: 'Tres especialistas, una misma ruta',
+    teamLink: `${a('team', 'Conoce al equipo de Clínica Dental Koral')}`,
+    team: [['Dra. Ana Padilla', 'Cirugía, implantología y estética'], ['Dra. Ana Soler', 'Ortodoncia y odontopediatría'], ['Dra. Ángeles Parra', 'Endodoncia']],
+    hoursTitle: 'Horario para venir desde la sierra',
+    hours: [['Lunes', '10:00 – 20:00'], ['Martes', '8:00 – 16:00'], ['Miércoles', '10:00 – 18:00'], ['Jueves', '8:00 – 16:00'], ['Viernes', '8:00 – 16:00']],
+    trtEyebrow: 'Leyenda de tratamientos',
+    trtTitle: 'Implantes, rehabilitación y encías para pacientes de Turre',
+    trtDesc: 'Son tratamientos de varias fases, y precisamente por eso es donde más se nota una buena planificación desde el primer día.',
+    cards: [
+      ['implantes', 'Implantes dentales', `${a('implantes', 'Implantes Straumann')} con garantía de por vida. La Dra. Ana Padilla los planifica sobre el CBCT 3D, así sabes desde el principio cuántas fases tendrá tu caso.`],
+      ['rehabilitacion', 'Rehabilitación oral', `Cuando faltan varias piezas o hay mucho desgaste, la ${a('rehabilitacion', 'rehabilitación oral')} devuelve función y estética por etapas, combinando implantes, coronas o prótesis.`],
+      ['periodoncia', 'Encías sanas', `La ${a('periodoncia', 'periodoncia')} trata el sangrado, la inflamación y la movilidad de las encías: la base de cualquier tratamiento duradero, también de los implantes.`],
+      ['endodoncia', 'Comodidad y dientes propios', `${a('endodoncia', 'Endodoncia con microscopio')} con la Dra. Ángeles Parra para conservar tus dientes, explicaciones sin prisa y atención en español, inglés, alemán, neerlandés y francés.`],
+    ],
+    ctaTitle: '¿Bajas pronto a la costa? Aprovecha el viaje',
+    ctaText: `Pide tu primera visita gratuita y te proponemos un plan pensado para venir lo justo. Si prefieres, ${a('contact', 'consulta la dirección y todas las vías de contacto')}.`,
+    faqEyebrow: 'Preguntas desde Turre',
+    faqTitle: 'Dentista en Turre: dudas frecuentes',
+    faqs: [
+      ['¿La clínica dental está en Turre?', `No. Clínica Dental Koral está en Vera (Av. de Baria, 4), a ${km} km de Turre. No tenemos consulta en Turre, pero en un solo sitio reunimos todas las especialidades, el diagnóstico 3D y la financiación.`],
+      ['¿Cuánto se tarda en llegar desde Turre al dentista en Vera?', `Unos ${min} minutos en coche sin tráfico, por la ${roads}. Desde las urbanizaciones de la sierra hay que sumar el tramo hasta el pueblo.`],
+      ['¿Puedo hacer el tratamiento en pocas visitas si vivo en la sierra?', 'Lo intentamos siempre: diagnóstico completo en la primera visita, un plan escrito con el número de citas y, cuando es clínicamente posible, varios pasos en la misma cita. Algunos tratamientos, como los implantes, necesitan sus tiempos de cicatrización.'],
+      ['¿Hacéis el escáner 3D (CBCT) en la misma clínica?', `Sí. Tenemos CBCT 3D y microscopio dental en la clínica, así que no hace falta ir a otro centro para la prueba. Es clave para planificar ${a('implantes', 'implantes dentales')} y endodoncias.`],
+      ['¿Atendéis en inglés u otros idiomas?', 'Sí: atendemos en español, inglés, alemán, neerlandés y francés, así que puedes explicarte con tranquilidad en tu idioma.'],
+      ['¿Cuánto cuesta la primera visita y se puede financiar?', `La primera visita es gratuita y sin compromiso. Para la mayoría de tratamientos ofrecemos ${a('pricing', 'financiación al 0 %')}. Pide cita por WhatsApp en el +34 634 68 36 39 o llama al +34 950 39 53 19.`],
+    ],
+  },
+  en: {
+    metaTitle: `Dentist Turre: English-speaking clinic, ${min} min | Koral`,
+    metaDesc: `English-speaking dentist for Turre and the Sierra Cabrera: Koral Dental Clinic in Vera, ${min} min away. 3D CBCT scans, Straumann implants, free first visit.`,
+    kicker: 'Contour lines · Turre → Vera',
+    h1: 'Dentist for Turre',
+    h1Accent: `from the sierra to the chair in ${min} minutes`,
+    lead: `Looking for an <strong>English-speaking dentist near Turre</strong>? Koral Dental Clinic is in Vera, ${km} km away by road: you drive down from the Sierra Cabrera towards the coast and, about ${min} minutes later, you are on Av. de Baria. We plan every treatment so you only make the trips you really need.`,
+    chips: [`${km} km · ${min} min`, t('trust.3'), t('trust.7')],
+    mapTitle: `Illustrative topographic map of the Sierra Cabrera with the real driving route from Turre to Koral Dental Clinic in Vera: ${km} km and ${min} min via ${roads}`,
+    sierra: 'Sierra Cabrera',
+    clinicNote: 'AV. DE BARIA, 4',
+    routeEyebrow: 'The route, bend by bend',
+    routeTitle: 'From Turre to your dental clinic: down from the sierra to the sea',
+    routeIntro: `Turre sits at the foot of the Sierra Cabrera, a few kilometres inland from ${a('mojacar', 'Mojácar')}, with homes and urbanisations scattered over the hills of the sierra. From here, a trip to the dentist always starts the same way: heading down to the coast.`,
+    routeP1: `The route leaves the village on the ${R0}, joins the ${R1} and loses height bend after bend until it reaches the coastal plain. There it takes the ${R2}, passes close to ${a('garrucha', 'Garrucha')} and climbs to Vera on the ${R3}, which brings you practically onto the clinic’s avenue. That is ${km} km and about ${min} minutes without traffic, according to OpenStreetMap data.`,
+    routeP2: `If you live on one of the urbanisations in the hills, add the drive down to the village. And if you are often inland, the route from ${a('gallardos', 'Los Gallardos')} along the A-7 takes about ${gal} minutes; from Mojácar, about ${moj}.`,
+    profileTitle: `Profile of the drive from Turre to Koral Dental Clinic: from the Sierra Cabrera to the coast and on to Vera in ${min} minutes`,
+    profile: { sierra: 'Sierra Cabrera', hills: 'Homes in the hills', coast: 'Coast', sea: 'Mediterranean', axis: 'By car', start: 'Start', arrive: 'Arrival' },
+    profileNote: 'Heights are illustrative, not to scale. Minutes and kilometres come from the real route.',
+    scrollHint: 'Swipe to see the whole profile',
+    planEyebrow: 'One plan, few trips',
+    planTitle: 'A dentist near Turre without driving up and down the sierra every week',
+    planDesc: 'When you live in the hills, every appointment is a journey. So we work the other way round: a full diagnosis first, then a fixed plan, and finally appointments arranged to make the most of every trip down.',
+    steps: [
+      ['Free first visit', 'An examination, time for all your questions and a clear, no-obligation quote. If you need one, the 3D CBCT scan is done at the clinic itself, so there is no extra trip to another centre.'],
+      ['One written plan', `The specialists agree on a single plan: what will be done, in what order, how many appointments and what it costs, with ${a('pricing', '0% financing')} for most treatments.`],
+      ['Appointments that make the trip worthwhile', 'Whenever it is clinically possible, we combine steps in the same visit and give you the dates well in advance, so you can plan your drives.'],
+      ['Check-ups at your pace', 'Once you are done, we schedule check-ups and hygiene sessions calmly, so maintenance fits in with your days on the coast.'],
+    ],
+    teamTitle: 'Three specialists, one route',
+    teamLink: `${a('team', 'Meet the Koral Dental Clinic team')}`,
+    team: [['Dr Ana Padilla', 'Surgery, implants & cosmetic dentistry'], ['Dr Ana Soler', 'Orthodontics & children’s dentistry'], ['Dr Ángeles Parra', 'Endodontics']],
+    hoursTitle: 'Opening hours for the drive from the sierra',
+    hours: [['Monday', '10 am – 8 pm'], ['Tuesday', '8 am – 4 pm'], ['Wednesday', '10 am – 6 pm'], ['Thursday', '8 am – 4 pm'], ['Friday', '8 am – 4 pm']],
+    trtEyebrow: 'Treatment key',
+    trtTitle: 'Implants, full-mouth restoration and gum care for Turre',
+    trtDesc: 'These treatments come in several stages, which is exactly where careful planning from day one makes the biggest difference.',
+    cards: [
+      ['implantes', 'Dental implants', `${a('implantes', 'Straumann dental implants')} with a lifetime warranty. Dr Ana Padilla plans them on the 3D CBCT scan, so you know from the start how many stages your case will need.`],
+      ['rehabilitacion', 'Full-mouth restoration', `When several teeth are missing or worn, ${a('rehabilitacion', 'oral rehabilitation')} restores function and appearance step by step, combining implants, crowns or dentures.`],
+      ['periodoncia', 'Healthy gums', `${a('periodoncia', 'Periodontal treatment')} deals with bleeding, inflamed or loose gums: the foundation for any lasting treatment, implants included.`],
+      ['endodoncia', 'Comfort, and keeping your own teeth', `${a('endodoncia', 'Microscope-assisted root canals')} with Dr Ángeles Parra to save your teeth, unhurried explanations and care in English, Spanish, German, Dutch and French.`],
+    ],
+    ctaTitle: 'Heading down to the coast soon? Make the trip count',
+    ctaText: `Book your free first visit and we will suggest a plan designed to keep your trips to a minimum. You can also ${a('contact', 'find our address and every way to contact us')}.`,
+    faqEyebrow: 'Questions from Turre',
+    faqTitle: 'Dentist for Turre: common questions',
+    faqs: [
+      ['Is the dental clinic in Turre?', `No. Koral Dental Clinic is in Vera (Av. de Baria, 4), ${km} km from Turre. We have no practice in Turre, but under one roof you will find every speciality, 3D diagnosis and financing.`],
+      ['How long is the drive from Turre to the dentist in Vera?', `About ${min} minutes without traffic, via the ${roads}. From the urbanisations in the hills, add the drive down to the village.`],
+      ['Can I have my treatment in few visits if I live in the sierra?', 'We always try: a full diagnosis at the first visit, a written plan with the number of appointments and, when it is clinically possible, several steps in one appointment. Some treatments, such as implants, need their healing time.'],
+      ['Is the 3D scan (CBCT) done at the clinic?', `Yes. We have a 3D CBCT scanner and a dental microscope on site, so you do not need to go elsewhere for the scan. It is key for planning ${a('implantes', 'dental implants')} and root canals.`],
+      ['Is there an English-speaking dentist for Turre residents?', 'Yes. We look after patients in English, Spanish, German, Dutch and French, so you can explain everything calmly in your own language.'],
+      ['How much is the first visit, and can I pay in instalments?', `The first visit is free, with no obligation. For most treatments we offer ${a('pricing', '0% financing')}. Book on WhatsApp at +34 634 68 36 39 or call +34 950 39 53 19.`],
+    ],
+  },
+  de: {
+    metaTitle: `Zahnarzt Turre: deutschsprachig, ${min} Min. entfernt | Koral`,
+    metaDesc: `Deutschsprachiger Zahnarzt für Turre und die Sierra Cabrera: Zahnklinik Koral in Vera, ${min} Min. entfernt. 3D-DVT, Straumann-Implantate, Ersttermin gratis.`,
+    kicker: 'Höhenlinien · Turre → Vera',
+    h1: 'Zahnarzt für Turre',
+    h1Accent: `aus der Sierra in ${min} Minuten auf den Behandlungsstuhl`,
+    lead: `Sie suchen einen <strong>Zahnarzt in der Nähe von Turre</strong>, der Deutsch spricht? Die Zahnklinik Koral liegt in Vera, ${km} km entfernt: Sie fahren von der Sierra Cabrera hinunter zur Küste und sind nach etwa ${min} Minuten in der Av. de Baria. Wir planen jede Behandlung so, dass Sie nur die nötigen Fahrten machen.`,
+    chips: [`${km} km · ${min} Min.`, t('trust.3'), t('trust.7')],
+    mapTitle: `Illustrative topografische Karte der Sierra Cabrera mit der echten Autoroute von Turre zur Zahnklinik Koral in Vera: ${km} km und ${min} Min. über ${roads}`,
+    sierra: 'Sierra Cabrera',
+    clinicNote: 'AV. DE BARIA, 4',
+    routeEyebrow: 'Die Strecke, Kurve für Kurve',
+    routeTitle: 'Von Turre zu Ihrer Zahnklinik: aus der Sierra ans Meer',
+    routeIntro: `Turre liegt am Fuß der Sierra Cabrera, wenige Kilometer landeinwärts von ${a('mojacar', 'Mojácar')}; Häuser und Urbanisationen verteilen sich über die Hügel der Sierra. Der Weg zum Zahnarzt beginnt hier deshalb immer gleich: bergab Richtung Küste.`,
+    routeP1: `Die Route verlässt den Ort über die ${R0}, geht in die ${R1} über und verliert Kurve um Kurve an Höhe, bis sie die Küstenebene erreicht. Dort nimmt sie die ${R2}, führt nahe an ${a('garrucha', 'Garrucha')} vorbei und steigt über die ${R3} nach Vera hinauf – fast direkt bis zur Straße der Klinik. Insgesamt ${km} km und rund ${min} Minuten ohne Verkehr, laut OpenStreetMap-Daten.`,
+    routeP2: `Wohnen Sie in einer Urbanisation in den Hügeln, kommt die Fahrt bis in den Ort hinzu. Und wenn Sie eher im Hinterland unterwegs sind: Von ${a('gallardos', 'Los Gallardos')} über die A-7 sind es etwa ${gal} Minuten, von Mojácar etwa ${moj}.`,
+    profileTitle: `Höhenprofil der Fahrt von Turre zur Zahnklinik Koral: von der Sierra Cabrera an die Küste und nach Vera in ${min} Minuten`,
+    profile: { sierra: 'Sierra Cabrera', hills: 'Häuser in den Hügeln', coast: 'Küste', sea: 'Mittelmeer', axis: 'Mit dem Auto', start: 'Start', arrive: 'Ankunft' },
+    profileNote: 'Höhen illustrativ, nicht maßstabsgetreu. Minuten und Kilometer stammen von der echten Route.',
+    scrollHint: 'Wischen Sie, um das ganze Profil zu sehen',
+    planEyebrow: 'Ein Plan, wenige Fahrten',
+    planTitle: 'Zahnarzt nahe Turre – ohne jede Woche die Sierra hinauf und hinunter',
+    planDesc: 'Wer in den Bergen wohnt, für den ist jeder Termin eine kleine Reise. Darum gehen wir umgekehrt vor: zuerst eine vollständige Diagnose, dann ein fester Plan und schließlich Termine, die jede Fahrt an die Küste bestmöglich nutzen.',
+    steps: [
+      ['Kostenloser Ersttermin', 'Untersuchung, Zeit für all Ihre Fragen und ein klarer, unverbindlicher Kostenvoranschlag. Falls nötig, erfolgt die 3D-Aufnahme (DVT) direkt in der Klinik – ohne Extrafahrt zu einem anderen Zentrum.'],
+      ['Ein schriftlicher Plan', `Die Fachärztinnen stimmen sich auf einen einzigen Plan ab: was gemacht wird, in welcher Reihenfolge, wie viele Termine und was es kostet – mit ${a('pricing', '0 % Finanzierung')} für die meisten Behandlungen.`],
+      ['Termine, die sich lohnen', 'Wann immer es medizinisch möglich ist, fassen wir Schritte in einem Termin zusammen und nennen Ihnen die Daten frühzeitig, damit Sie Ihre Fahrten planen können.'],
+      ['Kontrollen in Ihrem Rhythmus', 'Nach der Behandlung legen wir Kontrollen und Prophylaxe in Ruhe fest, damit die Pflege zu Ihren Tagen an der Küste passt.'],
+    ],
+    teamTitle: 'Drei Fachärztinnen, eine Route',
+    teamLink: `${a('team', 'Lernen Sie das Team der Zahnklinik Koral kennen')}`,
+    team: [['Dra. Ana Padilla', 'Chirurgie, Implantologie & Ästhetik'], ['Dra. Ana Soler', 'Kieferorthopädie & Kinderzahnheilkunde'], ['Dra. Ángeles Parra', 'Endodontie']],
+    hoursTitle: 'Öffnungszeiten für die Fahrt aus der Sierra',
+    hours: [['Montag', '10:00 – 20:00'], ['Dienstag', '8:00 – 16:00'], ['Mittwoch', '10:00 – 18:00'], ['Donnerstag', '8:00 – 16:00'], ['Freitag', '8:00 – 16:00']],
+    trtEyebrow: 'Legende der Behandlungen',
+    trtTitle: 'Implantate, Rehabilitation und Zahnfleisch für Patienten aus Turre',
+    trtDesc: 'Diese Behandlungen verlaufen in mehreren Phasen – genau hier zeigt sich, wie viel eine gute Planung vom ersten Tag an bringt.',
+    cards: [
+      ['implantes', 'Zahnimplantate', `${a('implantes', 'Straumann-Implantate')} mit lebenslanger Garantie. Dra. Ana Padilla plant sie anhand der 3D-DVT-Aufnahme, sodass Sie von Anfang an wissen, wie viele Phasen Ihr Fall braucht.`],
+      ['rehabilitacion', 'Orale Rehabilitation', `Fehlen mehrere Zähne oder sind sie stark abgenutzt, stellt die ${a('rehabilitacion', 'orale Rehabilitation')} Funktion und Ästhetik schrittweise wieder her – mit Implantaten, Kronen oder Prothesen.`],
+      ['periodoncia', 'Gesundes Zahnfleisch', `Die ${a('periodoncia', 'Parodontologie')} behandelt Zahnfleischbluten, Entzündungen und lockere Zähne: die Basis jeder dauerhaften Behandlung, auch von Implantaten.`],
+      ['endodoncia', 'Komfort und eigene Zähne', `${a('endodoncia', 'Wurzelbehandlung unter dem Mikroskop')} bei Dra. Ángeles Parra, um Ihre Zähne zu erhalten, Erklärungen ohne Zeitdruck und Betreuung auf Deutsch, Englisch, Spanisch, Niederländisch und Französisch.`],
+    ],
+    ctaTitle: 'Bald wieder an der Küste? Nutzen Sie die Fahrt',
+    ctaText: `Vereinbaren Sie Ihren kostenlosen Ersttermin – wir schlagen Ihnen einen Plan mit möglichst wenigen Fahrten vor. Oder ${a('contact', 'sehen Sie Adresse und alle Kontaktwege')}.`,
+    faqEyebrow: 'Fragen aus Turre',
+    faqTitle: 'Zahnarzt für Turre: häufige Fragen',
+    faqs: [
+      ['Befindet sich die Zahnklinik in Turre?', `Nein. Die Zahnklinik Koral liegt in Vera (Av. de Baria, 4), ${km} km von Turre entfernt. In Turre haben wir keine Praxis, dafür finden Sie bei uns alle Fachbereiche, 3D-Diagnostik und Finanzierung an einem Ort.`],
+      ['Wie lange fährt man von Turre zum Zahnarzt in Vera?', `Etwa ${min} Minuten ohne Verkehr, über die ${roads}. Aus den Urbanisationen in den Hügeln kommt die Fahrt bis in den Ort hinzu.`],
+      ['Kann ich die Behandlung mit wenigen Terminen machen, wenn ich in der Sierra wohne?', 'Darum bemühen wir uns immer: vollständige Diagnose beim ersten Termin, ein schriftlicher Plan mit der Zahl der Termine und, wenn medizinisch möglich, mehrere Schritte in einem Termin. Manche Behandlungen, etwa Implantate, brauchen ihre Einheilzeit.'],
+      ['Wird die 3D-Aufnahme (DVT) in der Klinik gemacht?', `Ja. DVT und Dentalmikroskop stehen direkt in der Klinik, Sie müssen für die Aufnahme nirgendwo anders hin. Sie ist entscheidend für die Planung von ${a('implantes', 'Zahnimplantaten')} und Wurzelbehandlungen.`],
+      ['Gibt es einen deutschsprachigen Zahnarzt für Turre?', 'Ja. Wir betreuen Patienten auf Deutsch, Englisch, Spanisch, Niederländisch und Französisch – Sie können alles in Ruhe in Ihrer Sprache besprechen.'],
+      ['Was kostet der erste Termin, und kann ich in Raten zahlen?', `Der erste Termin ist kostenlos und unverbindlich. Für die meisten Behandlungen bieten wir ${a('pricing', '0 % Finanzierung')}. Termine per WhatsApp unter +34 634 68 36 39 oder telefonisch unter +34 950 39 53 19.`],
+    ],
+  },
+  nl: {
+    metaTitle: `Tandarts Turre: Nederlandstalig, op ${min} min | Koral`,
+    metaDesc: `Nederlandstalige tandarts voor Turre en de Sierra Cabrera: Tandkliniek Koral in Vera, op ${min} min. 3D CBCT-scan, Straumann-implantaten, gratis eerste bezoek.`,
+    kicker: 'Hoogtelijnen · Turre → Vera',
+    h1: 'Tandarts voor Turre',
+    h1Accent: `van de sierra naar de stoel in ${min} minuten`,
+    lead: `Zoekt u een <strong>tandarts bij Turre</strong> die Nederlands spreekt? Tandkliniek Koral ligt in Vera, ${km} km over de weg: u rijdt vanaf de Sierra Cabrera naar de kust en staat na zo’n ${min} minuten aan de Av. de Baria. We plannen elke behandeling zo dat u alleen de ritten maakt die echt nodig zijn.`,
+    chips: [`${km} km · ${min} min`, t('trust.3'), t('trust.7')],
+    mapTitle: `Illustratieve topografische kaart van de Sierra Cabrera met de echte autoroute van Turre naar Tandkliniek Koral in Vera: ${km} km en ${min} min via ${roads}`,
+    sierra: 'Sierra Cabrera',
+    clinicNote: 'AV. DE BARIA, 4',
+    routeEyebrow: 'De route, bocht voor bocht',
+    routeTitle: 'Van Turre naar uw tandkliniek: van de sierra naar zee',
+    routeIntro: `Turre ligt aan de voet van de Sierra Cabrera, een paar kilometer landinwaarts van ${a('mojacar', 'Mojácar')}, met huizen en urbanisaties verspreid over de heuvels van de sierra. Naar de tandarts gaan begint hier dus altijd hetzelfde: naar beneden, richting kust.`,
+    routeP1: `De route verlaat het dorp via de ${R0}, sluit aan op de ${R1} en daalt bocht na bocht tot aan de kustvlakte. Daar neemt hij de ${R2}, komt langs ${a('garrucha', 'Garrucha')} en klimt via de ${R3} naar Vera, vrijwel tot aan de laan van de kliniek. Samen ${km} km en ongeveer ${min} minuten zonder verkeer, volgens gegevens van OpenStreetMap.`,
+    routeP2: `Woont u op een urbanisatie in de heuvels, tel dan de rit naar het dorp erbij op. En bent u vaak in het binnenland: vanuit ${a('gallardos', 'Los Gallardos')} over de A-7 is het ongeveer ${gal} minuten, vanuit Mojácar ongeveer ${moj}.`,
+    profileTitle: `Hoogteprofiel van de rit van Turre naar Tandkliniek Koral: van de Sierra Cabrera naar de kust en naar Vera in ${min} minuten`,
+    profile: { sierra: 'Sierra Cabrera', hills: 'Huizen in de heuvels', coast: 'Kust', sea: 'Middellandse Zee', axis: 'Met de auto', start: 'Vertrek', arrive: 'Aankomst' },
+    profileNote: 'Hoogtes zijn illustratief, niet op schaal. Minuten en kilometers komen van de echte route.',
+    scrollHint: 'Veeg om het hele profiel te zien',
+    planEyebrow: 'Eén plan, weinig ritten',
+    planTitle: 'Een tandarts bij Turre zonder elke week de sierra op en af',
+    planDesc: 'Wie in de bergen woont, maakt van elke afspraak een tochtje. Daarom werken we andersom: eerst een volledige diagnose, dan een vast plan en ten slotte afspraken die elke rit naar de kust zo goed mogelijk benutten.',
+    steps: [
+      ['Gratis eerste bezoek', 'Onderzoek, tijd voor al uw vragen en een duidelijke, vrijblijvende offerte. Is een 3D CBCT-scan nodig, dan maken we die in de kliniek zelf: geen extra rit naar een ander centrum.'],
+      ['Eén schriftelijk plan', `De specialisten stemmen samen één plan af: wat er gebeurt, in welke volgorde, hoeveel afspraken en wat het kost, met ${a('pricing', '0% financiering')} voor de meeste behandelingen.`],
+      ['Afspraken die de rit waard zijn', 'Waar het medisch kan, combineren we stappen in één bezoek en geven we u de data ruim van tevoren, zodat u uw ritten kunt plannen.'],
+      ['Controles in uw tempo', 'Na de behandeling plannen we controles en mondhygiëne rustig in, zodat het onderhoud past bij uw dagen aan de kust.'],
+    ],
+    teamTitle: 'Drie specialisten, één route',
+    teamLink: `${a('team', 'Maak kennis met het team van Tandkliniek Koral')}`,
+    team: [['Dra. Ana Padilla', 'Chirurgie, implantologie & esthetiek'], ['Dra. Ana Soler', 'Orthodontie & kindertandheelkunde'], ['Dra. Ángeles Parra', 'Endodontie']],
+    hoursTitle: 'Openingstijden voor de rit vanuit de sierra',
+    hours: [['Maandag', '10:00 – 20:00'], ['Dinsdag', '8:00 – 16:00'], ['Woensdag', '10:00 – 18:00'], ['Donderdag', '8:00 – 16:00'], ['Vrijdag', '8:00 – 16:00']],
+    trtEyebrow: 'Legenda van behandelingen',
+    trtTitle: 'Implantaten, mondrehabilitatie en tandvlees voor patiënten uit Turre',
+    trtDesc: 'Het zijn behandelingen in meerdere fasen, en juist daar merkt u het meest van een goede planning vanaf dag één.',
+    cards: [
+      ['implantes', 'Tandimplantaten', `${a('implantes', 'Straumann-implantaten')} met levenslange garantie. Dra. Ana Padilla plant ze op de 3D CBCT-scan, zodat u vanaf het begin weet hoeveel fasen uw behandeling heeft.`],
+      ['rehabilitacion', 'Mondrehabilitatie', `Ontbreken er meerdere tanden of is er veel slijtage, dan herstelt ${a('rehabilitacion', 'mondrehabilitatie')} functie en uiterlijk in fasen, met implantaten, kronen of prothesen.`],
+      ['periodoncia', 'Gezond tandvlees', `${a('periodoncia', 'Parodontologie')} behandelt bloedend, ontstoken of loszittend tandvlees: de basis van elke duurzame behandeling, ook van implantaten.`],
+      ['endodoncia', 'Comfort en eigen tanden', `${a('endodoncia', 'Wortelkanaalbehandeling onder de microscoop')} bij Dra. Ángeles Parra om uw tanden te behouden, uitleg zonder haast en zorg in het Nederlands, Engels, Duits, Spaans en Frans.`],
+    ],
+    ctaTitle: 'Binnenkort naar de kust? Maak de rit de moeite waard',
+    ctaText: `Plan uw gratis eerste bezoek en wij stellen een plan voor met zo min mogelijk ritten. U kunt ook ${a('contact', 'ons adres en alle contactmogelijkheden bekijken')}.`,
+    faqEyebrow: 'Vragen uit Turre',
+    faqTitle: 'Tandarts voor Turre: veelgestelde vragen',
+    faqs: [
+      ['Zit de tandkliniek in Turre?', `Nee. Tandkliniek Koral zit in Vera (Av. de Baria, 4), op ${km} km van Turre. We hebben geen praktijk in Turre, maar onder één dak vindt u alle specialismen, 3D-diagnose en financiering.`],
+      ['Hoe lang rijd je van Turre naar de tandarts in Vera?', `Ongeveer ${min} minuten zonder verkeer, via de ${roads}. Vanaf de urbanisaties in de heuvels komt de rit naar het dorp erbij.`],
+      ['Kan ik de behandeling in weinig bezoeken doen als ik in de sierra woon?', 'Dat proberen we altijd: een volledige diagnose bij het eerste bezoek, een schriftelijk plan met het aantal afspraken en, als het medisch kan, meerdere stappen in één afspraak. Sommige behandelingen, zoals implantaten, hebben hun genezingstijd nodig.'],
+      ['Wordt de 3D-scan (CBCT) in de kliniek gemaakt?', `Ja. We hebben een 3D CBCT-scanner en een tandheelkundige microscoop in de kliniek, dus u hoeft voor de scan nergens anders heen. Hij is essentieel voor het plannen van ${a('implantes', 'tandimplantaten')} en wortelkanaalbehandelingen.`],
+      ['Is er een Nederlandstalige tandarts voor Turre?', 'Ja. We helpen patiënten in het Nederlands, Engels, Duits, Spaans en Frans, zodat u alles rustig in uw eigen taal kunt uitleggen.'],
+      ['Wat kost het eerste bezoek, en kan ik gespreid betalen?', `Het eerste bezoek is gratis en vrijblijvend. Voor de meeste behandelingen bieden we ${a('pricing', '0% financiering')}. Maak een afspraak via WhatsApp op +34 634 68 36 39 of bel +34 950 39 53 19.`],
+    ],
+  },
+  fr: {
+    metaTitle: `Dentiste Turre : clinique francophone à ${min} min | Koral`,
+    metaDesc: `Dentiste francophone pour Turre et la Sierra Cabrera : Clinique Dentaire Koral à Vera, à ${min} min. Scanner 3D CBCT, implants Straumann, 1re visite gratuite.`,
+    kicker: 'Courbes de niveau · Turre → Vera',
+    h1: 'Dentiste pour Turre',
+    h1Accent: `de la sierra au fauteuil en ${min} minutes`,
+    lead: `Vous cherchez un <strong>dentiste près de Turre</strong> qui parle français ? La Clinique Dentaire Koral se trouve à Vera, à ${km} km par la route : vous descendez de la Sierra Cabrera vers la côte et, environ ${min} minutes plus tard, vous êtes avenue de Baria. Nous organisons chaque traitement pour que vous ne fassiez que les trajets nécessaires.`,
+    chips: [`${km} km · ${min} min`, t('trust.3'), t('trust.7')],
+    mapTitle: `Carte topographique illustrative de la Sierra Cabrera avec le vrai trajet en voiture de Turre à la Clinique Dentaire Koral à Vera : ${km} km et ${min} min par ${roads}`,
+    sierra: 'Sierra Cabrera',
+    clinicNote: 'AV. DE BARIA, 4',
+    routeEyebrow: 'Le trajet, virage après virage',
+    routeTitle: 'De Turre à votre clinique dentaire : de la sierra à la mer',
+    routeIntro: `Turre est posée au pied de la Sierra Cabrera, à quelques kilomètres de ${a('mojacar', 'Mojácar')} vers l’intérieur, avec des maisons et des urbanisations dispersées sur les collines de la sierra. D’ici, aller chez le dentiste commence toujours de la même façon : en descendant vers la côte.`,
+    routeP1: `Le trajet quitte le village par la ${R0}, rejoint la ${R1} et perd de l’altitude de virage en virage jusqu’à la plaine côtière. Il emprunte alors l’${R2}, passe près de ${a('garrucha', 'Garrucha')} et monte vers Vera par l’${R3}, qui vous dépose presque dans l’avenue de la clinique. Au total, ${km} km et environ ${min} minutes sans trafic, d’après les données d’OpenStreetMap.`,
+    routeP2: `Si vous habitez une urbanisation dans les collines, ajoutez le trajet jusqu’au village. Et si vous circulez plutôt dans l’intérieur, depuis ${a('gallardos', 'Los Gallardos')} par l’A-7 il faut environ ${gal} minutes ; depuis Mojácar, environ ${moj}.`,
+    profileTitle: `Profil du trajet de Turre à la Clinique Dentaire Koral : de la Sierra Cabrera à la côte puis à Vera en ${min} minutes`,
+    profile: { sierra: 'Sierra Cabrera', hills: 'Maisons des collines', coast: 'Côte', sea: 'Méditerranée', axis: 'En voiture', start: 'Départ', arrive: 'Arrivée' },
+    profileNote: 'Altitudes illustratives, pas à l’échelle. Les minutes et les kilomètres sont ceux du trajet réel.',
+    scrollHint: 'Faites glisser pour voir tout le profil',
+    planEyebrow: 'Un plan, peu de trajets',
+    planTitle: 'Un dentiste près de Turre sans monter et descendre la sierra chaque semaine',
+    planDesc: 'Quand on vit dans la montagne, chaque rendez-vous est un voyage. Alors nous travaillons à l’envers : d’abord un diagnostic complet, puis un plan arrêté, enfin des rendez-vous pensés pour rentabiliser chaque descente.',
+    steps: [
+      ['Première visite gratuite', 'Examen, temps pour toutes vos questions et devis clair, sans engagement. Si nécessaire, le scanner 3D CBCT se fait à la clinique même : pas de trajet supplémentaire vers un autre centre.'],
+      ['Un seul plan écrit', `Les spécialistes se coordonnent sur un plan unique : ce qui sera fait, dans quel ordre, combien de rendez-vous et à quel coût, avec un ${a('pricing', 'financement à 0 %')} pour la plupart des traitements.`],
+      ['Des rendez-vous qui valent le trajet', 'Chaque fois que c’est possible sur le plan clinique, nous regroupons des étapes lors d’une même visite et vous donnons les dates à l’avance pour organiser vos déplacements.'],
+      ['Des contrôles à votre rythme', 'Une fois le traitement terminé, nous fixons contrôles et hygiène sans précipitation, pour que l’entretien s’accorde avec vos journées sur la côte.'],
+    ],
+    teamTitle: 'Trois spécialistes, un même itinéraire',
+    teamLink: `${a('team', 'Découvrez l’équipe de la Clinique Dentaire Koral')}`,
+    team: [['Dra. Ana Padilla', 'Chirurgie, implantologie & esthétique'], ['Dra. Ana Soler', 'Orthodontie & soins pour enfants'], ['Dra. Ángeles Parra', 'Endodontie']],
+    hoursTitle: 'Des horaires pour descendre de la sierra',
+    hours: [['Lundi', '10 h – 20 h'], ['Mardi', '8 h – 16 h'], ['Mercredi', '10 h – 18 h'], ['Jeudi', '8 h – 16 h'], ['Vendredi', '8 h – 16 h']],
+    trtEyebrow: 'Légende des traitements',
+    trtTitle: 'Implants, réhabilitation et gencives pour les patients de Turre',
+    trtDesc: 'Ce sont des traitements en plusieurs phases, et c’est justement là qu’une bonne planification dès le premier jour fait toute la différence.',
+    cards: [
+      ['implantes', 'Implants dentaires', `${a('implantes', 'Implants Straumann')} garantis à vie. La Dra. Ana Padilla les planifie sur le scanner 3D CBCT : vous savez dès le départ combien de phases comptera votre cas.`],
+      ['rehabilitacion', 'Réhabilitation orale', `Quand plusieurs dents manquent ou sont très usées, la ${a('rehabilitacion', 'réhabilitation orale')} rend fonction et esthétique par étapes, en combinant implants, couronnes ou prothèses.`],
+      ['periodoncia', 'Des gencives saines', `La ${a('periodoncia', 'parodontie')} traite les gencives qui saignent, enflammées ou qui se déchaussent : la base de tout traitement durable, implants compris.`],
+      ['endodoncia', 'Confort et dents naturelles', `${a('endodoncia', 'Endodontie au microscope')} avec la Dra. Ángeles Parra pour conserver vos dents, des explications sans hâte et un accueil en français, espagnol, anglais, allemand et néerlandais.`],
+    ],
+    ctaTitle: 'Bientôt sur la côte ? Profitez du trajet',
+    ctaText: `Prenez votre première visite gratuite et nous vous proposerons un plan conçu pour limiter vos déplacements. Vous pouvez aussi ${a('contact', 'consulter notre adresse et tous nos contacts')}.`,
+    faqEyebrow: 'Questions depuis Turre',
+    faqTitle: 'Dentiste pour Turre : questions fréquentes',
+    faqs: [
+      ['La clinique dentaire est-elle à Turre ?', `Non. La Clinique Dentaire Koral se trouve à Vera (Av. de Baria, 4), à ${km} km de Turre. Nous n’avons pas de cabinet à Turre, mais vous trouvez chez nous toutes les spécialités, le diagnostic 3D et le financement au même endroit.`],
+      ['Combien de temps faut-il pour aller de Turre au dentiste à Vera ?', `Environ ${min} minutes sans trafic, par la ${roads}. Depuis les urbanisations des collines, ajoutez le trajet jusqu’au village.`],
+      ['Puis-je faire mon traitement en peu de visites si j’habite dans la sierra ?', 'Nous essayons toujours : diagnostic complet dès la première visite, plan écrit avec le nombre de rendez-vous et, quand c’est possible cliniquement, plusieurs étapes au cours d’un même rendez-vous. Certains traitements, comme les implants, demandent leur temps de cicatrisation.'],
+      ['Le scanner 3D (CBCT) se fait-il à la clinique ?', `Oui. Nous disposons d’un scanner 3D CBCT et d’un microscope dentaire sur place : inutile d’aller ailleurs pour l’examen. Il est essentiel pour planifier les ${a('implantes', 'implants dentaires')} et les dévitalisations.`],
+      ['Y a-t-il un dentiste francophone pour Turre ?', 'Oui. Nous recevons les patients en français, espagnol, anglais, allemand et néerlandais : vous pouvez tout expliquer tranquillement dans votre langue.'],
+      ['Combien coûte la première visite, et peut-on payer en plusieurs fois ?', `La première visite est gratuite et sans engagement. Pour la plupart des traitements, nous proposons un ${a('pricing', 'financement à 0 %')}. Rendez-vous par WhatsApp au +34 634 68 36 39 ou au +34 950 39 53 19.`],
+    ],
+  },
+} as const)[lang];
+
+const title = copy.metaTitle;
+const description = copy.metaDesc;
+const serviceName = fill(t('areas.dentist.in'), { town: town.name });
+const schema = townSchema({ town: 'turre', lang, title, description, serviceName });
+
+const teamPhotos = ['/equipo/Ana-padilla.jpg', '/equipo/ana-soler.jpg', '/equipo/angeles-parrar.jpg'];
+
+// Decorative contour rings for section backgrounds (organic, never crossing)
+const heroRings = contourRings(180, 260, 9, 40, 34, 1.7);
+const ctaRings = contourRings(980, 120, 8, 30, 30, 4.2);
+const legendRings = contourRings(100, 100, 5, 20, 16, 1.9);
+// Waypoint trail (desktop): gently climbing and descending line through 4 stops
+const trailD = 'M0 64C12 62 18 60 24 60C130 60 226 34 332 34C438 34 534 70 640 70C746 70 842 40 948 40C1040 40 1120 56 1200 62';
+---
+
+<Layout title={title} description={description} lang={lang} schema={schema}>
+  <Navigation />
+
+  <main id="main">
+    <!-- Hero: topographic sheet -->
+    <section class="tur-hero relative isolate overflow-hidden pb-20 pt-32 text-white md:pb-28 md:pt-40 lg:pt-44">
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <svg class="absolute -left-40 top-10 h-[620px] w-[900px] opacity-[0.09]" viewBox="0 0 400 520" fill="none">
+          {heroRings.map((d, i) => <path d={d} stroke={i % 4 === 0 ? '#C9D8B6' : '#8FA98A'} stroke-width={i % 4 === 0 ? 1.4 : 0.8} />)}
+        </svg>
+        <div class="absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[radial-gradient(circle,rgba(143,169,138,0.18)_0%,transparent_65%)]"></div>
+        <div class="absolute -bottom-40 left-1/4 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.12)_0%,transparent_65%)]"></div>
+      </div>
+
+      <div class="container-k relative">
+        <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+          <div class="lg:col-span-6">
+            <div data-reveal><Breadcrumbs items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} class="mb-8" /></div>
+
+            <p class="tur-kicker mb-7 inline-flex items-center gap-3 rounded-full border border-[#B5C9A8]/30 bg-white/[0.04] py-2 pl-2 pr-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C9D8B6]" data-reveal style="--d:.05s">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 18c3-1 4-5 9-5s6 4 9 5" /><path d="M6 14.5c2-1 3-4.5 6-4.5s4 3.5 6 4.5" /><path d="M9 11c1-1 1.6-3 3-3s2 2 3 3" /></svg>
+              {copy.kicker}
+            </p>
+
+            <h1 class="text-[2.55rem] leading-[1.03] text-white sm:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="accent-italic mt-2 block text-[0.62em] leading-[1.1] text-[#C9D8B6]">{copy.h1Accent}</span>
+            </h1>
+
+            <p class="mt-7 max-w-xl text-lg leading-relaxed text-white/75 md:text-xl [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.2s" set:html={copy.lead} />
+
+            <ul class="mt-8 flex flex-wrap gap-2.5" data-reveal style="--d:.26s">
+              {copy.chips.map((c, i) => (
+                <li class:list={['inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm', i === 0 ? 'tabular border-[#C9D8B6]/40 bg-[#C9D8B6]/10 font-semibold text-white' : 'border-white/12 bg-white/[0.05] text-white/85']}>
+                  <span class:list={['h-1.5 w-1.5 rounded-full', i === 0 ? 'bg-coral' : 'bg-[#B5C9A8]']}></span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+
+            <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.32s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-ghost-light tabular">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" /></svg>
+                +34 950 39 53 19
+              </a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6" data-reveal="scale" style="--d:.2s">
+            <div class="tur-sheet relative mx-auto max-w-[540px] overflow-hidden rounded-[1.75rem] ring-1 ring-[#B5C9A8]/25 shadow-[var(--shadow-premium)]">
+              <TurreTopo title={copy.mapTitle} sierraLabel={copy.sierra} seaLabel={t('areas.sea')} clinicNote={copy.clinicNote} lang={lang} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg class="absolute inset-x-0 bottom-[-1px] h-10 w-full md:h-14" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 60V34c160-22 300-30 460-14s300 30 470 8 320-30 510-6V60Z" fill="#ffffff" />
+        <path d="M0 30c160-22 300-30 460-14s300 30 470 8 320-30 510-6" fill="none" stroke="#B5C9A8" stroke-opacity=".5" />
+      </svg>
+    </section>
+
+    <!-- Route: sierra → sea → clinic -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5" data-reveal>
+            <p class="eyebrow tur-eyebrow mb-5">{copy.routeEyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.07] sm:text-5xl lg:text-[3.2rem]">{copy.routeTitle}</h2>
+          </div>
+          <div class="space-y-5 text-[17px] leading-relaxed text-slate-600 lg:col-span-7 lg:pt-10" data-reveal style="--d:.08s">
+            <p class="text-lg text-ocean-900" set:html={copy.routeIntro} />
+            <p set:html={copy.routeP1} />
+            <p set:html={copy.routeP2} />
+          </div>
+        </div>
+
+        <figure class="tur-profile-card relative mt-14 rounded-[2rem] border border-[#4F6B3A]/12 bg-[#F6F8F2] p-4 md:mt-16 md:p-8" data-reveal>
+          <div class="tur-scroll -mx-1 overflow-x-auto px-1 pb-2">
+            <TurreProfile title={copy.profileTitle} labels={copy.profile} lang={lang} class="min-w-[720px] md:min-w-0" />
+          </div>
+          <figcaption class="mt-3 flex flex-col gap-1 border-t border-[#4F6B3A]/12 pt-4 text-[13px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <span>{copy.profileNote}</span>
+            <span class="tur-hint font-semibold text-[#4F6B3A] md:hidden" aria-hidden="true">{copy.scrollHint} →</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- One plan, few trips -->
+    <section class="tur-plan section-y relative overflow-hidden">
+      <div class="container-k relative">
+        <div class="max-w-3xl" data-reveal>
+          <p class="eyebrow tur-eyebrow mb-5">{copy.planEyebrow}</p>
+          <h2 class="text-[2.2rem] leading-[1.07] sm:text-5xl lg:text-[3.2rem]">{copy.planTitle}</h2>
+          <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.planDesc}</p>
+        </div>
+
+        <div class="relative mt-16">
+          <svg class="pointer-events-none absolute inset-x-0 top-0 hidden h-[110px] w-full lg:block" viewBox="0 0 1200 110" preserveAspectRatio="none" fill="none" aria-hidden="true" data-reveal="fade">
+            <path d={trailD} stroke="#4F6B3A" stroke-opacity=".12" stroke-width="10" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+            <path d={trailD} stroke="#4F6B3A" stroke-width="2.2" stroke-linecap="round" class="draw-me" pathLength="1" vector-effect="non-scaling-stroke" />
+          </svg>
+          <ol class="tur-trail relative grid gap-10 lg:grid-cols-4 lg:gap-8 lg:pt-[118px]">
+            {copy.steps.map(([title, text], i) => (
+              <li class="tur-way relative pl-16 lg:pl-0" data-reveal style={`--d:${i * 0.1}s`} data-i={i}>
+                <span class="tur-flag absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#4F6B3A] bg-white font-display text-lg italic text-[#2F4423] shadow-[0_8px_20px_-10px_rgba(47,68,35,0.5)]" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3 class="font-sans text-xl font-semibold tracking-tight text-ocean-900">{title}</h3>
+                <p class="mt-2 text-[15.5px] leading-relaxed text-slate-600" set:html={text} />
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div class="mt-20 grid gap-5 lg:grid-cols-12">
+          <div class="flex flex-col rounded-[1.75rem] border border-[#4F6B3A]/12 bg-white p-7 shadow-[var(--shadow-soft)] md:p-9 lg:col-span-7" data-reveal>
+            <h3 class="text-2xl text-ocean-900 md:text-[1.9rem]">{copy.teamTitle}</h3>
+            <ul class="mt-7 grid gap-5 sm:grid-cols-3">
+              {copy.team.map(([name, role], i) => (
+                <li class="flex items-center gap-4 sm:flex-col sm:items-start">
+                  <span class="relative shrink-0">
+                    <Picture src={teamPhotos[i]} alt={`${name} · ${role}`} width={600} height={600} class="h-16 w-16 rounded-full object-cover ring-4 ring-[#EEF2EA] sm:h-20 sm:w-20" />
+                  </span>
+                  <span>
+                    <span class="block font-semibold text-ocean-900">{name}</span>
+                    <span class="mt-0.5 block text-[13.5px] leading-snug text-slate-500">{role}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p class="mt-7 border-t border-[#4F6B3A]/10 pt-6 text-[15px] lg:mt-auto" set:html={copy.teamLink} />
+          </div>
+          <div class="tur-hours rounded-[1.75rem] p-7 text-white md:p-9 lg:col-span-5" data-reveal style="--d:.08s">
+            <h3 class="text-2xl text-white md:text-[1.9rem]">{copy.hoursTitle}</h3>
+            <dl class="mt-6 divide-y divide-white/10 text-[15px]">
+              {copy.hours.map(([day, h]) => (
+                <div class="flex items-center justify-between py-2.5">
+                  <dt class="text-white/70">{day}</dt>
+                  <dd class="tabular font-semibold text-white">{h}</dd>
+                </div>
+              ))}
+            </dl>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-ghost-light !px-5 !py-3 text-sm">WhatsApp · +34 634 68 36 39</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Treatments as a map legend -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end" data-reveal>
+          <div class="lg:col-span-7">
+            <p class="eyebrow tur-eyebrow mb-5">{copy.trtEyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.07] sm:text-5xl lg:text-[3.2rem]">{copy.trtTitle}</h2>
+          </div>
+          <p class="text-lg leading-relaxed text-slate-600 lg:col-span-5 lg:pb-2">{copy.trtDesc}</p>
+        </div>
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2">
+          {copy.cards.map(([key, title, text], i) => (
+            <li class="tur-legend group relative overflow-hidden rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] md:p-8" data-reveal style={`--d:${(i % 2) * 0.08}s`}>
+              <svg class="pointer-events-none absolute -right-10 -top-10 h-44 w-44 text-[#4F6B3A] opacity-[0.12] transition-opacity duration-500 group-hover:opacity-25" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+                {i === 0 ? (
+                  <symbol id="tur-legend-rings" viewBox="0 0 200 200"><g stroke="currentColor" stroke-width="1.2" fill="none">{legendRings.map((d) => <path d={d} />)}</g></symbol>
+                ) : null}
+                <use href="#tur-legend-rings" width="200" height="200" transform={`rotate(${i * 67} 100 100)`} />
+              </svg>
+              <div class="relative flex flex-col items-start gap-5 sm:flex-row">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2EA] text-[#2F4423] transition-colors duration-500 group-hover:bg-[#2F4423] group-hover:text-white">
+                  <TreatmentIcon name={key as TreatmentKey} size={30} strokeWidth={1.7} />
+                </span>
+                <div>
+                  <p class="tabular text-[11px] font-semibold uppercase tracking-[0.2em] text-[#4F6B3A]">{String(i + 1).padStart(2, '0')}</p>
+                  <h3 class="mt-1 font-sans text-xl font-semibold tracking-tight text-ocean-900">{title}</h3>
+                  <p class="mt-2 text-[15.5px] leading-relaxed text-slate-600" set:html={text} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="bg-white pb-20 md:pb-28">
+      <div class="container-k">
+        <div class="tur-cta relative isolate overflow-hidden rounded-[2.25rem] px-7 py-12 text-white shadow-[var(--shadow-premium)] md:px-14 md:py-16" data-reveal="scale">
+          <svg class="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.16]" viewBox="0 0 1200 400" preserveAspectRatio="xMaxYMid slice" fill="none" aria-hidden="true">
+            {ctaRings.map((d, i) => <path d={d} stroke="#C9D8B6" stroke-width={i % 3 === 0 ? 1.4 : 0.8} />)}
+          </svg>
+          <div class="grid items-center gap-10 lg:grid-cols-12">
+            <div class="lg:col-span-7">
+              <p class="eyebrow eyebrow-light mb-4">{t('nav.mega.promo.title')}</p>
+              <p class="font-display text-[2.1rem] leading-[1.08] text-white md:text-5xl">{copy.ctaTitle}</p>
+              <p class="tur-cta-text mt-5 max-w-xl text-white/75" set:html={copy.ctaText} />
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:justify-end">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-ghost-light">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow={copy.faqEyebrow} title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="turre" />
+
+    <Contact />
+  </main>
+
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  .tur-hero {
+    background-color: #0a1f33;
+    background-image:
+      radial-gradient(70% 60% at 90% 0%, rgba(143, 169, 138, 0.16) 0%, transparent 60%),
+      linear-gradient(170deg, #0a1f33 0%, #0c2533 55%, #10302f 100%);
+  }
+  .tur-eyebrow { color: #4f6b3a; }
+  .tur-eyebrow::before { background: linear-gradient(90deg, #8fa98a, var(--color-accent)); }
+  .tur-plan { background: linear-gradient(180deg, #f6f8f2 0%, #fbf8f4 100%); }
+  .tur-hours {
+    background-color: #0c2533;
+    background-image: radial-gradient(80% 70% at 100% 0%, rgba(143, 169, 138, 0.22) 0%, transparent 60%);
+  }
+  .tur-cta {
+    background-color: #0c2533;
+    background-image:
+      radial-gradient(60% 80% at 100% 0%, rgba(143, 169, 138, 0.25) 0%, transparent 60%),
+      radial-gradient(50% 60% at 0% 100%, rgba(242, 97, 122, 0.14) 0%, transparent 60%);
+  }
+  .tur-cta-text .prose-link { color: var(--color-aqua-soft); text-decoration-color: rgba(143, 227, 234, 0.4); }
+
+  /* Trail: vertical dashed path on mobile, flags above an SVG trail on desktop */
+  .tur-way::before {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 52px;
+    bottom: -36px;
+    border-left: 2px dashed rgba(79, 107, 58, 0.35);
+  }
+  .tur-way:last-child::before { display: none; }
+  @media (min-width: 1024px) {
+    .tur-way::before { display: none; }
+    .tur-way[data-i='0'] .tur-flag { top: -82px; }
+    .tur-way[data-i='1'] .tur-flag { top: -108px; }
+    .tur-way[data-i='2'] .tur-flag { top: -72px; }
+    .tur-way[data-i='3'] .tur-flag { top: -102px; }
+  }
+
+  .tur-scroll { scrollbar-width: thin; scrollbar-color: rgba(79, 107, 58, 0.35) transparent; }
+</style>

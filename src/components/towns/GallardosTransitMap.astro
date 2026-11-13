@@ -1,0 +1,111 @@
+---
+/**
+ * Los Gallardos page — schematic "metro" diagram: lines from Los Gallardos
+ * (via the A-7), Turre, Mojácar and Antas converging on Koral · Vera, with
+ * Bédar as a feeder. Driving times come from src/data/towns.ts. Lines draw in,
+ * then a dot runs along each one; the terminus pulses.
+ */
+import { TOWNS } from '../../data/towns';
+
+interface Props {
+  title: string;
+  terminal: string;
+  /** Localised "min". */
+  minLabel: string;
+  num: (n: number) => string;
+  class?: string;
+}
+
+const { title, terminal, minLabel, num, class: className = '' } = Astro.props;
+const g = TOWNS.gallardos.routes[0];
+const tu = TOWNS.turre.routes[0];
+const mo = TOWNS.mojacar.routes[0];
+const an = TOWNS.antas.routes[0];
+
+const lines = [
+  { id: 'gal', color: '#F2617A', w: 11, d: 'M96 418H156L306 268H420L452 236V112', dur: 6.5, begin: 2.2 },
+  { id: 'tur', color: '#0B7C86', w: 7, d: 'M300 486V432L466 266V112', dur: 7.5, begin: 2.8 },
+  { id: 'moj', color: '#2CC5D2', w: 7, d: 'M500 486V300L480 280V112', dur: 8, begin: 3.3 },
+  { id: 'ant', color: '#143B5C', w: 7, d: 'M60 96H434', dur: 6, begin: 3.8 },
+];
+const uid = `gtm-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<svg viewBox="0 0 560 540" class:list={['gal-transit', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <defs>
+    <pattern id={`${uid}-grid`} width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#0A1F33" stroke-opacity=".06" />
+    </pattern>
+  </defs>
+  <rect width="560" height="540" fill={`url(#${uid}-grid)`} />
+
+  <!-- Bédar feeder (no route data: drawn as a dashed branch) -->
+  <path d="M96 330V404" fill="none" stroke="#7C8B99" stroke-width="5" stroke-dasharray="2 9" stroke-linecap="round" />
+
+  <!-- Casing + lines -->
+  {lines.map((l) => <path d={l.d} fill="none" stroke="#fff" stroke-width={l.w + 6} stroke-linecap="round" stroke-linejoin="round" />)}
+  <g class="draw">
+    {lines.map((l, i) => (
+      <path id={`${uid}-${l.id}`} d={l.d} fill="none" stroke={l.color} stroke-width={l.w} stroke-linecap="round" stroke-linejoin="round" pathLength="1" style={`--dd:${0.2 + i * 0.25}s`} />
+    ))}
+  </g>
+
+  <!-- Travelling dots -->
+  {lines.map((l) => (
+    <circle r={l.id === 'gal' ? 5 : 3.6} fill="#fff" stroke={l.color} stroke-width="2.5" class="gal-dot">
+      <animateMotion dur={`${l.dur}s`} begin={`${l.begin}s`} repeatCount="indefinite" calcMode="linear">
+        <mpath href={`#${uid}-${l.id}`} />
+      </animateMotion>
+    </circle>
+  ))}
+
+  <!-- Road labels -->
+  <g font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" letter-spacing=".5">
+    <g transform="translate(142 446)"><rect x="-36" y="-13" width="72" height="25" rx="5" fill="#F2617A" /><text y="5" text-anchor="middle" fill="#fff">{g.roads[0]}</text></g>
+    <g transform="translate(231 343) rotate(-45)"><rect x="-29" y="-13" width="58" height="25" rx="5" fill="#0A1F33" /><text y="5" text-anchor="middle" fill="#fff">{g.roads[1]}</text></g>
+    <g transform="translate(522 186)"><rect x="-34" y="-13" width="68" height="25" rx="5" fill="#fff" stroke="#0A1F33" stroke-width="1.5" /><text y="5" text-anchor="middle" fill="#0A1F33">{g.roads[2]}</text></g>
+  </g>
+
+  <!-- Stations -->
+  <g font-family="Inter, system-ui, sans-serif" fill="#0A1F33">
+    <!-- Los Gallardos: interchange -->
+    <rect x="76" y="404" width="40" height="28" rx="14" fill="#fff" stroke="#0A1F33" stroke-width="4" />
+    <text x="36" y="484" font-size="25" font-weight="700">Los Gallardos</text>
+    <text x="36" y="508" font-size="18" font-weight="600" fill="#C9304A" class="tabular">{g.min} {minLabel} · {num(g.km)} km</text>
+
+    <!-- Bédar -->
+    <circle cx="96" cy="322" r="9" fill="#fff" stroke="#7C8B99" stroke-width="4" />
+    <text x="116" y="327" font-size="19" font-weight="600" fill="#4A5B6B">Bédar</text>
+
+    <!-- Turre -->
+    <circle cx="300" cy="486" r="10" fill="#fff" stroke="#0B7C86" stroke-width="5" />
+    <text x="318" y="492" font-size="20" font-weight="700">Turre</text>
+    <text x="318" y="514" font-size="16" font-weight="600" fill="#0B7C86" class="tabular">{tu.min} {minLabel}</text>
+
+    <!-- Mojácar -->
+    <circle cx="500" cy="486" r="10" fill="#fff" stroke="#2CC5D2" stroke-width="5" />
+    <text x="482" y="492" font-size="20" font-weight="700" text-anchor="end">Mojácar</text>
+    <text x="482" y="514" font-size="16" font-weight="600" fill="#0B7C86" text-anchor="end" class="tabular">{mo.min} {minLabel}</text>
+
+    <!-- Antas -->
+    <circle cx="60" cy="96" r="10" fill="#fff" stroke="#143B5C" stroke-width="5" />
+    <text x="46" y="140" font-size="20" font-weight="700">Antas</text>
+    <text x="46" y="162" font-size="16" font-weight="600" fill="#143B5C" class="tabular">{an.min} {minLabel}</text>
+
+    <!-- Terminus -->
+    <circle cx="466" cy="96" r="44" fill="#F2617A" fill-opacity=".12" class="gal-pulse" />
+    <rect x="432" y="76" width="68" height="40" rx="20" fill="#fff" stroke="#0A1F33" stroke-width="4.5" />
+    <text x="400" y="34" font-size="13" font-weight="700" letter-spacing="2.4" fill="#C9304A" text-anchor="end">{terminal}</text>
+    <text x="400" y="64" font-size="30" font-family="Fraunces, Georgia, serif" font-style="italic" text-anchor="end">Koral · Vera</text>
+  </g>
+</svg>
+
+<style is:global>
+  .gal-transit { display: block; width: 100%; height: auto; }
+  .gal-transit .gal-pulse { transform-box: fill-box; transform-origin: center; animation: gal-pulse 2.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+  @keyframes gal-pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .gal-transit .gal-dot, .gal-transit .gal-pulse { display: none; }
+  }
+</style>

@@ -1,0 +1,261 @@
+---
+/**
+ * Turre hero map — "Curvas de nivel". An illustrative topographic sheet: the
+ * contour lines of the Sierra Cabrera (a smooth height field traced with
+ * marching squares at build time, so lines never cross), a lat/lon graticule,
+ * the coastline, and the REAL driving route from Turre to the clinic
+ * (OpenStreetMap data in src/data/towns.ts) with a car that travels along it.
+ * Heights are not to scale and carry no numbers on purpose.
+ */
+import { TOWNS, CLINIC, COAST } from '../../data/towns';
+import { smoothPath } from './TurrePaths';
+
+interface Props {
+  title: string;
+  sierraLabel: string;
+  seaLabel: string;
+  clinicNote: string;
+  lang: string;
+  class?: string;
+}
+const { title, sierraLabel, seaLabel, clinicNote, lang, class: className = '' } = Astro.props;
+
+const town = TOWNS.turre;
+const route = town.routes[0];
+
+// Projection (equirectangular, corrected for latitude)
+const W = 560;
+const H = 700;
+const maxLat = 37.247;
+const spanLat = 0.13;
+const minLon = -1.926;
+const cos = Math.cos((37.18 * Math.PI) / 180);
+const spanLonScaled = (spanLat * W) / H;
+const x = (lon: number) => ((lon - minLon) * cos) / spanLonScaled * W;
+const y = (lat: number) => ((maxLat - lat) / spanLat) * H;
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const line = (pts: [number, number][]) => pts.map(([px, py], i) => `${i ? 'L' : 'M'}${r1(px)} ${r1(py)}`).join('');
+
+// Coast, land and sea
+const coast = COAST.map(([lat, lon]) => [x(lon), y(lat)] as [number, number]);
+const coastD = line(coast);
+const landD = `M-20 ${r1(coast[0][1])}${coast.map(([cx, cy]) => `L${r1(cx)} ${r1(cy)}`).join('')}L-20 ${r1(coast[coast.length - 1][1])}Z`;
+const seaD = `${coastD}L${W + 40} ${r1(coast[coast.length - 1][1])}L${W + 40} ${r1(coast[0][1])}Z`;
+
+// Height field: the sierra south of Turre (off the bottom edge), two spurs and
+// low hills between Turre and Vera, plus a gentle wobble so lines look drawn.
+const hills: [number, number, number, number, number, number][] = [
+  // cx, cy, sx, sy, angle, amplitude
+  [240, 805, 300, 165, -0.32, 1.15],
+  [40, 735, 150, 120, 0.2, 0.62],
+  [400, 760, 120, 90, 0.4, 0.45],
+  [120, 260, 105, 80, 0.5, 0.3],
+  [300, 330, 80, 60, -0.3, 0.2],
+];
+const field = (px: number, py: number) => {
+  let h = 0;
+  for (const [cx, cy, sx, sy, a, amp] of hills) {
+    const dx = px - cx;
+    const dy = py - cy;
+    const u = dx * Math.cos(a) + dy * Math.sin(a);
+    const v = -dx * Math.sin(a) + dy * Math.cos(a);
+    h += amp * Math.exp(-((u * u) / (2 * sx * sx) + (v * v) / (2 * sy * sy)));
+  }
+  h += 0.035 * Math.sin(px * 0.031 + py * 0.017) + 0.025 * Math.sin(px * 0.013 - py * 0.041 + 1.3);
+  return h;
+};
+
+// Marching squares → joined polylines per level
+const step = 13;
+const cols = Math.ceil((W + 40) / step) + 1;
+const rows = Math.ceil((H + 40) / step) + 1;
+const ox = -20;
+const oy = -20;
+const grid: number[][] = [];
+for (let j = 0; j < rows; j++) {
+  grid[j] = [];
+  for (let i = 0; i < cols; i++) grid[j][i] = field(ox + i * step, oy + j * step);
+}
+const contour = (level: number) => {
+  const segs: [string, string][] = [];
+  const pts = new Map<string, [number, number]>();
+  const edgePt = (i: number, j: number, horizontal: boolean) => {
+    const key = `${horizontal ? 'h' : 'v'}${i},${j}`;
+    if (!pts.has(key)) {
+      const a = grid[j][i];
+      const b = horizontal ? grid[j][i + 1] : grid[j + 1][i];
+      const t = (level - a) / (b - a);
+      pts.set(key, horizontal ? [ox + (i + t) * step, oy + j * step] : [ox + i * step, oy + (j + t) * step]);
+    }
+    return key;
+  };
+  for (let j = 0; j < rows - 1; j++) {
+    for (let i = 0; i < cols - 1; i++) {
+      const c = (grid[j][i] > level ? 8 : 0) | (grid[j][i + 1] > level ? 4 : 0) | (grid[j + 1][i + 1] > level ? 2 : 0) | (grid[j + 1][i] > level ? 1 : 0);
+      if (c === 0 || c === 15) continue;
+      const top = () => edgePt(i, j, true);
+      const bottom = () => edgePt(i, j + 1, true);
+      const left = () => edgePt(i, j, false);
+      const right = () => edgePt(i + 1, j, false);
+      const table: Record<number, [() => string, () => string][]> = {
+        1: [[left, bottom]], 2: [[bottom, right]], 3: [[left, right]], 4: [[top, right]],
+        5: [[left, top], [bottom, right]], 6: [[top, bottom]], 7: [[left, top]], 8: [[left, top]],
+        9: [[top, bottom]], 10: [[left, bottom], [top, right]], 11: [[top, right]], 12: [[left, right]],
+        13: [[bottom, right]], 14: [[left, bottom]],
+      };
+      for (const [p, q] of table[c]) segs.push([p(), q()]);
+    }
+  }
+  // chain segments
+  const adj = new Map<string, number[]>();
+  segs.forEach(([p, q], k) => {
+    adj.set(p, [...(adj.get(p) ?? []), k]);
+    adj.set(q, [...(adj.get(q) ?? []), k]);
+  });
+  const used = new Set<number>();
+  const chains: [number, number][][] = [];
+  segs.forEach((_, start) => {
+    if (used.has(start)) return;
+    used.add(start);
+    const chain = [segs[start][0], segs[start][1]];
+    for (const dir of [1, -1]) {
+      let end = dir === 1 ? chain[chain.length - 1] : chain[0];
+      for (;;) {
+        const next = (adj.get(end) ?? []).find((k) => !used.has(k));
+        if (next === undefined) break;
+        used.add(next);
+        const [p, q] = segs[next];
+        end = p === end ? q : p;
+        if (dir === 1) chain.push(end);
+        else chain.unshift(end);
+      }
+    }
+    if (chain.length > 4) chains.push(chain.map((k) => pts.get(k)!));
+  });
+  return chains.map((c) => smoothPath(c)).join('');
+};
+const levels = Array.from({ length: 11 }, (_, i) => 0.1 + i * 0.082);
+const contours = levels.map((lv, i) => ({ d: contour(lv), major: i % 4 === 0, i })).filter((c) => c.d);
+
+// Graticule
+const lats = [37.15, 37.2];
+const lons = [-1.9, -1.85];
+const deg = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(2)}° ${v >= 0 ? pos : neg}`;
+
+// Route + markers
+const routeD = line(route.path.map(([lon, lat]) => [x(lon), y(lat)]));
+const start = { x: x(route.path[0][0]), y: y(route.path[0][1]) };
+const clinic = { x: x(CLINIC.lon), y: y(CLINIC.lat) };
+const uid = `tur-topo-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class:list={['tur-topo', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <defs>
+    <clipPath id={`${uid}-land`}><path d={landD} /></clipPath>
+    <linearGradient id={`${uid}-road`} x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9D8B6" />
+      <stop offset=".45" stop-color="#2CC5D2" />
+      <stop offset="1" stop-color="#F2617A" />
+    </linearGradient>
+    <radialGradient id={`${uid}-glow`}>
+      <stop offset="0" stop-color="#F2617A" stop-opacity=".45" />
+      <stop offset="1" stop-color="#F2617A" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id={`${uid}-shade`} x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#8FA98A" stop-opacity=".22" />
+      <stop offset=".55" stop-color="#8FA98A" stop-opacity="0" />
+    </linearGradient>
+    <pattern id={`${uid}-waves`} width="22" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 6q5.5-4 11 0t11 0" fill="none" stroke="#8FE3EA" stroke-opacity=".12" />
+    </pattern>
+  </defs>
+
+  <rect width={W} height={H} fill="#0C2533" />
+  <path d={seaD} fill="#071A2A" />
+  <path d={seaD} fill={`url(#${uid}-waves)`} />
+  <rect width={W} height={H} fill={`url(#${uid}-shade)`} clip-path={`url(#${uid}-land)`} />
+
+  <!-- Graticule -->
+  <g stroke="#E8F2F5" stroke-opacity=".08" stroke-dasharray="2 6" font-family="Inter, system-ui, sans-serif" font-size="9.5" letter-spacing=".8">
+    {lats.map((la) => <path d={`M0 ${r1(y(la))}H${W}`} />)}
+    {lons.map((lo) => <path d={`M${r1(x(lo))} 0V${H}`} />)}
+    {lats.map((la) => <text x="10" y={r1(y(la)) - 6} fill="#B8CCB0" fill-opacity=".55" stroke="none">{deg(la, 'N', 'S')}</text>)}
+    {lons.map((lo) => <text x={r1(x(lo)) + 6} y={H - 12} fill="#B8CCB0" fill-opacity=".55" stroke="none">{deg(lo, 'E', 'W')}</text>)}
+  </g>
+
+  <!-- Contour lines of the sierra -->
+  <g clip-path={`url(#${uid}-land)`} fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="draw">
+      {contours.map((c) => (
+        <path d={c.d} pathLength="1" stroke={c.major ? '#B5C9A8' : '#8FA98A'} stroke-opacity={c.major ? 0.62 : 0.34} stroke-width={c.major ? 1.5 : 0.9} style={`--dd:${(0.1 + (contours.length - c.i) * 0.11).toFixed(2)}s`} />
+      ))}
+    </g>
+  </g>
+
+  <!-- Coast -->
+  <path d={coastD} fill="none" stroke="#8FE3EA" stroke-opacity=".7" stroke-width="1.4" />
+  {[9, 20].map((o, i) => (
+    <path d={line(coast.map(([cx, cy]) => [cx + o, cy]))} fill="none" stroke="#8FE3EA" stroke-opacity={0.18 - i * 0.07} stroke-dasharray={i ? '2 6' : undefined} />
+  ))}
+  <text x={W - 22} y={H - 52} text-anchor="end" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="16" fill="#8FE3EA" fill-opacity=".7">{seaLabel}</text>
+
+  <!-- Spot heights (unnumbered) and sierra label -->
+  <g fill="#C9D8B6" fill-opacity=".8">
+    <path d="M118 278l6-10 6 10Z" />
+    <path d="M206 612l7-12 7 12Z" />
+  </g>
+  <text x="236" y="596" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="21" letter-spacing="1.5" fill="#DDE7D4" fill-opacity=".85" paint-order="stroke" stroke="#0C2533" stroke-width="4" transform="rotate(-7 236 596)">{sierraLabel}</text>
+
+  <!-- Route -->
+  <path d={routeD} fill="none" stroke="#071A2A" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".75" />
+  <path d={routeD} fill="none" stroke="#E8F2F5" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".08" />
+  <g class="draw">
+    <path id={`${uid}-route`} d={routeD} fill="none" stroke={`url(#${uid}-road)`} stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" pathLength="1" style="--dd:.9s" />
+  </g>
+  <circle r="6.5" fill="#fff" stroke="#F2617A" stroke-width="2.6" class="tur-car">
+    <animateMotion dur="7.5s" repeatCount="indefinite" begin="3s" calcMode="linear" keyPoints="0;1" keyTimes="0;1">
+      <mpath href={`#${uid}-route`} />
+    </animateMotion>
+  </circle>
+
+  <!-- Turre -->
+  <g>
+    <circle cx={r1(start.x)} cy={r1(start.y)} r="16" fill="none" stroke="#C9D8B6" stroke-opacity=".5" class="tur-pulse" />
+    <circle cx={r1(start.x)} cy={r1(start.y)} r="7.5" fill="#0C2533" stroke="#C9D8B6" stroke-width="3" />
+    <text x={r1(start.x) + 16} y={r1(start.y) + 26} font-family="Fraunces, Georgia, serif" font-size="22" fill="#fff" paint-order="stroke" stroke="#0C2533" stroke-width="5" stroke-linejoin="round">{town.name}</text>
+    <text x={r1(start.x) + 16} y={r1(start.y) + 42} font-family="Inter, system-ui, sans-serif" font-size="9.5" letter-spacing="1.2" fill="#B8CCB0" paint-order="stroke" stroke="#0C2533" stroke-width="4">{`${town.lat.toFixed(4)}° N · ${Math.abs(town.lon).toFixed(4)}° W`}</text>
+  </g>
+
+  <!-- Clinic -->
+  <g>
+    <circle cx={r1(clinic.x)} cy={r1(clinic.y)} r="40" fill={`url(#${uid}-glow)`} />
+    <path d={`M${r1(clinic.x)} ${r1(clinic.y) + 2}c-7-8.8-11-14.2-11-19.6a11 11 0 0 1 22 0c0 5.4-4 10.8-11 19.6Z`} fill="#F2617A" stroke="#fff" stroke-width="2" />
+    <circle cx={r1(clinic.x)} cy={r1(clinic.y) - 17} r="4" fill="#fff" />
+    <text x={r1(clinic.x) - 18} y={r1(clinic.y) - 20} text-anchor="end" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="21" fill="#fff" paint-order="stroke" stroke="#0C2533" stroke-width="5">Koral · Vera</text>
+    <text x={r1(clinic.x) - 18} y={r1(clinic.y) - 4} text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="9.5" letter-spacing="1.3" fill="#FF9AAA" paint-order="stroke" stroke="#0C2533" stroke-width="4">{clinicNote}</text>
+  </g>
+
+  <!-- Route legend -->
+  <g transform={`translate(22 ${H - 76})`} font-family="Inter, system-ui, sans-serif">
+    <rect width="196" height="52" rx="12" fill="#071A2A" fill-opacity=".82" stroke="#B5C9A8" stroke-opacity=".25" />
+    <text x="14" y="22" font-size="15" font-weight="700" fill="#fff" class="tabular">{`${String(route.km).replace('.', lang === 'en' ? '.' : ',')} km · ${route.min} ${lang === 'de' ? 'Min.' : 'min'}`}</text>
+    <text x="14" y="39" font-size="9.5" letter-spacing=".6" fill="#B8CCB0">{route.roads.join(' › ')}</text>
+  </g>
+
+  <!-- North arrow -->
+  <g transform={`translate(${W - 34} 36)`} fill="none" stroke="#C9D8B6" stroke-opacity=".6">
+    <circle r="14" />
+    <path d="M0-10l4 10-4 10-4-10Z" fill="#C9D8B6" fill-opacity=".3" />
+    <text y="-19" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#C9D8B6" stroke="none">N</text>
+  </g>
+</svg>
+
+<style is:global>
+  .tur-topo { display: block; width: 100%; height: auto; }
+  .tur-topo .tur-pulse { transform-box: fill-box; transform-origin: center; animation: pulse-ring 2.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+  .tur-topo .draw path { transition-duration: 2.6s; }
+  @media (prefers-reduced-motion: reduce) {
+    .tur-topo .tur-car, .tur-topo .tur-pulse { display: none; }
+  }
+</style>

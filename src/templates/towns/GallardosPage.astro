@@ -1,0 +1,733 @@
+---
+/**
+ * Local landing page for Los Gallardos — concept "Cruce de caminos":
+ * a light, graphic page built like a transit diagram. Lines converge on
+ * Koral · Vera, a split-flap welcome board in five languages, a strip map of
+ * the real route, a "ticket" for the treatment plan and line-coded treatments.
+ * The clinic is in Vera: the copy never claims a practice in Los Gallardos.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import GallardosTransitMap from '../../components/towns/GallardosTransitMap.astro';
+import GallardosBoard from '../../components/towns/GallardosBoard.astro';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey } from '../../i18n/routes';
+import { TOWNS, fill } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const town = TOWNS.gallardos;
+const route = town.routes[0];
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const min = route.min;
+const km = num(route.km);
+// Road names for prose, kept on one line (N-340A, A-7, A-352)
+const R = route.roads.map((r) => `<span class="whitespace-nowrap">${r}</span>`);
+const moj = TOWNS.mojacar.routes[0].min;
+const antas = TOWNS.antas.routes[0].min;
+/** Descriptive in-body link. */
+const a = (key: RouteKey, text: string) => `<a class="prose-link" href="${pathFor(key, lang)}">${text}</a>`;
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista Los Gallardos: clínica dental a ${min} min | Koral`,
+    metaDesc: `Dentista para Los Gallardos en Vera, a ${min} min por la A-7. Consulta en inglés, alemán, neerlandés o francés, asesora de pacientes y primera visita gratis.`,
+    eyebrow: 'Cruce de caminos · Los Gallardos → Vera',
+    h1: 'Tu dentista para Los Gallardos',
+    h1Accent: `a ${min} minutos por la A-7`,
+    lead: `¿Buscas dentista en Los Gallardos? Clínica Dental Koral está en Vera, a ${km} km y unos ${min} minutos en coche por la ${R[0]}, la ${R[1]} y la ${R[2]}. Es tu clínica dental cerca de Los Gallardos: consulta en tu idioma, todas las especialidades en el mismo sitio y primera visita gratuita.`,
+    minLabel: 'min',
+    terminal: 'TERMINAL',
+    mapTitle: `Dentista Los Gallardos: plano de líneas hacia Clínica Dental Koral, en Vera, a ${min} min`,
+    boardEyebrow: 'Salidas en 5 idiomas',
+    boardTitle: 'Consulta en inglés, alemán, neerlandés o francés',
+    boardP1: 'Los Gallardos tiene una gran comunidad internacional de residentes, y en el dentista los matices importan: qué notas, qué te preocupa, qué opciones tienes y qué implica cada una. En Koral puedes explicarte en español, inglés, alemán, neerlandés o francés, y recibir el diagnóstico y el presupuesto en el idioma en el que te sientas cómodo.',
+    boardP2: `Si en casa se hablan varios idiomas, cada miembro de la familia puede hacer su consulta en el suyo. Basta con decirlo al pedir cita por teléfono, por WhatsApp o desde el ${a('contact', 'formulario de contacto de la clínica')}.`,
+    boardLabel: 'Panel de bienvenida en cinco idiomas',
+    boardHeaders: ['Idioma', 'Saludo', 'Consulta', 'Destino'],
+    boardSummary: 'Hello, Hallo, Hallo, Bonjour, Hola: consulta en inglés, alemán, neerlandés, francés y español en Clínica Dental Koral, Vera.',
+    routeEyebrow: 'La ruta real',
+    routeTitle: `Clínica dental cerca de Los Gallardos, a ${km} km por la A-7`,
+    routeP1: `Es uno de los trayectos más cómodos de la comarca. Desde el centro de Los Gallardos sales a la ${R[0]}, te incorporas a la ${R[1]} en dirección Vera y, al final, la ${R[2]} te deja en la Av. de Baria, 4. Son ${km} km y unos ${min} minutos sin tráfico, la mayor parte por autovía, así que la cita encaja en una mañana sin desmontar el día.`,
+    routeP2: `Para quien vive en Bédar, a un paso de Los Gallardos, la clínica queda igual de a mano. Los pacientes de Turre llegan por otro camino, el que va hacia la costa (lo contamos en ${a('turre', 'dentista para Turre')}), igual que los de ${a('mojacar', 'Mojácar')}, a ${moj} minutos; y desde ${a('antas', 'Antas')} son ${antas} minutos. Tienes todos los pueblos en ${a('areas', 'las zonas que atendemos en el Levante Almeriense')}.`,
+    stripStart: 'Salida',
+    stripEnd: 'Llegada',
+    mapNote: 'Ruta real (OpenStreetMap). Tiempo en coche sin tráfico.',
+    planEyebrow: 'Tu plan, explicado',
+    planTitle: 'Una asesora que te explica el plan y la financiación',
+    planP1: 'Cuando el especialista te propone un tratamiento, no te vas a casa con un papel lleno de códigos. Ellé-Louise Warner, asesora de pacientes de Koral, se sienta contigo y repasa el plan fase a fase: qué se hace en cada cita, cuánto tiempo lleva, cuánto cuesta y qué alternativas tienes.',
+    planP2: `La mayoría de los tratamientos se pueden financiar al 0 %, y la primera visita es gratuita. Tienes las condiciones en ${a('pricing', 'precios y financiación')} y puedes conocer a todo el ${a('team', 'equipo de especialistas de la clínica')}.`,
+    ticketTitle: 'Billete · Plan de tratamiento',
+    ticket: [['Origen', 'Los Gallardos'], ['Destino', 'Koral · Vera'], ['Trayecto', `${min} min · ${km} km`], ['Primera visita', 'Gratuita'], ['Financiación', '0 % · mayoría de tratamientos'], ['Idiomas', 'ES · EN · DE · NL · FR']],
+    ticketStub: 'Te atiende',
+    photoAlt: 'Ellé-Louise Warner, asesora de pacientes de Clínica Dental Koral en Vera',
+    trtEyebrow: 'Líneas de tratamiento',
+    trtTitle: 'Implantes, alineadores, estética y revisiones para Los Gallardos',
+    trtDesc: 'Cuatro líneas de tratamiento, cada una en manos de su especialista, sin salir de la misma clínica de Vera.',
+    trts: [
+      { title: 'Implantes dentales Straumann', text: 'Implantes Straumann con garantía de por vida, planificados con escáner CBCT 3D en la propia clínica. La cirugía la realiza la Dra. Ana Padilla, especialista en cirugía oral e implantología.', link: a('implantes', 'Implantes dentales en Vera') },
+      { title: 'Alineadores transparentes y ortodoncia', text: 'Ortodoncia con alineadores transparentes para adultos y adolescentes, y ortodoncia para los más pequeños, con el seguimiento de la Dra. Ana Soler, especialista en ortodoncia y odontopediatría.', link: a('ortodoncia', 'Ortodoncia con alineadores transparentes') },
+      { title: 'Estética dental', text: 'Blanqueamiento, carillas y diseño de sonrisa con un objetivo sencillo: que el resultado se vea natural. El área de estética también la dirige la Dra. Ana Padilla.', link: a('estetica', 'Estética dental y carillas') },
+      { title: 'Revisiones y encías', text: `Revisión, limpieza y control de encías para detectar los problemas a tiempo. Si un diente necesita ${a('endodoncia', 'endodoncia')}, la Dra. Ángeles Parra la realiza con microscopio dental.`, link: a('periodoncia', 'Periodoncia y salud de las encías') },
+    ],
+    whyEyebrow: 'Antes de decidir',
+    whyTitle: '¿El mejor dentista para Los Gallardos? Compáralo tú',
+    whyDesc: 'Eso no nos toca decirlo a nosotros. Lo que sí podemos darte son hechos concretos para que compares:',
+    why: [
+      ['Diagnóstico 3D en la clínica', 'Escáner CBCT y microscopio dental en Vera: las pruebas se hacen aquí, sin derivarte a otro centro.'],
+      ['Un especialista por área', 'Cirugía e implantes, ortodoncia y endodoncia, cada una con su especialista.'],
+      ['Cinco idiomas', 'Consulta, diagnóstico y presupuesto en español, inglés, alemán, neerlandés o francés.'],
+      ['Cuentas claras', 'Primera visita gratuita, presupuesto claro y financiación al 0 % en la mayoría de tratamientos.'],
+    ],
+    hoursTitle: 'Horario de la clínica',
+    days: [['Lunes', '10:00 – 20:00'], ['Martes', '8:00 – 16:00'], ['Miércoles', '10:00 – 18:00'], ['Jueves', '8:00 – 16:00'], ['Viernes', '8:00 – 16:00']],
+    hoursNote: 'El lunes, hasta las 20:00: útil si trabajas por la mañana.',
+    faqEyebrow: 'Preguntas frecuentes',
+    faqTitle: 'Dudas de pacientes de Los Gallardos',
+    faqs: [
+      ['¿A qué distancia está la clínica dental desde Los Gallardos?', `Clínica Dental Koral está en la Av. de Baria, 4, en Vera: a ${km} km y unos ${min} minutos en coche desde Los Gallardos por la ${R[0]}, la ${R[1]} y la ${R[2]}. No tenemos consulta en Los Gallardos; todo se hace en la clínica de Vera.`],
+      ['¿Hay un dentista que hable inglés, alemán o neerlandés cerca de Los Gallardos?', 'Sí. En Koral atendemos en español, inglés, alemán, neerlandés y francés, desde la primera visita hasta el presupuesto. Indícanos tu idioma al pedir cita.'],
+      ['¿Quién me explica el presupuesto y la financiación?', `Ellé-Louise Warner, nuestra asesora de pacientes, repasa contigo el plan y el presupuesto. La mayoría de tratamientos se pueden financiar al 0 %: tienes los detalles en ${a('pricing', 'precios y financiación')}.`],
+      ['¿Cuánto cuesta la primera visita?', 'Es gratuita. Hacemos una valoración completa, te explicamos las opciones y te damos un presupuesto claro, sin compromiso.'],
+      ['¿Qué tratamientos puedo hacerme en la clínica?', `Todas las especialidades: ${a('implantes', 'implantes Straumann')} con garantía de por vida, alineadores transparentes, estética dental, endodoncia con microscopio, periodoncia y odontopediatría, con diagnóstico 3D por CBCT en la propia clínica.`],
+      ['¿Qué horario tenéis y cómo pido cita desde Los Gallardos?', 'Lunes de 10:00 a 20:00, miércoles de 10:00 a 18:00, y martes, jueves y viernes de 8:00 a 16:00. Llama al +34 950 39 53 19, escribe por WhatsApp al +34 634 68 36 39 o usa el formulario de esta página.'],
+    ],
+  },
+  en: {
+    metaTitle: `Dentist Los Gallardos: English-speaking, ${min} min | Koral`,
+    metaDesc: `English-speaking dentist for Los Gallardos, ${min} min away in Vera via the A-7. German, Dutch and French spoken too, a patient advisor and a free first visit.`,
+    eyebrow: 'Crossroads · Los Gallardos → Vera',
+    h1: 'Your dentist for Los Gallardos',
+    h1Accent: `${min} minutes down the A-7`,
+    lead: `Looking for a dentist in Los Gallardos? Koral Dental Clinic is in Vera, ${km} km and about ${min} minutes by car via the ${R[0]}, ${R[1]} and ${R[2]}. It is an English-speaking dental clinic near Los Gallardos, with every speciality under one roof and a free first visit.`,
+    minLabel: 'min',
+    terminal: 'TERMINUS',
+    mapTitle: `Dentist for Los Gallardos: line diagram to Koral Dental Clinic in Vera, ${min} min away`,
+    boardEyebrow: 'Departures in 5 languages',
+    boardTitle: 'An English-speaking dentist near Los Gallardos',
+    boardP1: 'Los Gallardos is home to a large international community, and at the dentist the details matter: what you feel, what worries you, which options you have and what each one involves. At Koral you can talk it all through in English, German, Dutch, French or Spanish, and receive your diagnosis and quote in the language you are most comfortable with.',
+    boardP2: `If your household speaks more than one language, that is fine: each member of the family can have their consultation in their own. Just tell us when you book by phone, on WhatsApp or through the ${a('contact', 'clinic’s contact form')}.`,
+    boardLabel: 'Welcome board in five languages',
+    boardHeaders: ['Language', 'Greeting', 'Consultation', 'To'],
+    boardSummary: 'Hello, Hallo, Hallo, Bonjour, Hola: consultations in English, German, Dutch, French and Spanish at Koral Dental Clinic, Vera.',
+    routeEyebrow: 'The real route',
+    routeTitle: `A dental clinic near Los Gallardos, ${km} km along the A-7`,
+    routeP1: `It is one of the easiest drives in the area. From the centre of Los Gallardos you take the ${R[0]}, join the ${R[1]} towards Vera and finish on the ${R[2]}, which brings you to Av. de Baria, 4. That is ${km} km and about ${min} minutes without traffic, most of it on the motorway, so an appointment fits into a morning without losing the whole day.`,
+    routeP2: `If you live in Bédar, right next to Los Gallardos, the clinic is just as handy. Patients from Turre come a different way, towards the coast (see ${a('turre', 'our dentist page for Turre')}), as do those from ${a('mojacar', 'Mojácar')}, ${moj} minutes away; from ${a('antas', 'Antas')} it is ${antas} minutes. Every town is listed on ${a('areas', 'the areas we serve across the Levante Almeriense')}.`,
+    stripStart: 'Depart',
+    stripEnd: 'Arrive',
+    mapNote: 'Real route (OpenStreetMap). Driving time without traffic.',
+    planEyebrow: 'Your plan, explained',
+    planTitle: 'A patient advisor who explains your plan and the financing',
+    planP1: 'When a specialist proposes a treatment, you don’t go home with a sheet full of codes. Ellé-Louise Warner, Koral’s patient advisor, sits down with you and goes through the plan step by step: what happens at each appointment, how long it takes, what it costs and what the alternatives are.',
+    planP2: `Most treatments can be spread with 0% financing, and the first visit is free. The details are on ${a('pricing', 'prices & financing')}, and you can meet ${a('team', 'the clinic’s team of specialists')}.`,
+    ticketTitle: 'Ticket · Treatment plan',
+    ticket: [['From', 'Los Gallardos'], ['To', 'Koral · Vera'], ['Journey', `${min} min · ${km} km`], ['First visit', 'Free'], ['Financing', '0% · most treatments'], ['Languages', 'EN · DE · NL · FR · ES']],
+    ticketStub: 'Your advisor',
+    photoAlt: 'Ellé-Louise Warner, patient advisor at Koral Dental Clinic in Vera',
+    trtEyebrow: 'Treatment lines',
+    trtTitle: 'Implants, clear aligners, cosmetic dentistry and check-ups for Los Gallardos',
+    trtDesc: 'Four lines of treatment, each in the hands of its own specialist, all at the same clinic in Vera.',
+    trts: [
+      { title: 'Straumann dental implants', text: 'Straumann implants with a lifetime warranty, planned with a 3D CBCT scan taken here at the clinic. Surgery is carried out by Dr Ana Padilla, who specialises in oral surgery and implantology.', link: a('implantes', 'Dental implants in Vera') },
+      { title: 'Clear aligners & orthodontics', text: 'Clear aligners for adults and teenagers, and orthodontics for younger children, followed by Dr Ana Soler, our specialist in orthodontics and children’s dentistry.', link: a('ortodoncia', 'Clear aligner orthodontics') },
+      { title: 'Cosmetic dentistry', text: 'Whitening, veneers and smile design with one simple aim: a result that looks natural. Dr Ana Padilla also leads the clinic’s cosmetic work.', link: a('estetica', 'Cosmetic dentistry and veneers') },
+      { title: 'Check-ups & gums', text: `Check-ups, cleaning and gum care to catch problems early. If a tooth needs a ${a('endodoncia', 'root canal')}, Dr Ángeles Parra performs it under a dental microscope.`, link: a('periodoncia', 'Periodontics and gum health') },
+    ],
+    whyEyebrow: 'Before you decide',
+    whyTitle: 'The best dentist for Los Gallardos? You be the judge',
+    whyDesc: 'That is not for us to say. What we can give you are concrete facts to compare:',
+    why: [
+      ['3D diagnosis on site', 'CBCT scanner and dental microscope in Vera: tests are done here, with no referral to another centre.'],
+      ['A specialist for each area', 'Surgery and implants, orthodontics and endodontics each have their own specialist.'],
+      ['Five languages', 'Consultation, diagnosis and quote in English, German, Dutch, French or Spanish.'],
+      ['Clear numbers', 'Free first visit, a clear quote and 0% financing on most treatments.'],
+    ],
+    hoursTitle: 'Clinic opening hours',
+    days: [['Monday', '10 am – 8 pm'], ['Tuesday', '8 am – 4 pm'], ['Wednesday', '10 am – 6 pm'], ['Thursday', '8 am – 4 pm'], ['Friday', '8 am – 4 pm']],
+    hoursNote: 'Mondays until 8 pm: handy if you work in the mornings.',
+    faqEyebrow: 'FAQ',
+    faqTitle: 'Questions from patients in Los Gallardos',
+    faqs: [
+      ['How far is the dental clinic from Los Gallardos?', `Koral Dental Clinic is at Av. de Baria, 4, in Vera: ${km} km and about ${min} minutes by car from Los Gallardos via the ${R[0]}, ${R[1]} and ${R[2]}. We don’t have a practice in Los Gallardos; all treatment takes place at the clinic in Vera.`],
+      ['Is there an English-speaking dentist near Los Gallardos?', 'Yes. At Koral we see patients in English, German, Dutch, French and Spanish, from the first visit right through to the quote. Just let us know your language when you book.'],
+      ['Who explains the quote and the financing?', `Ellé-Louise Warner, our patient advisor, goes through the plan and the quote with you. Most treatments can be paid with 0% financing: see ${a('pricing', 'prices & financing')}.`],
+      ['How much is the first visit?', 'It is free. We carry out a full assessment, explain your options and give you a clear quote, with no obligation.'],
+      ['Which treatments can I have at the clinic?', `Every speciality: ${a('implantes', 'Straumann implants')} with a lifetime warranty, clear aligners, cosmetic dentistry, microscope-assisted root canals, periodontics and children’s dentistry, with 3D CBCT diagnosis on site.`],
+      ['What are your opening hours and how do I book from Los Gallardos?', 'Monday 10 am–8 pm, Wednesday 10 am–6 pm, and Tuesday, Thursday and Friday 8 am–4 pm. Call +34 950 39 53 19, message us on WhatsApp at +34 634 68 36 39 or use the form on this page.'],
+    ],
+  },
+  de: {
+    metaTitle: `Zahnarzt Los Gallardos: deutschsprachig, ${min} Min. | Koral`,
+    metaDesc: `Zahnarzt für Los Gallardos: Zahnklinik in Vera, ${min} Min. über die A-7. Beratung auf Deutsch oder Englisch, Patientenberatung und kostenloser Ersttermin.`,
+    eyebrow: 'Knotenpunkt · Los Gallardos → Vera',
+    h1: 'Ihr Zahnarzt für Los Gallardos',
+    h1Accent: `${min} Minuten über die A-7`,
+    lead: `Sie suchen einen Zahnarzt in Los Gallardos? Die Zahnklinik Koral liegt in Vera, ${km} km und rund ${min} Autominuten entfernt, über die ${R[0]}, die ${R[1]} und die ${R[2]}. Eine Zahnklinik nahe Los Gallardos, in der Sie auf Deutsch beraten werden, alle Fachbereiche unter einem Dach finden und der erste Termin kostenlos ist.`,
+    minLabel: 'Min.',
+    terminal: 'ENDHALTESTELLE',
+    mapTitle: `Zahnarzt Los Gallardos: Linienplan zur Zahnklinik Koral in Vera, ${min} Min. entfernt`,
+    boardEyebrow: 'Abfahrt in 5 Sprachen',
+    boardTitle: 'Deutschsprachiger Zahnarzt nahe Los Gallardos',
+    boardP1: 'In Los Gallardos lebt eine große internationale Gemeinschaft, und beim Zahnarzt kommt es auf Nuancen an: was Sie spüren, was Sie beunruhigt, welche Möglichkeiten es gibt und was jede davon bedeutet. Bei Koral sprechen Sie Deutsch, Englisch, Niederländisch, Französisch oder Spanisch und erhalten Befund und Kostenvoranschlag in der Sprache, in der Sie sich wohlfühlen.',
+    boardP2: `Wird bei Ihnen zu Hause in mehreren Sprachen gesprochen? Kein Problem: Jedes Familienmitglied kann seinen Termin in der eigenen Sprache wahrnehmen. Sagen Sie es uns einfach bei der Terminvereinbarung, telefonisch, per WhatsApp oder über das ${a('contact', 'Kontaktformular der Klinik')}.`,
+    boardLabel: 'Begrüßungstafel in fünf Sprachen',
+    boardHeaders: ['Sprache', 'Gruß', 'Beratung', 'Ziel'],
+    boardSummary: 'Hello, Hallo, Hallo, Bonjour, Hola: Beratung auf Englisch, Deutsch, Niederländisch, Französisch und Spanisch in der Zahnklinik Koral, Vera.',
+    routeEyebrow: 'Die echte Strecke',
+    routeTitle: `Zahnklinik nahe Los Gallardos: ${km} km über die A-7`,
+    routeP1: `Die Anfahrt gehört zu den bequemsten der Region. Vom Ortskern von Los Gallardos fahren Sie auf die ${R[0]}, wechseln auf die ${R[1]} Richtung Vera und erreichen über die ${R[2]} die Av. de Baria, 4. Das sind ${km} km und etwa ${min} Minuten ohne Verkehr, größtenteils auf der Autobahn: Ein Termin passt bequem in einen Vormittag.`,
+    routeP2: `Wer in Bédar wohnt, gleich neben Los Gallardos, hat es ebenso nah. Aus Turre fährt man eine andere Strecke Richtung Küste (mehr dazu unter ${a('turre', 'Zahnarzt für Turre')}), ebenso aus ${a('mojacar', 'Mojácar')} mit ${moj} Minuten; aus ${a('antas', 'Antas')} sind es ${antas} Minuten. Alle Orte finden Sie in ${a('areas', 'unserem Einzugsgebiet im Levante Almeriense')}.`,
+    stripStart: 'Abfahrt',
+    stripEnd: 'Ankunft',
+    mapNote: 'Echte Strecke (OpenStreetMap). Fahrzeit ohne Verkehr.',
+    planEyebrow: 'Ihr Plan, verständlich erklärt',
+    planTitle: 'Eine Patientenberaterin erklärt Plan und Finanzierung',
+    planP1: 'Wenn die Fachärztin Ihnen eine Behandlung vorschlägt, gehen Sie nicht mit einem Blatt voller Kürzel nach Hause. Ellé-Louise Warner, Patientenberaterin bei Koral, nimmt sich Zeit und geht den Plan Schritt für Schritt mit Ihnen durch: was bei jedem Termin passiert, wie lange es dauert, was es kostet und welche Alternativen es gibt.',
+    planP2: `Die meisten Behandlungen lassen sich mit 0 % finanzieren, und der Ersttermin ist kostenlos. Die Konditionen finden Sie unter ${a('pricing', 'Preise & Finanzierung')}; dort stellt sich auch ${a('team', 'das Fachärzteteam der Klinik')} vor.`,
+    ticketTitle: 'Fahrschein · Behandlungsplan',
+    ticket: [['Von', 'Los Gallardos'], ['Nach', 'Koral · Vera'], ['Fahrt', `${min} Min. · ${km} km`], ['Ersttermin', 'Kostenlos'], ['Finanzierung', '0 % · die meisten Behandlungen'], ['Sprachen', 'DE · EN · NL · FR · ES']],
+    ticketStub: 'Ihre Beraterin',
+    photoAlt: 'Ellé-Louise Warner, Patientenberaterin der Zahnklinik Koral in Vera',
+    trtEyebrow: 'Behandlungslinien',
+    trtTitle: 'Implantate, Aligner, Ästhetik und Kontrollen für Los Gallardos',
+    trtDesc: 'Vier Behandlungslinien, jede in der Hand ihrer Fachärztin, alles in derselben Klinik in Vera.',
+    trts: [
+      { title: 'Straumann-Zahnimplantate', text: 'Straumann-Implantate mit lebenslanger Garantie, geplant mit 3D-DVT direkt in der Klinik. Den Eingriff übernimmt Dra. Ana Padilla, Fachärztin für Oralchirurgie und Implantologie.', link: a('implantes', 'Zahnimplantate in Vera') },
+      { title: 'Transparente Aligner & Kieferorthopädie', text: 'Transparente Aligner für Erwachsene und Jugendliche sowie Kieferorthopädie für Kinder, betreut von Dra. Ana Soler, Fachärztin für Kieferorthopädie und Kinderzahnheilkunde.', link: a('ortodoncia', 'Kieferorthopädie mit transparenten Alignern') },
+      { title: 'Ästhetische Zahnheilkunde', text: 'Bleaching, Veneers und Smile Design mit einem klaren Ziel: ein natürlich wirkendes Ergebnis. Auch die Ästhetik leitet Dra. Ana Padilla.', link: a('estetica', 'Ästhetische Zahnheilkunde und Veneers') },
+      { title: 'Kontrollen & Zahnfleisch', text: `Kontrolle, Zahnreinigung und Zahnfleischpflege, damit Probleme früh erkannt werden. Braucht ein Zahn eine ${a('endodoncia', 'Wurzelbehandlung')}, führt Dra. Ángeles Parra sie unter dem Dentalmikroskop durch.`, link: a('periodoncia', 'Parodontologie und Zahnfleischgesundheit') },
+    ],
+    whyEyebrow: 'Bevor Sie sich entscheiden',
+    whyTitle: 'Der beste Zahnarzt für Los Gallardos? Urteilen Sie selbst',
+    whyDesc: 'Das zu behaupten steht uns nicht zu. Wir können Ihnen aber konkrete Fakten zum Vergleichen geben:',
+    why: [
+      ['3D-Diagnostik vor Ort', 'DVT und Dentalmikroskop in Vera: Die Untersuchungen finden hier statt, ohne Überweisung an ein anderes Zentrum.'],
+      ['Eine Fachärztin pro Bereich', 'Chirurgie und Implantate, Kieferorthopädie und Endodontie, jeweils mit eigener Spezialistin.'],
+      ['Fünf Sprachen', 'Beratung, Befund und Kostenvoranschlag auf Deutsch, Englisch, Niederländisch, Französisch oder Spanisch.'],
+      ['Klare Zahlen', 'Kostenloser Ersttermin, transparenter Kostenvoranschlag und 0 % Finanzierung für die meisten Behandlungen.'],
+    ],
+    hoursTitle: 'Öffnungszeiten der Klinik',
+    days: [['Montag', '10–20 Uhr'], ['Dienstag', '8–16 Uhr'], ['Mittwoch', '10–18 Uhr'], ['Donnerstag', '8–16 Uhr'], ['Freitag', '8–16 Uhr']],
+    hoursNote: 'Montags bis 20 Uhr: praktisch, wenn Sie vormittags arbeiten.',
+    faqEyebrow: 'Häufige Fragen',
+    faqTitle: 'Fragen von Patienten aus Los Gallardos',
+    faqs: [
+      ['Wie weit ist die Zahnklinik von Los Gallardos entfernt?', `Die Zahnklinik Koral liegt in der Av. de Baria, 4 in Vera: ${km} km und etwa ${min} Autominuten von Los Gallardos, über die ${R[0]}, die ${R[1]} und die ${R[2]}. In Los Gallardos selbst haben wir keine Praxis; alle Behandlungen finden in Vera statt.`],
+      ['Gibt es einen deutschsprachigen Zahnarzt in der Nähe von Los Gallardos?', 'Ja. Bei Koral werden Sie auf Deutsch, Englisch, Niederländisch, Französisch und Spanisch betreut, vom Ersttermin bis zum Kostenvoranschlag. Nennen Sie uns bei der Terminvereinbarung einfach Ihre Sprache.'],
+      ['Wer erklärt mir Kostenvoranschlag und Finanzierung?', `Ellé-Louise Warner, unsere Patientenberaterin, geht Plan und Kosten mit Ihnen durch. Die meisten Behandlungen lassen sich mit 0 % finanzieren, Details unter ${a('pricing', 'Preise & Finanzierung')}.`],
+      ['Was kostet der erste Termin?', 'Er ist kostenlos. Wir untersuchen Sie gründlich, erklären Ihnen die Möglichkeiten und erstellen einen klaren, unverbindlichen Kostenvoranschlag.'],
+      ['Welche Behandlungen bietet die Klinik an?', `Alle Fachbereiche: ${a('implantes', 'Straumann-Implantate')} mit lebenslanger Garantie, transparente Aligner, ästhetische Zahnheilkunde, Wurzelbehandlung unter dem Mikroskop, Parodontologie und Kinderzahnheilkunde, mit 3D-Diagnostik per DVT direkt vor Ort.`],
+      ['Wann ist die Klinik geöffnet und wie vereinbare ich einen Termin?', 'Montags 10–20 Uhr, mittwochs 10–18 Uhr, dienstags, donnerstags und freitags 8–16 Uhr. Rufen Sie +34 950 39 53 19 an, schreiben Sie per WhatsApp an +34 634 68 36 39 oder nutzen Sie das Formular auf dieser Seite.'],
+    ],
+  },
+  nl: {
+    metaTitle: `Tandarts Los Gallardos: Nederlandstalig, ${min} min | Koral`,
+    metaDesc: `Tandarts voor Los Gallardos: tandkliniek in Vera, ${min} min via de A-7. Consult in het Nederlands, Engels of Duits, een patiëntadviseur en gratis eerste bezoek.`,
+    eyebrow: 'Knooppunt · Los Gallardos → Vera',
+    h1: 'Uw tandarts voor Los Gallardos',
+    h1Accent: `${min} minuten over de A-7`,
+    lead: `Op zoek naar een tandarts in Los Gallardos? Tandkliniek Koral ligt in Vera, op ${km} km en zo’n ${min} minuten rijden via de ${R[0]}, de ${R[1]} en de ${R[2]}. Een tandkliniek vlak bij Los Gallardos waar u in het Nederlands terechtkunt, alle specialismen onder één dak vindt en het eerste bezoek gratis is.`,
+    minLabel: 'min',
+    terminal: 'EINDSTATION',
+    mapTitle: `Tandarts Los Gallardos: lijnenkaart naar Tandkliniek Koral in Vera, op ${min} min`,
+    boardEyebrow: 'Vertrek in 5 talen',
+    boardTitle: 'Een Nederlandstalige tandarts bij Los Gallardos',
+    boardP1: 'In Los Gallardos woont een grote internationale gemeenschap, en bij de tandarts tellen de details: wat u voelt, waar u zich zorgen over maakt, welke mogelijkheden er zijn en wat elke keuze inhoudt. Bij Koral legt u het uit in het Nederlands, Engels, Duits, Frans of Spaans, en krijgt u de diagnose en de offerte in de taal waarin u zich prettig voelt.',
+    boardP2: `Spreekt u thuis meerdere talen? Geen probleem: ieder gezinslid kan het consult in de eigen taal doen. Laat het ons weten wanneer u een afspraak maakt, telefonisch, via WhatsApp of met het ${a('contact', 'contactformulier van de kliniek')}.`,
+    boardLabel: 'Welkomstbord in vijf talen',
+    boardHeaders: ['Taal', 'Groet', 'Consult', 'Naar'],
+    boardSummary: 'Hello, Hallo, Hallo, Bonjour, Hola: consult in het Engels, Duits, Nederlands, Frans en Spaans bij Tandkliniek Koral, Vera.',
+    routeEyebrow: 'De echte route',
+    routeTitle: `Tandkliniek bij Los Gallardos, ${km} km over de A-7`,
+    routeP1: `Het is een van de makkelijkste ritten in de regio. Vanuit het centrum van Los Gallardos neemt u de ${R[0]}, voegt u in op de ${R[1]} richting Vera en via de ${R[2]} komt u uit bij de Av. de Baria, 4. Dat is ${km} km en ongeveer ${min} minuten zonder verkeer, grotendeels over de snelweg: een afspraak past makkelijk in een ochtend.`,
+    routeP2: `Woont u in Bédar, vlak bij Los Gallardos, dan ligt de kliniek net zo dichtbij. Vanuit Turre rijdt u een andere route, richting de kust (zie ${a('turre', 'tandarts voor Turre')}), net als vanuit ${a('mojacar', 'Mojácar')}, op ${moj} minuten; vanuit ${a('antas', 'Antas')} is het ${antas} minuten. Alle plaatsen vindt u bij ${a('areas', 'onze werkgebieden in de Levante Almeriense')}.`,
+    stripStart: 'Vertrek',
+    stripEnd: 'Aankomst',
+    mapNote: 'Echte route (OpenStreetMap). Rijtijd zonder verkeer.',
+    planEyebrow: 'Uw plan, helder uitgelegd',
+    planTitle: 'Een patiëntadviseur die plan en financiering uitlegt',
+    planP1: 'Stelt de specialist een behandeling voor, dan gaat u niet naar huis met een blad vol codes. Ellé-Louise Warner, patiëntadviseur bij Koral, neemt het plan stap voor stap met u door: wat er bij elke afspraak gebeurt, hoe lang het duurt, wat het kost en welke alternatieven er zijn.',
+    planP2: `De meeste behandelingen kunnen met 0% financiering worden betaald, en het eerste bezoek is gratis. De voorwaarden staan bij ${a('pricing', 'prijzen & financiering')}, en u kunt ook kennismaken met ${a('team', 'het team van specialisten van de kliniek')}.`,
+    ticketTitle: 'Vervoersbewijs · Behandelplan',
+    ticket: [['Van', 'Los Gallardos'], ['Naar', 'Koral · Vera'], ['Reistijd', `${min} min · ${km} km`], ['Eerste bezoek', 'Gratis'], ['Financiering', '0% · meeste behandelingen'], ['Talen', 'NL · EN · DE · FR · ES']],
+    ticketStub: 'Uw adviseur',
+    photoAlt: 'Ellé-Louise Warner, patiëntadviseur van Tandkliniek Koral in Vera',
+    trtEyebrow: 'Behandellijnen',
+    trtTitle: 'Implantaten, aligners, esthetiek en controles voor Los Gallardos',
+    trtDesc: 'Vier behandellijnen, elk in handen van een eigen specialist, allemaal in dezelfde kliniek in Vera.',
+    trts: [
+      { title: 'Straumann-tandimplantaten', text: 'Straumann-implantaten met levenslange garantie, gepland met een 3D CBCT-scan in de kliniek zelf. De ingreep doet Dra. Ana Padilla, specialist in mondchirurgie en implantologie.', link: a('implantes', 'Tandimplantaten in Vera') },
+      { title: 'Transparante aligners & orthodontie', text: 'Transparante aligners voor volwassenen en tieners, en orthodontie voor kinderen, begeleid door Dra. Ana Soler, specialist in orthodontie en kindertandheelkunde.', link: a('ortodoncia', 'Orthodontie met transparante aligners') },
+      { title: 'Esthetische tandheelkunde', text: 'Bleken, facings en smile design met één eenvoudig doel: een resultaat dat er natuurlijk uitziet. Ook de esthetiek staat onder leiding van Dra. Ana Padilla.', link: a('estetica', 'Esthetische tandheelkunde en facings') },
+      { title: 'Controles & tandvlees', text: `Controle, gebitsreiniging en tandvleeszorg om problemen vroeg te zien. Heeft een tand een ${a('endodoncia', 'wortelkanaalbehandeling')} nodig, dan doet Dra. Ángeles Parra die onder de microscoop.`, link: a('periodoncia', 'Parodontologie en gezond tandvlees') },
+    ],
+    whyEyebrow: 'Voordat u kiest',
+    whyTitle: 'De beste tandarts voor Los Gallardos? Oordeel zelf',
+    whyDesc: 'Dat moeten wij niet zelf zeggen. Wel kunnen we u concrete feiten geven om te vergelijken:',
+    why: [
+      ['3D-diagnose in de kliniek', 'CBCT-scanner en tandheelkundige microscoop in Vera: onderzoeken gebeuren hier, zonder doorverwijzing.'],
+      ['Een specialist per vakgebied', 'Chirurgie en implantaten, orthodontie en endodontie hebben elk een eigen specialist.'],
+      ['Vijf talen', 'Consult, diagnose en offerte in het Nederlands, Engels, Duits, Frans of Spaans.'],
+      ['Heldere cijfers', 'Gratis eerste bezoek, een duidelijke offerte en 0% financiering voor de meeste behandelingen.'],
+    ],
+    hoursTitle: 'Openingstijden van de kliniek',
+    days: [['Maandag', '10.00 – 20.00'], ['Dinsdag', '8.00 – 16.00'], ['Woensdag', '10.00 – 18.00'], ['Donderdag', '8.00 – 16.00'], ['Vrijdag', '8.00 – 16.00']],
+    hoursNote: 'Op maandag tot 20.00 uur: handig als u ’s ochtends werkt.',
+    faqEyebrow: 'Veelgestelde vragen',
+    faqTitle: 'Vragen van patiënten uit Los Gallardos',
+    faqs: [
+      ['Hoe ver is de tandkliniek van Los Gallardos?', `Tandkliniek Koral ligt aan de Av. de Baria, 4 in Vera: ${km} km en ongeveer ${min} minuten rijden vanaf Los Gallardos via de ${R[0]}, de ${R[1]} en de ${R[2]}. We hebben geen praktijk in Los Gallardos zelf; alle behandelingen vinden plaats in Vera.`],
+      ['Is er een Nederlandstalige tandarts in de buurt van Los Gallardos?', 'Ja. Bij Koral wordt u geholpen in het Nederlands, Engels, Duits, Frans en Spaans, van het eerste bezoek tot en met de offerte. Geef uw taal door wanneer u een afspraak maakt.'],
+      ['Wie legt de offerte en de financiering uit?', `Ellé-Louise Warner, onze patiëntadviseur, neemt het plan en de kosten met u door. De meeste behandelingen kunnen met 0% financiering: zie ${a('pricing', 'prijzen & financiering')}.`],
+      ['Wat kost het eerste bezoek?', 'Het is gratis. We doen een volledig onderzoek, leggen uw opties uit en geven u een duidelijke, vrijblijvende offerte.'],
+      ['Welke behandelingen biedt de kliniek?', `Alle specialismen: ${a('implantes', 'Straumann-implantaten')} met levenslange garantie, transparante aligners, esthetische tandheelkunde, wortelkanaalbehandeling onder de microscoop, parodontologie en kindertandheelkunde, met 3D CBCT-diagnose in de kliniek.`],
+      ['Wat zijn de openingstijden en hoe maak ik een afspraak?', 'Maandag 10.00–20.00, woensdag 10.00–18.00 en dinsdag, donderdag en vrijdag 8.00–16.00 uur. Bel +34 950 39 53 19, stuur een WhatsApp naar +34 634 68 36 39 of gebruik het formulier op deze pagina.'],
+    ],
+  },
+  fr: {
+    metaTitle: `Dentiste Los Gallardos : francophone, à ${min} min | Koral`,
+    metaDesc: `Dentiste pour Los Gallardos : clinique dentaire à Vera, à ${min} min par l’A-7. Consultation en français ou en anglais, conseillère patients, 1re visite gratuite.`,
+    eyebrow: 'Carrefour · Los Gallardos → Vera',
+    h1: 'Votre dentiste pour Los Gallardos',
+    h1Accent: `à ${min} minutes par l’A-7`,
+    lead: `Vous cherchez un dentiste à Los Gallardos ? La Clinique Dentaire Koral se trouve à Vera, à ${km} km et environ ${min} minutes en voiture par la ${R[0]}, l’${R[1]} et l’${R[2]}. Une clinique dentaire proche de Los Gallardos où l’on vous reçoit en français, avec toutes les spécialités au même endroit et une première visite gratuite.`,
+    minLabel: 'min',
+    terminal: 'TERMINUS',
+    mapTitle: `Dentiste Los Gallardos : plan des lignes vers la Clinique Dentaire Koral à Vera, à ${min} min`,
+    boardEyebrow: 'Départs en 5 langues',
+    boardTitle: 'Un dentiste francophone près de Los Gallardos',
+    boardP1: 'Los Gallardos accueille une importante communauté internationale, et chez le dentiste, les nuances comptent : ce que vous ressentez, ce qui vous inquiète, les options possibles et ce que chacune implique. Chez Koral, vous pouvez vous exprimer en français, anglais, allemand, néerlandais ou espagnol, et recevoir diagnostic et devis dans la langue où vous êtes le plus à l’aise.',
+    boardP2: `Plusieurs langues à la maison ? Aucun souci : chaque membre de la famille peut faire sa consultation dans la sienne. Il suffit de nous le préciser en prenant rendez-vous par téléphone, par WhatsApp ou via le ${a('contact', 'formulaire de contact de la clinique')}.`,
+    boardLabel: 'Panneau d’accueil en cinq langues',
+    boardHeaders: ['Langue', 'Salut', 'Consultation', 'Vers'],
+    boardSummary: 'Hello, Hallo, Hallo, Bonjour, Hola : consultation en anglais, allemand, néerlandais, français et espagnol à la Clinique Dentaire Koral, Vera.',
+    routeEyebrow: 'Le vrai trajet',
+    routeTitle: `Une clinique dentaire près de Los Gallardos, à ${km} km par l’A-7`,
+    routeP1: `C’est l’un des trajets les plus simples de la région. Depuis le centre de Los Gallardos, vous prenez la ${R[0]}, rejoignez l’${R[1]} en direction de Vera, puis l’${R[2]} vous mène jusqu’à l’Av. de Baria, 4. Soit ${km} km et environ ${min} minutes sans trafic, en grande partie sur l’autoroute : un rendez-vous tient facilement dans une matinée.`,
+    routeP2: `Si vous habitez Bédar, tout près de Los Gallardos, la clinique est tout aussi accessible. Depuis Turre, on emprunte un autre itinéraire, vers la côte (voir ${a('turre', 'dentiste pour Turre')}), comme depuis ${a('mojacar', 'Mojácar')}, à ${moj} minutes ; depuis ${a('antas', 'Antas')}, comptez ${antas} minutes. Toutes les communes figurent sur ${a('areas', 'nos zones desservies dans le Levante Almeriense')}.`,
+    stripStart: 'Départ',
+    stripEnd: 'Arrivée',
+    mapNote: 'Trajet réel (OpenStreetMap). Temps en voiture sans trafic.',
+    planEyebrow: 'Votre plan, expliqué',
+    planTitle: 'Une conseillère qui vous explique le plan et le financement',
+    planP1: 'Quand la spécialiste vous propose un traitement, vous ne repartez pas avec une feuille pleine de codes. Ellé-Louise Warner, conseillère patients chez Koral, prend le temps de parcourir le plan avec vous, étape par étape : ce qui se fait à chaque rendez-vous, la durée, le coût et les alternatives possibles.',
+    planP2: `La plupart des traitements peuvent être financés à 0 %, et la première visite est gratuite. Les conditions sont détaillées sur ${a('pricing', 'prix et financement')}, et vous pouvez découvrir ${a('team', 'l’équipe de spécialistes de la clinique')}.`,
+    ticketTitle: 'Billet · Plan de traitement',
+    ticket: [['Départ', 'Los Gallardos'], ['Arrivée', 'Koral · Vera'], ['Trajet', `${min} min · ${km} km`], ['Première visite', 'Gratuite'], ['Financement', '0 % · la plupart des soins'], ['Langues', 'FR · EN · DE · NL · ES']],
+    ticketStub: 'Votre conseillère',
+    photoAlt: 'Ellé-Louise Warner, conseillère patients de la Clinique Dentaire Koral à Vera',
+    trtEyebrow: 'Lignes de traitement',
+    trtTitle: 'Implants, aligneurs, esthétique et contrôles pour Los Gallardos',
+    trtDesc: 'Quatre lignes de traitement, chacune confiée à sa spécialiste, toutes dans la même clinique de Vera.',
+    trts: [
+      { title: 'Implants dentaires Straumann', text: 'Implants Straumann garantis à vie, planifiés grâce au scanner CBCT 3D de la clinique. L’intervention est réalisée par la Dra. Ana Padilla, spécialiste en chirurgie orale et implantologie.', link: a('implantes', 'Implants dentaires à Vera') },
+      { title: 'Aligneurs transparents et orthodontie', text: 'Aligneurs transparents pour adultes et adolescents, et orthodontie pour les plus jeunes, suivis par la Dra. Ana Soler, spécialiste en orthodontie et en dentisterie pédiatrique.', link: a('ortodoncia', 'Orthodontie par aligneurs transparents') },
+      { title: 'Esthétique dentaire', text: 'Blanchiment, facettes et design du sourire avec un objectif simple : un résultat naturel. L’esthétique est elle aussi dirigée par la Dra. Ana Padilla.', link: a('estetica', 'Esthétique dentaire et facettes') },
+      { title: 'Contrôles et gencives', text: `Contrôle, détartrage et soin des gencives pour repérer les problèmes tôt. Si une dent a besoin d’une ${a('endodoncia', 'dévitalisation')}, la Dra. Ángeles Parra la réalise au microscope dentaire.`, link: a('periodoncia', 'Parodontie et santé des gencives') },
+    ],
+    whyEyebrow: 'Avant de choisir',
+    whyTitle: 'Le meilleur dentiste pour Los Gallardos ? À vous de juger',
+    whyDesc: 'Ce n’est pas à nous de le dire. En revanche, voici des faits concrets pour comparer :',
+    why: [
+      ['Diagnostic 3D sur place', 'Scanner CBCT et microscope dentaire à Vera : les examens se font ici, sans vous envoyer ailleurs.'],
+      ['Une spécialiste par domaine', 'Chirurgie et implants, orthodontie et endodontie ont chacune leur spécialiste.'],
+      ['Cinq langues', 'Consultation, diagnostic et devis en français, anglais, allemand, néerlandais ou espagnol.'],
+      ['Des comptes clairs', 'Première visite gratuite, devis clair et financement à 0 % pour la plupart des traitements.'],
+    ],
+    hoursTitle: 'Horaires de la clinique',
+    days: [['Lundi', '10 h – 20 h'], ['Mardi', '8 h – 16 h'], ['Mercredi', '10 h – 18 h'], ['Jeudi', '8 h – 16 h'], ['Vendredi', '8 h – 16 h']],
+    hoursNote: 'Le lundi jusqu’à 20 h : pratique si vous travaillez le matin.',
+    faqEyebrow: 'Questions fréquentes',
+    faqTitle: 'Questions des patients de Los Gallardos',
+    faqs: [
+      ['À quelle distance se trouve la clinique dentaire depuis Los Gallardos ?', `La Clinique Dentaire Koral est située Av. de Baria, 4, à Vera : à ${km} km et environ ${min} minutes en voiture de Los Gallardos par la ${R[0]}, l’${R[1]} et l’${R[2]}. Nous n’avons pas de cabinet à Los Gallardos ; tous les soins ont lieu à la clinique de Vera.`],
+      ['Y a-t-il un dentiste qui parle français près de Los Gallardos ?', 'Oui. Chez Koral, nous recevons en français, anglais, allemand, néerlandais et espagnol, de la première visite jusqu’au devis. Indiquez simplement votre langue en prenant rendez-vous.'],
+      ['Qui m’explique le devis et le financement ?', `Ellé-Louise Warner, notre conseillère patients, parcourt avec vous le plan et le devis. La plupart des traitements peuvent être financés à 0 % : voir ${a('pricing', 'prix et financement')}.`],
+      ['Combien coûte la première visite ?', 'Elle est gratuite. Nous faisons un bilan complet, vous expliquons les options et vous remettons un devis clair, sans engagement.'],
+      ['Quels traitements propose la clinique ?', `Toutes les spécialités : ${a('implantes', 'implants Straumann')} garantis à vie, aligneurs transparents, esthétique dentaire, endodontie au microscope, parodontie et soins pour enfants, avec diagnostic 3D par CBCT sur place.`],
+      ['Quels sont vos horaires et comment prendre rendez-vous ?', 'Lundi 10 h–20 h, mercredi 10 h–18 h, mardi, jeudi et vendredi 8 h–16 h. Appelez le +34 950 39 53 19, écrivez sur WhatsApp au +34 634 68 36 39 ou utilisez le formulaire de cette page.'],
+    ],
+  },
+} as const)[lang];
+
+const title = copy.metaTitle;
+const description = copy.metaDesc;
+const serviceName = fill(t('areas.dentist.in'), { town: town.name });
+
+/** Colours of the treatment lines and of the route segments. */
+const lineColors = ['#F2617A', '#0B7C86', '#2CC5D2', '#143B5C'];
+const segColors = ['#F2617A', '#0A1F33', '#0B7C86'];
+
+// Barcode for the ticket stub (decorative, deterministic)
+const bars = Array.from({ length: 34 }, (_, i) => ((i * 37 + 11) % 7) % 3 + 1);
+let bx = 0;
+const barcode = bars.map((w) => {
+  const d = `M${bx + w / 2} 0V40`;
+  bx += w + 2;
+  return { d, w };
+});
+const barW = bx;
+---
+
+<Layout title={title} description={description} lang={lang} schema={townSchema({ town: 'gallardos', lang, title, description, serviceName })}>
+  <Navigation />
+  <main id="main">
+    <!-- ============ Hero: the line diagram ============ -->
+    <section class="gal-hero relative isolate overflow-hidden bg-white pb-20 pt-32 md:pb-28 md:pt-40 lg:pt-44">
+      <div class="gal-hero-grid pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="container-k">
+        <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div class="lg:col-span-6">
+            <div data-reveal><Breadcrumbs tone="light" items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} class="mb-8" /></div>
+            <p class="gal-tag mb-6" data-reveal style="--d:.05s">
+              <span class="gal-tag-dot" aria-hidden="true"></span>{copy.eyebrow}
+            </p>
+            <h1 class="text-[2.55rem] leading-[1.02] text-ocean-900 sm:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="gal-h1-accent mt-2 block">{copy.h1Accent}</span>
+            </h1>
+            <p class="mt-7 max-w-xl text-lg leading-relaxed text-slate-600" data-reveal style="--d:.2s" set:html={copy.lead} />
+
+            <ul class="mt-8 flex flex-wrap gap-2.5" data-reveal style="--d:.26s">
+              <li class="gal-chip"><span class="gal-chip-sw" style="background:#F2617A"></span><span class="tabular">{fill(t('areas.drive'), { min, km })}</span></li>
+              <li class="gal-chip"><span class="gal-chip-sw" style="background:#0B7C86"></span>{t('trust.6')}</li>
+              <li class="gal-chip"><span class="gal-chip-sw" style="background:#2CC5D2"></span>{t('trust.7')}</li>
+            </ul>
+
+            <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.32s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-outline tabular">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" /></svg>
+                +34 950 39 53 19
+              </a>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6" data-reveal="scale" style="--d:.2s">
+            <div class="gal-plate relative">
+              <GallardosTransitMap title={copy.mapTitle} terminal={copy.terminal} minLabel={copy.minLabel} num={num} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- four lines running out of the hero -->
+      <svg class="draw absolute inset-x-0 bottom-0 h-10 w-full" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true">
+        {lineColors.map((c, i) => <path d={`M0 ${7 + i * 9}H1440`} stroke={c} stroke-width="5" fill="none" pathLength="1" style={`--dd:${0.4 + i * 0.15}s`} />)}
+      </svg>
+    </section>
+
+    <!-- ============ Welcome board: 5 languages ============ -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5" data-reveal>
+            <p class="eyebrow mb-5">{copy.boardEyebrow}</p>
+            <h2 class="text-[2.25rem] leading-[1.06] sm:text-5xl">{copy.boardTitle}</h2>
+            <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.boardP1}</p>
+            <p class="mt-4 text-lg leading-relaxed text-slate-600" set:html={copy.boardP2} />
+          </div>
+          <div class="lg:col-span-7" data-reveal="right" style="--d:.1s">
+            <GallardosBoard lang={lang} label={copy.boardLabel} headers={copy.boardHeaders} destination="Koral · Vera" summary={copy.boardSummary} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ The real route ============ -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="max-w-3xl" data-reveal>
+          <p class="eyebrow mb-5">{copy.routeEyebrow}</p>
+          <h2 class="text-[2.25rem] leading-[1.06] sm:text-5xl">{copy.routeTitle}</h2>
+        </div>
+
+        <ol class="gal-strip mt-14" data-reveal>
+          <li class="gal-stop gal-stop--end">
+            <span class="gal-node"></span>
+            <span class="gal-stop-txt"><span class="gal-stop-k">{copy.stripStart} · 0 {copy.minLabel}</span><strong>Los Gallardos</strong></span>
+          </li>
+          {route.roads.map((road, i) => (
+            <Fragment>
+              <li class="gal-seg" style={`--i:${i};--c:${segColors[i % segColors.length]}`}><span class="gal-shield" style={`--c:${segColors[i % segColors.length]}`}>{road}</span></li>
+              {i < route.roads.length - 1 && <li class="gal-stop" aria-hidden="true"><span class="gal-node gal-node--small"></span></li>}
+            </Fragment>
+          ))}
+          <li class="gal-stop gal-stop--end gal-stop--last">
+            <span class="gal-node gal-node--terminal"></span>
+            <span class="gal-stop-txt"><span class="gal-stop-k tabular">{copy.stripEnd} · {min} {copy.minLabel} · {km} km</span><strong>Koral · Vera</strong></span>
+          </li>
+        </ol>
+
+        <div class="mt-16 grid items-start gap-10 lg:grid-cols-12 lg:gap-16">
+          <div class="space-y-5 text-lg leading-relaxed text-slate-600 lg:col-span-6" data-reveal>
+            <p set:html={copy.routeP1} />
+            <p set:html={copy.routeP2} />
+          </div>
+          <figure class="lg:col-span-6" data-reveal="right">
+            <div class="overflow-hidden rounded-[1.75rem] ring-1 ring-ocean-900/10 shadow-[var(--shadow-card)]">
+              <TownRouteMap town="gallardos" tone="light" seaLabel={t('areas.sea')} />
+            </div>
+            <figcaption class="mt-3 text-[13px] text-slate-500">{copy.mapNote}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ The plan, as a ticket ============ -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5" data-reveal>
+            <p class="eyebrow mb-5">{copy.planEyebrow}</p>
+            <h2 class="text-[2.25rem] leading-[1.06] sm:text-5xl">{copy.planTitle}</h2>
+            <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.planP1}</p>
+            <p class="mt-4 text-lg leading-relaxed text-slate-600" set:html={copy.planP2} />
+          </div>
+
+          <div class="lg:col-span-7" data-reveal="right" style="--d:.1s">
+            <div class="gal-ticket">
+              <div class="gal-ticket-main">
+                <div class="flex items-center justify-between gap-4 border-b-2 border-ocean-900 pb-4">
+                  <p class="text-[12px] font-bold uppercase tracking-[0.2em] text-ocean-900">{copy.ticketTitle}</p>
+                  <span class="flex gap-1" aria-hidden="true">{lineColors.map((c) => <span class="h-3 w-3 rounded-full" style={`background:${c}`}></span>)}</span>
+                </div>
+                <dl class="mt-5 grid grid-cols-2 gap-x-6 gap-y-5">
+                  {copy.ticket.map(([k, v]) => (
+                    <div>
+                      <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{k}</dt>
+                      <dd class="mt-1 text-[15px] font-semibold leading-snug text-ocean-900 tabular">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              <div class="gal-ticket-stub">
+                <Picture src="/equipo/elle-louise-warner.jpg" alt={copy.photoAlt} width={600} height={600} class="h-24 w-24 rounded-full object-cover ring-4 ring-white/80" />
+                <p class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">{copy.ticketStub}</p>
+                <p class="font-display mt-1 text-xl leading-tight text-white">Ellé-Louise Warner</p>
+                <p class="mt-1 text-[13px] text-white/80">{t('role.advisor')}</p>
+                <svg viewBox={`0 0 ${barW} 40`} class="mt-5 h-8 w-36" preserveAspectRatio="none" aria-hidden="true">
+                  {barcode.map((b) => <path d={b.d} stroke="#fff" stroke-opacity=".85" stroke-width={b.w} />)}
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Treatment lines ============ -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end" data-reveal>
+          <div class="lg:col-span-7">
+            <p class="eyebrow mb-5">{copy.trtEyebrow}</p>
+            <h2 class="text-[2.25rem] leading-[1.06] sm:text-5xl">{copy.trtTitle}</h2>
+          </div>
+          <p class="text-lg leading-relaxed text-slate-600 lg:col-span-5 lg:pb-2">{copy.trtDesc}</p>
+        </div>
+
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {copy.trts.map((tr, i) => (
+            <li class="gal-line-card" style={`--c:${lineColors[i]};--d:${i * 0.08}s`} data-reveal>
+              <div class="gal-line-track" aria-hidden="true"><span></span><span></span><span></span></div>
+              <span class="gal-line-badge">L{i + 1}</span>
+              <h3 class="mt-5 font-sans text-xl font-semibold tracking-tight text-ocean-900">{tr.title}</h3>
+              <p class="mt-3 text-[15px] leading-relaxed text-slate-600" set:html={tr.text} />
+              <p class="gal-line-link mt-auto pt-6 text-[15px]" set:html={`${tr.link} →`} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ Facts + timetable ============ -->
+    <section class="section-y relative overflow-hidden bg-white pt-0 md:pt-0 lg:pt-0">
+      <div class="container-k">
+        <div class="gal-rule mb-20 md:mb-28" aria-hidden="true"></div>
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-7">
+            <div data-reveal>
+              <p class="eyebrow mb-5">{copy.whyEyebrow}</p>
+              <h2 class="text-[2.25rem] leading-[1.06] sm:text-5xl">{copy.whyTitle}</h2>
+              <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.whyDesc}</p>
+            </div>
+            <ol class="gal-stops mt-10">
+              {copy.why.map(([h, d], i) => (
+                <li data-reveal style={`--d:${i * 0.08}s;--c:${lineColors[i]}`}>
+                  <span class="gal-stops-dot" aria-hidden="true"></span>
+                  <h3 class="font-sans text-lg font-semibold tracking-tight text-ocean-900">{h}</h3>
+                  <p class="mt-1 text-[15px] leading-relaxed text-slate-600">{d}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <aside class="lg:col-span-5" data-reveal="right">
+            <div class="overflow-hidden rounded-[1.75rem] bg-white ring-2 ring-ocean-900 lg:sticky lg:top-32">
+              <div class="flex items-center gap-3 bg-ocean-900 px-6 py-4 text-white">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" class="text-aqua"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                <p class="text-[13px] font-bold uppercase tracking-[0.18em]">{copy.hoursTitle}</p>
+              </div>
+              <table class="w-full text-[15px]">
+                <tbody>
+                  {copy.days.map(([d, h]) => (
+                    <tr class="border-b border-ocean-900/10">
+                      <th scope="row" class="px-6 py-3.5 text-left font-medium text-slate-600">{d}</th>
+                      <td class="px-6 py-3.5 text-right font-semibold text-ocean-900 tabular">{h}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p class="px-6 pt-4 text-[13px] text-slate-500">{copy.hoursNote}</p>
+              <div class="flex flex-col gap-2.5 p-6 sm:flex-row lg:flex-col xl:flex-row">
+                <a href="tel:+34950395319" class="btn btn-dark !px-5 !py-3 text-sm tabular">+34 950 39 53 19</a>
+                <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-teal !px-5 !py-3 text-sm">WhatsApp</a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow={copy.faqEyebrow} title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="gallardos" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  /* Light hero: dark header text until the page scrolls */
+  body:has(.gal-hero) #site-header[data-solid='false']:not([data-menu='true']) { color: var(--color-ocean-900); }
+  body:has(.gal-hero) #site-header[data-solid='false']:not([data-menu='true']) .logo-img { filter: none; }
+
+  .gal-hero-grid {
+    background-image:
+      linear-gradient(rgba(10, 31, 51, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 31, 51, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(120% 90% at 70% 40%, #000 40%, transparent 85%);
+    -webkit-mask-image: radial-gradient(120% 90% at 70% 40%, #000 40%, transparent 85%);
+  }
+  .gal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: 2px solid var(--color-ocean-900);
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem 0.4rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ocean-900);
+  }
+  .gal-tag-dot { width: 0.85rem; height: 0.85rem; border-radius: 999px; border: 3px solid var(--color-coral); background: #fff; }
+  .gal-h1-accent { font-style: italic; font-weight: 400; color: var(--color-coral-deep); }
+  .gal-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    border-radius: 0.6rem;
+    background: var(--color-sand);
+    box-shadow: inset 0 0 0 1px rgba(10, 31, 51, 0.1);
+    padding: 0.5rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ocean-900);
+  }
+  .gal-chip-sw { width: 0.95rem; height: 0.35rem; border-radius: 1rem; }
+  .gal-plate {
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px rgba(10, 31, 51, 0.08), var(--shadow-elevated);
+    padding: 0.75rem;
+  }
+  @media (min-width: 768px) { .gal-plate { padding: 1.5rem; } }
+
+  /* Strip map of the route (vertical on phones, horizontal from md) */
+  .gal-strip { display: flex; flex-direction: column; list-style: none; padding: 0; }
+  .gal-stop { display: flex; align-items: center; gap: 1rem; }
+  .gal-node { flex: none; width: 28px; height: 28px; margin-left: 14px; border-radius: 999px; background: #fff; border: 6px solid var(--color-ocean-900); position: relative; z-index: 1; }
+  .gal-node--small { width: 20px; height: 20px; margin-left: 18px; border-width: 4px; }
+  .gal-node--terminal { border-color: var(--color-coral-deep); box-shadow: 0 0 0 6px rgba(242, 97, 122, 0.18); }
+  .gal-stop-txt { display: flex; flex-direction: column; line-height: 1.2; }
+  .gal-stop-txt strong { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500; color: var(--color-ocean-900); }
+  .gal-stop-k { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 0.2rem; }
+  .gal-seg { position: relative; height: 84px; padding-left: 72px; display: flex; align-items: center; }
+  .gal-seg::before, .gal-seg::after { content: ''; position: absolute; left: 23px; width: 10px; top: -6px; bottom: -6px; border-radius: 5px; }
+  .gal-seg::before { background: #e6ebef; }
+  .gal-seg::after { background: var(--c); transform: scaleY(0); transform-origin: top; transition: transform 0.9s var(--ease-out-expo) calc(0.3s + var(--i) * 0.45s); }
+  .gal-strip.visible .gal-seg::after { transform: none; }
+  .gal-shield { position: relative; z-index: 2; border-radius: 0.45rem; background: var(--c); padding: 0.3rem 0.65rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.04em; color: #fff; box-shadow: 0 0 0 3px #fff; }
+  @media (min-width: 768px) {
+    .gal-strip { flex-direction: row; align-items: center; padding-bottom: 4.75rem; }
+    .gal-stop { position: relative; flex: none; }
+    .gal-node, .gal-node--small { margin-left: 0; }
+    .gal-stop-txt { position: absolute; top: calc(100% + 0.9rem); left: 0; white-space: nowrap; }
+    .gal-stop--last .gal-stop-txt { left: auto; right: 0; text-align: right; }
+    .gal-seg { flex: 1; height: 64px; padding: 0; justify-content: center; }
+    .gal-seg::before, .gal-seg::after { left: -6px; right: -6px; width: auto; top: 50%; bottom: auto; height: 10px; margin-top: -5px; }
+    .gal-seg::after { transform: scaleX(0); transform-origin: left; }
+    .gal-strip.visible .gal-seg::after { transform: none; }
+  }
+
+  /* Ticket */
+  .gal-ticket { position: relative; display: grid; border-radius: 1.75rem; background: #fff; box-shadow: 0 0 0 1px rgba(10, 31, 51, 0.08), var(--shadow-elevated); overflow: hidden; }
+  .gal-ticket-main { padding: 1.75rem; }
+  .gal-ticket-stub { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; background: linear-gradient(160deg, #d93d56 0%, var(--color-coral-deep) 100%); padding: 2rem 1.5rem; border-top: 2px dashed rgba(255, 255, 255, 0.6); }
+  .gal-ticket-stub::before, .gal-ticket-stub::after { content: ''; position: absolute; top: -14px; width: 26px; height: 26px; border-radius: 999px; background: var(--color-sand); }
+  .gal-ticket-stub::before { left: -13px; }
+  .gal-ticket-stub::after { right: -13px; }
+  @media (min-width: 640px) {
+    .gal-ticket { grid-template-columns: 1fr 15rem; }
+    .gal-ticket-main { padding: 2.25rem; }
+    .gal-ticket-stub { justify-content: center; border-top: 0; border-left: 2px dashed rgba(255, 255, 255, 0.6); }
+    .gal-ticket-stub::before, .gal-ticket-stub::after { left: -14px; right: auto; }
+    .gal-ticket-stub::before { top: -13px; }
+    .gal-ticket-stub::after { top: auto; bottom: -13px; }
+  }
+
+  /* Treatment line cards */
+  .gal-line-card { position: relative; display: flex; flex-direction: column; border-radius: 1.5rem; background: #fff; box-shadow: 0 0 0 1px rgba(10, 31, 51, 0.08), var(--shadow-soft); padding: 1.75rem; transition: opacity 1s var(--ease-out-expo) var(--d, 0s), transform 0.6s var(--ease-out-expo), box-shadow 0.6s var(--ease-out-expo); }
+  .gal-line-card:hover { transform: translateY(-4px); box-shadow: 0 0 0 2px var(--c), var(--shadow-elevated); }
+  .gal-line-track { position: relative; display: flex; justify-content: space-between; height: 14px; align-items: center; }
+  .gal-line-track::before { content: ''; position: absolute; inset: 50% 0 auto; height: 6px; margin-top: -3px; border-radius: 3px; background: var(--c); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease-out-expo) calc(var(--d, 0s) + 0.3s); }
+  .gal-line-card.visible .gal-line-track::before { transform: none; }
+  .gal-line-track span { position: relative; width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 3px solid var(--c); }
+  .gal-line-badge { align-self: flex-start; margin-top: 1.4rem; display: inline-flex; height: 2.4rem; min-width: 2.4rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--c); padding: 0 0.6rem; font-weight: 800; font-size: 0.9rem; color: #fff; }
+  .gal-line-link a { text-decoration: none; }
+
+  .gal-rule { height: 10px; border-radius: 6px; background: linear-gradient(90deg, #f2617a 0 25%, #0b7c86 25% 50%, #2cc5d2 50% 75%, #143b5c 75% 100%); }
+
+  /* Facts as stops on a vertical line */
+  .gal-stops { position: relative; list-style: none; padding: 0; }
+  .gal-stops::before { content: ''; position: absolute; left: 11px; top: 10px; bottom: 10px; width: 6px; border-radius: 3px; background: linear-gradient(180deg, #f2617a, #0b7c86, #2cc5d2, #143b5c); }
+  .gal-stops li { position: relative; padding: 0 0 2rem 3.25rem; }
+  .gal-stops li:last-child { padding-bottom: 0; }
+  .gal-stops-dot { position: absolute; left: 0; top: 0.1rem; width: 28px; height: 28px; border-radius: 999px; background: #fff; border: 6px solid var(--c); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gal-seg::after, .gal-line-track::before { transform: none !important; transition: none !important; }
+  }
+</style>

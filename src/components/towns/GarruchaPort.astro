@@ -1,0 +1,137 @@
+---
+/**
+ * Editorial illustration of Garrucha's fishing port: the coastal fort on the
+ * promenade, white houses behind, moored fishing boats bobbing, drifting wave
+ * lines and a red-prawn stamp that draws itself.
+ */
+interface Props {
+  title: string;
+  stamp: string;
+  class?: string;
+}
+const { title, stamp, class: className = '' } = Astro.props;
+
+const navy = '#0A1F33';
+const sand = '#F3ECE3';
+const wave = (yy: number, amp: number, period: number) => {
+  let d = `M0 ${yy}`;
+  for (let xx = 0; xx < 1280; xx += period) d += `q${period / 4} ${-amp} ${period / 2} 0t${period / 2} 0`;
+  return d;
+};
+const boats = [
+  { x: 70, y: 322, s: 1, d: 0 },
+  { x: 250, y: 352, s: 0.82, d: 1.3 },
+  { x: 400, y: 312, s: 0.68, d: 2.1 },
+];
+const houses = [
+  [276, 214, 34, 36], [306, 200, 30, 50], [334, 220, 40, 30], [370, 206, 28, 44], [396, 224, 44, 26],
+  [436, 210, 30, 40], [462, 222, 36, 28], [494, 204, 32, 46], [522, 218, 42, 32], [560, 208, 30, 42], [586, 224, 54, 26],
+];
+---
+
+<svg viewBox="0 0 640 400" class:list={['gar-port', className]} role="img" aria-labelledby="gar-port-t">
+  <title id="gar-port-t">{title}</title>
+  <defs>
+    <linearGradient id="gar-port-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#143B5C" />
+      <stop offset="1" stop-color="#0A1F33" />
+    </linearGradient>
+    <path id="gar-stamp-ring" d="M84 124a40 40 0 1 1 0.01 0" />
+  </defs>
+
+  <!-- Sun and hills -->
+  <circle cx="520" cy="118" r="52" fill="#FFE4E8" />
+  <circle cx="520" cy="118" r="70" fill="none" stroke="#F2617A" stroke-opacity=".25" stroke-dasharray="2 6" class="gar-sunring" />
+  <path d="M0 214C70 190 150 196 226 206S372 176 456 194 590 186 640 196V262H0Z" fill="#E6D8C6" fill-opacity=".7" />
+
+  <!-- Gulls -->
+  <g fill="none" stroke={navy} stroke-width="1.4" stroke-linecap="round" class="gar-gulls">
+    <path d="M300 96q6-6 12 0q6-6 12 0" />
+    <path d="M338 118q4-4 8 0q4-4 8 0" />
+  </g>
+
+  <!-- Houses -->
+  <g fill="#fff" stroke={navy} stroke-width="1.2" stroke-linejoin="round">
+    {houses.map(([hx, hy, w, h]) => <rect x={hx} y={hy} width={w} height={h} />)}
+  </g>
+  <g fill={navy} fill-opacity=".75">
+    {houses.map(([hx, hy, w], i) => <rect x={hx + w / 2 - 3 + (i % 3) * 3 - 3} y={hy + 9} width="5" height="7" />)}
+  </g>
+
+  <!-- Fort on the promenade -->
+  <g stroke={navy} stroke-width="1.5" stroke-linejoin="round">
+    <path d="M48 262 66 212H246L264 262Z" fill={sand} />
+    <rect x="78" y="190" width="156" height="22" fill={sand} />
+    <rect x="138" y="164" width="40" height="26" fill={sand} />
+    <path d="M136 164h44" />
+    <path d="M158 164v-24" fill="none" />
+    <path d="M158 141h16l-4 5 4 5h-16" fill="#F2617A" stroke="none" />
+  </g>
+  <g fill={navy}>
+    {[92, 118, 196, 222].map((ex) => <rect x={ex} y="196" width="8" height="9" rx="1" />)}
+    <path d="M151 190v-12a7 7 0 0 1 14 0v12Z" />
+  </g>
+  <path d="M54 246H258" stroke={navy} stroke-opacity=".35" stroke-dasharray="3 4" />
+
+  <!-- Promenade -->
+  <rect x="0" y="262" width="640" height="8" fill={navy} />
+  <g stroke={navy} stroke-width="1.4" fill="#F2617A">
+    {[290, 350, 410, 470, 530, 590].map((lx) => (
+      <g><path d={`M${lx} 262v-26`} /><circle cx={lx} cy="234" r="3" /></g>
+    ))}
+  </g>
+
+  <!-- Sea -->
+  <rect x="0" y="270" width="640" height="130" fill="url(#gar-port-sea)" />
+  <g fill="none" stroke="#8FE3EA" stroke-linecap="round">
+    <path d={wave(296, 3, 64)} stroke-opacity=".28" class="gar-wave" />
+    <path d={wave(338, 4, 80)} stroke-opacity=".2" class="gar-wave gar-wave-2" />
+    <path d={wave(380, 3, 160)} stroke-opacity=".16" class="gar-wave gar-wave-3" />
+  </g>
+
+  <!-- Breakwater with harbour light -->
+  <path d="M640 292H520c-10 0-14 4-24 4s-12 6-22 6-14 4-20 4v10H640Z" fill="#1C5175" />
+  <g fill="#143B5C">
+    {[470, 496, 524, 554, 584, 614].map((rx, i) => <path d={`M${rx - 12} 306l4-${8 + (i % 3) * 2} 9-${3 + (i % 2) * 2} 10 ${4 + (i % 2)} 3 ${7 + (i % 3)}Z`} />)}
+  </g>
+  <rect x="446" y="276" width="10" height="30" fill="#fff" stroke={navy} stroke-width="1.2" />
+  <rect x="446" y="284" width="10" height="5" fill="#F2617A" />
+  <circle cx="451" cy="272" r="4" fill="#F2617A" class="gar-light" />
+
+  <!-- Fishing boats -->
+  {boats.map((b) => (
+    <g transform={`translate(${b.x} ${b.y}) scale(${b.s})`}>
+      <g class="gar-boat" style={`--bd:${b.d}s`}>
+        <path d="M44 -2V-68M44-64 104-22M44-68 4-4" fill="none" stroke={navy} stroke-width="1.5" stroke-linecap="round" />
+        <rect x="70" y="-24" width="30" height="22" fill="#fff" stroke={navy} stroke-width="1.5" />
+        <rect x="76" y="-18" width="8" height="7" fill={navy} />
+        <rect x="88" y="-18" width="8" height="7" fill={navy} />
+        <path d="M0 -2H124L110 20H14Z" fill="#fff" stroke={navy} stroke-width="1.6" stroke-linejoin="round" />
+        <path d="M4 5H120" stroke="#F2617A" stroke-width="3" />
+        <path d="M18 13H106" stroke="#2CC5D2" stroke-width="1.5" />
+        <g stroke="#fff" stroke-opacity=".35" stroke-linecap="round">
+          <path d="M20 28h30M66 30h40M36 36h24" />
+        </g>
+      </g>
+    </g>
+  ))}
+
+  <!-- Red prawn stamp -->
+  <g class="gar-stamp">
+    <circle cx="84" cy="84" r="52" fill="#fff" fill-opacity=".6" stroke="#F2617A" stroke-opacity=".7" />
+    <circle cx="84" cy="84" r="34" fill="none" stroke="#F2617A" stroke-opacity=".35" stroke-dasharray="1 3" />
+    <text font-family="Inter, system-ui, sans-serif" font-size="8.6" font-weight="600" letter-spacing="2.4" fill="#C9304A">
+      <textPath href="#gar-stamp-ring">{stamp}</textPath>
+    </text>
+    <g transform="translate(52 66) scale(.64)" fill="none" stroke="#F2617A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path pathLength="1" class="draw-me" d="M18 30C26 16 50 10 70 18c14 6 20 20 14 32-4 8-14 10-18 2" />
+      <path pathLength="1" class="draw-me" d="M18 32c10 8 26 12 44 8" />
+      <path pathLength="1" class="draw-me" d="M66 52l-8 7M66 52l1 10M66 52l9 4" />
+      <path pathLength="1" class="draw-me" d="M46 14c3 8 3 17 0 25M56 14c4 8 4 17 1 26M66 18c3 7 3 15 0 22M75 24c2 6 2 12-1 18" style="--dd:.5s" />
+      <path pathLength="1" class="draw-me" d="M18 30 2 26" />
+      <path pathLength="1" class="draw-me" d="M20 27C8 10 34 0 72 4M21 28C2 18 8 2 46-4" stroke-width="1.4" style="--dd:.7s" />
+      <path pathLength="1" class="draw-me" d="M28 36l-4 11M35 38l-2 12M42 39l-1 11M49 39l1 10" stroke-width="1.6" style="--dd:.9s" />
+      <circle cx="23" cy="25" r="1.8" fill="#F2617A" stroke="none" />
+    </g>
+  </g>
+</svg>

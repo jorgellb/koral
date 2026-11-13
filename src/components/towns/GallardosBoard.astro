@@ -1,0 +1,179 @@
+---
+/**
+ * Los Gallardos page — multilingual welcome board styled like a split-flap
+ * departures board. The big greeting flips through Hello / Hallo / Hallo /
+ * Bonjour / Hola; each row is written in its own language.
+ */
+import type { Lang } from '../../i18n/routes';
+
+interface Props {
+  lang: Lang;
+  label: string;
+  headers: readonly [string, string, string, string];
+  destination: string;
+  /** Accessible summary of the board. */
+  summary: string;
+}
+
+const { lang, label, headers, destination, summary } = Astro.props;
+
+const rows = [
+  { code: 'EN', lang: 'en', hello: 'Hello', text: 'Consultation in English' },
+  { code: 'DE', lang: 'de', hello: 'Hallo', text: 'Beratung auf Deutsch' },
+  { code: 'NL', lang: 'nl', hello: 'Hallo', text: 'Consult in het Nederlands' },
+  { code: 'FR', lang: 'fr', hello: 'Bonjour', text: 'Consultation en français' },
+  { code: 'ES', lang: 'es', hello: 'Hola', text: 'Consulta en español' },
+];
+const start = Math.max(0, rows.findIndex((r) => r.lang === lang));
+const first = rows[start];
+const TILES = 7;
+---
+
+<figure class="gal-board" aria-label={label}>
+  <p class="sr-only">{summary}</p>
+  <div class="gal-board-head" aria-hidden="true">
+    <span class="gal-board-code" data-flap-code>{first.code}</span>
+    <div class="gal-flap" data-flap data-start={start} data-words={rows.map((r) => r.hello).join('|')} data-codes={rows.map((r) => r.code).join('|')}>
+      {Array.from({ length: TILES }, (_, i) => (
+        <span class="gal-tile"><span class="gal-ch">{first.hello[i] ?? ''}</span></span>
+      ))}
+    </div>
+  </div>
+
+  <table class="gal-board-table">
+    <thead>
+      <tr>{headers.map((h) => <th scope="col">{h}</th>)}</tr>
+    </thead>
+    <tbody>
+      {rows.map((r, i) => (
+        <tr class:list={[r.lang === lang && 'is-current']} style={`--i:${i}`}>
+          <td><span class="gal-board-pill">{r.code}</span></td>
+          <td lang={r.lang} class="gal-board-hello">{r.hello}</td>
+          <td lang={r.lang}>{r.text}</td>
+          <td class="gal-board-dest">{destination}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</figure>
+
+<style is:global>
+  .gal-board {
+    margin: 0;
+    border-radius: 1.75rem;
+    background: #061624;
+    padding: 1.25rem;
+    color: #e8f2f5;
+    box-shadow: var(--shadow-premium), inset 0 0 0 1px rgba(143, 227, 234, 0.12);
+  }
+  @media (min-width: 768px) { .gal-board { padding: 2rem; } }
+  .gal-board-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .gal-board-code {
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    background: var(--color-coral-deep);
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #fff;
+  }
+  .gal-flap { display: flex; gap: 4px; }
+  .gal-tile {
+    position: relative;
+    display: inline-flex;
+    width: clamp(1.85rem, 7.6vw, 3.4rem);
+    height: clamp(2.6rem, 11vw, 4.6rem);
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.4rem;
+    background: linear-gradient(180deg, #143b5c 0 50%, #0e2b45 50% 100%);
+    font-family: var(--font-sans);
+    font-size: clamp(1.3rem, 5.4vw, 2.5rem);
+    font-weight: 700;
+    color: #fff;
+    perspective: 300px;
+  }
+  .gal-tile::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .gal-ch { display: inline-block; }
+  .gal-tile.is-flip .gal-ch { animation: gal-flip 0.42s cubic-bezier(0.4, 0, 0.2, 1); }
+  @keyframes gal-flip {
+    0% { transform: rotateX(0); opacity: 1; }
+    48% { transform: rotateX(88deg); opacity: 0.2; }
+    52% { transform: rotateX(-88deg); opacity: 0.2; }
+    100% { transform: rotateX(0); opacity: 1; }
+  }
+  .gal-board-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .gal-board-table th {
+    padding: 0 0.5rem 0.6rem;
+    text-align: left;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-aqua-soft);
+    opacity: 0.75;
+  }
+  .gal-board-table td {
+    border-top: 1px solid rgba(143, 227, 234, 0.12);
+    padding: 0.7rem 0.5rem;
+    color: rgba(232, 242, 245, 0.8);
+    font-variant-numeric: tabular-nums;
+  }
+  .gal-board-table tr.is-current td { color: #fff; background: rgba(242, 97, 122, 0.12); }
+  .gal-board-table tr.is-current td:first-child { box-shadow: inset 3px 0 0 var(--color-coral); }
+  .gal-board-hello { font-weight: 700; color: #ffd36b !important; letter-spacing: 0.02em; }
+  .gal-board-pill { display: inline-block; border-radius: 0.35rem; background: rgba(143, 227, 234, 0.14); padding: 0.1rem 0.4rem; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--color-aqua-soft); }
+  .gal-board-dest { white-space: nowrap; color: var(--color-aqua-soft) !important; }
+  @media (max-width: 520px) {
+    .gal-board-table th:nth-child(4), .gal-board-table td:nth-child(4) { display: none; }
+  }
+  /* rows light up one by one when the board scrolls into view */
+  .gal-board-table tbody tr { opacity: 0; transform: translateY(6px); transition: opacity 0.6s ease calc(0.3s + var(--i) * 0.12s), transform 0.6s var(--ease-out-expo) calc(0.3s + var(--i) * 0.12s); }
+  .visible .gal-board-table tbody tr { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .gal-board-table tbody tr { opacity: 1; transform: none; transition: none; }
+    .gal-tile.is-flip .gal-ch { animation: none; }
+  }
+</style>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-flap]').forEach((flap) => {
+    const words = (flap.dataset.words || '').split('|');
+    const codes = (flap.dataset.codes || '').split('|');
+    const codeEl = flap.closest('.gal-board')?.querySelector<HTMLElement>('[data-flap-code]');
+    const tiles = [...flap.querySelectorAll<HTMLElement>('.gal-tile')];
+    let index = Number(flap.dataset.start || 0);
+    let timer: number | undefined;
+
+    const show = (next: number) => {
+      index = next % words.length;
+      const word = words[index];
+      tiles.forEach((tile, i) => {
+        const ch = tile.querySelector<HTMLElement>('.gal-ch')!;
+        const target = word[i] ?? '';
+        if (ch.textContent === target) return;
+        if (reduce) { ch.textContent = target; return; }
+        window.setTimeout(() => {
+          tile.classList.remove('is-flip');
+          void tile.offsetWidth;
+          tile.classList.add('is-flip');
+          window.setTimeout(() => (ch.textContent = target), 200);
+        }, i * 70);
+      });
+      if (codeEl) codeEl.textContent = codes[index];
+    };
+
+    const run = () => { if (!timer) timer = window.setInterval(() => show(index + 1), 2800); };
+    const stop = () => { window.clearInterval(timer); timer = undefined; };
+    if (reduce) return;
+    new IntersectionObserver(([e]) => (e.isIntersecting ? run() : stop())).observe(flap);
+  });
+</script>

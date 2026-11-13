@@ -1,0 +1,1041 @@
+---
+/**
+ * Cuevas del Almanzora — "Estratos".
+ * A vertical descent through layers: the castle and cave houses above the
+ * strata of the hillside, strata that morph into the layers of a tooth, then
+ * each level of care from the surface down to the bone. The clinic is in Vera:
+ * the page never claims a practice in Cuevas.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import TreatmentIcon from '../../components/svg/TreatmentIcon.astro';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey } from '../../i18n/routes';
+import { TOWNS, fill } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.cuevas;
+const route = town.routes[0];
+const min = route.min;
+const km = lang === 'en' ? String(route.km) : String(route.km).replace('.', ',');
+// Non-breaking hyphens keep road numbers (A-352) on one line.
+const roads = route.roads.map((r) => r.replace(/-/g, '\u2011'));
+const join = (list: string[], and: string) => (list.length > 1 ? `${list.slice(0, -1).join(', ')} ${and} ${list[list.length - 1]}` : list[0]);
+/** Contextual in-body link (trusted HTML, rendered with set:html). */
+const to = (key: RouteKey, text: string) => `<a href="${pathFor(key, lang)}" class="prose-link">${text}</a>`;
+
+const HOURS: [number, number][] = [[10, 20], [8, 16], [10, 18], [8, 16], [8, 16]];
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista Cuevas del Almanzora, a ${min} min | Clínica Dental Koral`,
+    metaDesc: `Dentista para Cuevas del Almanzora a ${min} min, en Vera: odontopediatría, ortodoncia, endodoncia con microscopio e implantes. Primera visita gratis.`,
+    hero: {
+      eyebrow: 'Clínica dental cerca de Cuevas del Almanzora',
+      h1: 'Dentista para Cuevas del Almanzora,',
+      accent: 'capa a capa',
+      lead: `Si buscas dentista en Cuevas del Almanzora, en Clínica Dental Koral te atendemos a ${min} minutos, en Vera. Cuidamos a toda la familia, de la primera revisión de los peques a la endodoncia que salva un diente, con todas las especialidades bajo el mismo techo.`,
+      note: 'Nuestra consulta está en Vera (Av. de Baria, 4); no tenemos sede en Cuevas.',
+      svgTitle: 'Cuevas del Almanzora: el castillo del Marqués de los Vélez sobre las casas cueva y los estratos de la sierra',
+      river: 'Río Almanzora',
+    },
+    intro: {
+      eyebrow: 'Del castillo a la consulta',
+      h2: `Tu dentista para Cuevas del Almanzora, a ${min} minutos de casa`,
+      paras: [
+        'Cuevas del Almanzora se lee por capas. Arriba, el Castillo del Marqués de los Vélez, levantado en el siglo XVI. En la ladera, las casas cueva excavadas en la roca que dan nombre al pueblo. Debajo, la memoria minera de la Sierra Almagrera y la vega del río Almanzora. Y alrededor, un municipio enorme que llega hasta el mar con pedanías como Palomares y Villaricos.',
+        `En la consulta trabajamos igual: capa a capa. Antes de proponerte un tratamiento miramos lo que no se ve a simple vista, con diagnóstico 3D (CBCT) y microscopio dental, y te explicamos en qué capa del diente está el problema. La primera visita es gratuita y sales con un ${to('pricing', 'presupuesto claro y financiación al 0 %')} para la mayoría de tratamientos.`,
+        `Desde el centro de Cuevas son ${km} km por ${join(roads.map((r) => `la ${r}`), 'y')}: unos ${min} minutos sin tráfico hasta la Av. de Baria, en Vera.`,
+      ],
+      coreTitle: 'Muestra del trayecto',
+      facts: [[`${km} km`, 'de distancia'], [`${min} min`, 'en coche'], [roads.join(' → '), 'carreteras'], ['Gratis', 'primera visita']],
+    },
+    morph: {
+      eyebrow: 'De la sierra al diente',
+      h2: 'Los estratos de la sierra, las capas de tu diente',
+      lead: 'En la Sierra Almagrera cada estrato guarda una época. En un diente pasa algo parecido: el esmalte protege, la dentina sostiene y la pulpa, en el centro, lo mantiene vivo. Saber hasta qué capa ha llegado un problema decide el tratamiento y, casi siempre, cuanto antes lo vemos, más diente conservamos.',
+      strata: ['Capa superficial', 'Capa media', 'Capa profunda'],
+      toTooth: 'Ver el diente',
+      toStrata: 'Ver los estratos',
+      svgTitle: 'Estratos de la Sierra Almagrera que se transforman en las capas de un diente: esmalte, dentina y pulpa',
+      layers: [
+        ['Esmalte', 'La capa más dura del cuerpo. Aquí todo es prevención: revisiones periódicas, higiene profesional y buenos hábitos en casa, sobre todo en los niños.'],
+        ['Dentina', 'Más blanda y sensible al frío o al dulce. Si una caries llega hasta aquí, la detenemos con una restauración conservadora antes de que avance.'],
+        ['Pulpa', 'El nervio del diente. Cuando se inflama o se infecta, una endodoncia con microscopio permite limpiarla y conservar tu diente natural.'],
+      ],
+    },
+    descent: {
+      eyebrow: 'Descenso por capas',
+      h2: 'Clínica dental cerca de Cuevas del Almanzora, a cualquier profundidad',
+      lead: 'Bajamos contigo tan hondo como haga falta, sin mandarte a otra clínica en cada paso. Así cuidamos a una familia de Cuevas, de la superficie al hueso.',
+      level: 'Nivel',
+      levels: [
+        { tag: 'Superficie', title: 'Primera visita gratuita para toda la familia', text: `Empezamos escuchándote y revisando la boca entera; si hace falta, completamos el diagnóstico con imagen 3D. Te vas con un plan por escrito, un presupuesto sin compromiso y, si lo necesitas, ${to('pricing', 'financiación al 0 % para la mayoría de tratamientos')}.` },
+        { tag: 'Esmalte', title: 'Los más pequeños, sin miedo', text: `La Dra. Ana Soler se ocupa de la ${to('odontopediatria', 'odontopediatría para familias de Cuevas del Almanzora')}: primeras visitas tranquilas, prevención y tratamientos explicados a la altura de cada niño. Cuidar los dientes de leche es cuidar los que vienen detrás.` },
+        { tag: 'Dentina', title: 'Ortodoncia en el momento justo', text: `La Dra. Soler sigue también el crecimiento de la boca y propone ${to('ortodoncia', 'ortodoncia para niños y adultos')} cuando toca, con brackets o con alineadores transparentes. Corregir a tiempo evita desgastes y problemas más profundos.` },
+        { tag: 'Pulpa', title: 'Salvar el diente antes que sacarlo', text: `Cuando el dolor viene de dentro, la Dra. Ángeles Parra realiza la ${to('endodoncia', 'endodoncia con microscopio dental')}: localiza y limpia cada conducto con precisión para que tu diente natural siga en su sitio muchos años.` },
+        { tag: 'Hueso', title: 'Reponer lo que falta, con garantía', text: `Si un diente ya no se puede salvar, la Dra. Ana Padilla planifica ${to('implantes', 'implantes dentales Straumann con garantía de por vida')}, siempre con diagnóstico 3D (CBCT) para medir el hueso antes de empezar.` },
+      ],
+      team: `Conoce a todas las doctoras en la página del ${to('team', 'equipo de Clínica Dental Koral')}.`,
+    },
+    roof: {
+      eyebrow: 'Bajo el mismo techo',
+      h2: 'Especialistas para toda la familia de Cuevas, sin cambiar de clínica',
+      lead: 'Para una familia de Cuevas del Almanzora, ir de una consulta a otra en cada tratamiento significa más kilómetros y más mañanas perdidas. En Koral, la odontopediatra, la endodoncista y la cirujana trabajan puerta con puerta, como las casas cueva de una misma ladera: tu historia pasa de una a otra sin empezar de cero.',
+      doctors: [
+        ['Dra. Ana Soler', 'Odontopediatría y ortodoncia: la referencia de niños y adolescentes.'],
+        ['Dra. Ángeles Parra', 'Endodoncia con microscopio para conservar el diente natural.'],
+        ['Dra. Ana Padilla', 'Cirugía oral, implantes Straumann y estética dental.'],
+      ],
+      langs: 'Y si en casa se habla inglés, alemán, neerlandés o francés, en la consulta también: atendemos en cinco idiomas.',
+      cta: 'Conoce al equipo',
+    },
+    route: {
+      eyebrow: 'Ruta real · OpenStreetMap',
+      paras: [
+        `Sales del centro de Cuevas, con el castillo a la espalda, y tomas ${join(roads.map((r) => `la ${r}`), 'y después')} en dirección a Vera. Son ${km} km y unos ${min} minutos sin tráfico hasta la Av. de Baria, 4, donde está la clínica.`,
+        `¿Vives en la parte costera del municipio? Palomares tiene su propia página: ${to('palomares', 'dentista cerca de Palomares')}. Y si te mueves más por la zona, también tenemos páginas para ${to('vera', 'pacientes de Vera')} y de ${to('antas', 'dentista para Antas')}.`,
+      ],
+      hours: 'Horario',
+      days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+      weekend: 'Sábado y domingo: cerrado',
+      maps: 'Abrir la ruta en Google Maps',
+      all: `Ver ${to('areas', 'todas las zonas que atendemos en el Levante Almeriense')}.`,
+    },
+    faqTitle: 'Preguntas de pacientes de Cuevas del Almanzora',
+    faqs: [
+      ['¿Tenéis consulta en Cuevas del Almanzora?', `No. Clínica Dental Koral está en Vera (Av. de Baria, 4), a unos ${min} minutos de Cuevas del Almanzora por ${join(roads.map((r) => `la ${r}`), 'y')}. Preferimos decirlo claro: no tenemos sede en Cuevas, pero el trayecto es corto y abrimos de mañana y de tarde.`],
+      ['¿Cuál es el mejor dentista cerca de Cuevas del Almanzora para niños?', `El que os lo explica todo y consigue que el niño esté tranquilo. En Koral a los peques los atiende la Dra. Ana Soler, que se ocupa de la ${to('odontopediatria', 'odontopediatría')} y de la ortodoncia, así que la misma persona sigue su crecimiento. La primera visita es gratuita: podéis comprobarlo vosotros mismos.`],
+      ['¿Se puede salvar un diente que duele mucho en lugar de sacarlo?', `Muchas veces, sí. Si el problema está en la pulpa, una endodoncia con microscopio con la Dra. Ángeles Parra puede conservar el diente natural. Depende del diagnóstico, que confirmamos con imagen 3D cuando hace falta. Más información en ${to('endodoncia', 'endodoncia')}.`],
+      ['¿Cuánto cuesta la primera visita si vengo desde Cuevas?', `Nada: la primera visita es gratuita. Revisamos tu boca, te explicamos las opciones y te damos un presupuesto detallado. La mayoría de tratamientos se pueden pagar con financiación al 0 %; lo tienes todo en ${to('pricing', 'precios y financiación')}.`],
+      ['¿Atendéis en inglés u otros idiomas?', 'Sí. Atendemos en español, inglés, alemán, neerlandés y francés, para que puedas explicar lo que te pasa y entender tu tratamiento en tu idioma.'],
+      ['¿Qué horario tenéis para pacientes de Cuevas del Almanzora?', `Lunes de 10:00 a 20:00, martes de 8:00 a 16:00, miércoles de 10:00 a 18:00, y jueves y viernes de 8:00 a 16:00. Pide cita en el +34 950 39 53 19, por WhatsApp en el +34 634 68 36 39 o desde la página de ${to('contact', 'contacto')}.`],
+    ],
+  },
+  en: {
+    metaTitle: 'Dentist near Cuevas del Almanzora | Clínica Dental Koral',
+    metaDesc: `Your dentist for Cuevas del Almanzora, ${min} minutes away in Vera: children's dentistry, orthodontics, microscope root canals and implants. Free first visit.`,
+    hero: {
+      eyebrow: 'Dental clinic near Cuevas del Almanzora',
+      h1: 'Your dentist for Cuevas del Almanzora,',
+      accent: 'layer by layer',
+      lead: `Looking for a dentist in Cuevas del Almanzora? Clínica Dental Koral is ${min} minutes away in Vera, caring for the whole family — from a child's first check-up to the root canal that saves a tooth — with every specialty under one roof.`,
+      note: 'Our practice is in Vera (Av. de Baria, 4); we have no branch in Cuevas.',
+      svgTitle: 'Cuevas del Almanzora: the Castillo del Marqués de los Vélez above the cave houses and the strata of the sierra',
+      river: 'Almanzora river',
+    },
+    intro: {
+      eyebrow: 'From the castle to the clinic',
+      h2: `A dentist for Cuevas del Almanzora, ${min} minutes from home`,
+      paras: [
+        'Cuevas del Almanzora reads like a cross-section. At the top stands the 16th-century Castillo del Marqués de los Vélez. On the slopes, the cave houses carved into the rock that gave the town its name. Below lie the mining past of the Sierra Almagrera and the valley of the Almanzora river — and around it all, a vast municipality that reaches the sea through villages such as Palomares and Villaricos.',
+        `We work the same way: layer by layer. Before suggesting any treatment we look at what the eye can't see, with 3D imaging (CBCT) and a dental microscope, and show you which layer of the tooth is involved. Your first visit is free, and you leave with ${to('pricing', 'a clear quote and 0% financing')} available for most treatments.`,
+        `From the centre of Cuevas it is ${km} km along the ${join(roads, 'and')}: around ${min} minutes without traffic to Av. de Baria in Vera.`,
+      ],
+      coreTitle: 'Core sample of the trip',
+      facts: [[`${km} km`, 'distance'], [`${min} min`, 'by car'], [roads.join(' → '), 'roads'], ['Free', 'first visit']],
+    },
+    morph: {
+      eyebrow: 'From the sierra to the tooth',
+      h2: 'The layers of the sierra, the layers of your tooth',
+      lead: 'In the Sierra Almagrera every stratum holds a different era. A tooth is built in a similar way: enamel protects, dentine supports and the pulp, at its centre, keeps it alive. How deep a problem has reached decides the treatment — and the sooner we see it, the more of your tooth we can keep.',
+      strata: ['Surface layer', 'Middle layer', 'Deep layer'],
+      toTooth: 'Show the tooth',
+      toStrata: 'Show the strata',
+      svgTitle: 'Strata of the Sierra Almagrera turning into the layers of a tooth: enamel, dentine and pulp',
+      layers: [
+        ['Enamel', 'The hardest tissue in the body. Here it is all about prevention: regular check-ups, professional cleaning and good habits at home, especially for children.'],
+        ['Dentine', 'Softer, and sensitive to cold and sweet things. If decay reaches this layer, we stop it with a conservative filling before it goes any further.'],
+        ['Pulp', 'The nerve of the tooth. When it becomes inflamed or infected, root canal treatment under the microscope lets us clean it and keep your natural tooth.'],
+      ],
+    },
+    descent: {
+      eyebrow: 'Going deeper',
+      h2: 'A dental clinic near Cuevas del Almanzora, for every depth',
+      lead: 'We go as deep as your mouth needs, without sending you to another clinic at each step. This is how we look after a family from Cuevas, from the surface down to the bone.',
+      level: 'Level',
+      levels: [
+        { tag: 'Surface', title: 'A free first visit for the whole family', text: `We start by listening and checking your whole mouth, adding 3D imaging when it is needed. You go home with a written plan, a no-obligation quote and, if it helps, ${to('pricing', '0% financing for most treatments')}.` },
+        { tag: 'Enamel', title: 'Children, without the fear', text: `Dr Ana Soler leads our ${to('odontopediatria', "children's dentistry for families in Cuevas del Almanzora")}: calm first visits, prevention and every treatment explained at the child's level. Looking after milk teeth means looking after the teeth that follow.` },
+        { tag: 'Dentine', title: 'Orthodontics at the right moment', text: `Dr Soler also follows how the mouth grows and suggests ${to('ortodoncia', 'orthodontics for children and adults')} when the time is right, with braces or clear aligners. Correcting early avoids wear and deeper problems later on.` },
+        { tag: 'Pulp', title: 'Save the tooth before removing it', text: `When the pain comes from inside, Dr Ángeles Parra performs ${to('endodoncia', 'root canal treatment with a dental microscope')}, finding and cleaning every canal precisely so your natural tooth can stay for many years.` },
+        { tag: 'Bone', title: 'Replacing what is missing, with a warranty', text: `If a tooth can no longer be saved, Dr Ana Padilla plans ${to('implantes', 'Straumann dental implants with a lifetime warranty')}, always with 3D imaging (CBCT) to measure the bone before starting.` },
+      ],
+      team: `Meet all our dentists on the ${to('team', 'Clínica Dental Koral team page')}.`,
+    },
+    roof: {
+      eyebrow: 'Under one roof',
+      h2: 'Specialists for every generation in Cuevas, in a single clinic',
+      lead: 'For a family in Cuevas del Almanzora, going from one practice to another for each treatment means more miles and more lost mornings. At Koral, the paediatric dentist, the endodontist and the surgeon work door to door — like cave houses on the same hillside — so your history travels with you and nobody starts from scratch.',
+      doctors: [
+        ['Dr Ana Soler', "Children's dentistry and orthodontics: the go-to dentist for kids and teenagers."],
+        ['Dr Ángeles Parra', 'Root canal treatment under the microscope to keep the natural tooth.'],
+        ['Dr Ana Padilla', 'Oral surgery, Straumann implants and cosmetic dentistry.'],
+      ],
+      langs: 'And if English, German, Dutch or French is spoken at home, it is spoken in the surgery too: we see patients in five languages.',
+      cta: 'Meet the team',
+    },
+    route: {
+      eyebrow: 'Real route · OpenStreetMap',
+      paras: [
+        `Leave the centre of Cuevas with the castle behind you and follow the ${join(roads, 'and then the')} towards Vera. It is ${km} km and about ${min} minutes without traffic to Av. de Baria, 4, where the clinic is.`,
+        `Living on the coastal side of the municipality? Palomares has its own page: ${to('palomares', 'dentist near Palomares')}. We also have pages for ${to('vera', 'patients from Vera')} and for ${to('antas', 'a dentist for Antas')}.`,
+      ],
+      hours: 'Opening hours',
+      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      weekend: 'Saturday and Sunday: closed',
+      maps: 'Open the route in Google Maps',
+      all: `See ${to('areas', 'every area we serve in the Levante Almeriense')}.`,
+    },
+    faqTitle: 'Questions from patients in Cuevas del Almanzora',
+    faqs: [
+      ['Do you have a practice in Cuevas del Almanzora?', `No. Clínica Dental Koral is in Vera (Av. de Baria, 4), about ${min} minutes from Cuevas del Almanzora along the ${join(roads, 'and')}. We would rather be clear: there is no branch in Cuevas, but the drive is short and we open both mornings and afternoons.`],
+      ['Who is the best dentist near Cuevas del Almanzora for children?', `The one who explains everything and puts your child at ease. At Koral, children are seen by Dr Ana Soler, who covers both ${to('odontopediatria', "children's dentistry")} and orthodontics, so the same person follows their growth. The first visit is free, so you can see for yourself.`],
+      ['Can a very painful tooth be saved instead of extracted?', `Often, yes. If the problem is in the pulp, root canal treatment under the microscope with Dr Ángeles Parra can save the natural tooth. It depends on the diagnosis, which we confirm with 3D imaging when needed. More on our ${to('endodoncia', 'endodontics page')}.`],
+      ['How much is the first visit if I come from Cuevas?', `Nothing: the first visit is free. We examine your mouth, explain your options and give you a detailed quote. Most treatments can be paid with 0% financing — see ${to('pricing', 'pricing and financing')}.`],
+      ['Do you see patients in English and other languages?', 'Yes. We see patients in Spanish, English, German, Dutch and French, so you can explain your symptoms and understand your treatment in your own language.'],
+      ['What are your opening hours for patients from Cuevas del Almanzora?', `Monday 10:00–20:00, Tuesday 8:00–16:00, Wednesday 10:00–18:00, Thursday and Friday 8:00–16:00. Book on +34 950 39 53 19, by WhatsApp on +34 634 68 36 39 or through the ${to('contact', 'contact page')}.`],
+    ],
+  },
+  de: {
+    metaTitle: `Zahnarzt Cuevas del Almanzora, ${min} Min. | Clínica Dental Koral`,
+    metaDesc: `Zahnarzt für Cuevas del Almanzora, ${min} Min. entfernt in Vera: Kinderzahnheilkunde, Kieferorthopädie, Endodontie mit Mikroskop, Implantate. Erstbesuch gratis.`,
+    hero: {
+      eyebrow: 'Zahnarztpraxis nahe Cuevas del Almanzora',
+      h1: 'Ihr Zahnarzt für Cuevas del Almanzora,',
+      accent: 'Schicht für Schicht',
+      lead: `Sie suchen einen Zahnarzt in Cuevas del Almanzora? Die Clínica Dental Koral liegt nur ${min} Minuten entfernt in Vera. Wir betreuen die ganze Familie – von der ersten Kontrolle der Kleinen bis zur Wurzelbehandlung, die einen Zahn rettet – mit allen Fachbereichen unter einem Dach.`,
+      note: 'Unsere Praxis befindet sich in Vera (Av. de Baria, 4); in Cuevas haben wir keine Filiale.',
+      svgTitle: 'Cuevas del Almanzora: die Burg des Marqués de los Vélez über den Höhlenhäusern und den Gesteinsschichten der Sierra',
+      river: 'Río Almanzora',
+    },
+    intro: {
+      eyebrow: 'Von der Burg in die Praxis',
+      h2: `Ihr Zahnarzt für Cuevas del Almanzora, ${min} Minuten von zu Hause`,
+      paras: [
+        'Cuevas del Almanzora liest sich wie ein Querschnitt. Ganz oben thront das Castillo del Marqués de los Vélez aus dem 16. Jahrhundert. Am Hang liegen die in den Fels gegrabenen Höhlenhäuser, denen der Ort seinen Namen verdankt. Darunter die Bergbaugeschichte der Sierra Almagrera und das Tal des Río Almanzora – und rundherum eine weitläufige Gemeinde, die mit Ortsteilen wie Palomares und Villaricos bis ans Meer reicht.',
+        `Genauso arbeiten wir: Schicht für Schicht. Bevor wir eine Behandlung vorschlagen, sehen wir uns an, was dem bloßen Auge verborgen bleibt – mit 3D-Diagnostik (DVT/CBCT) und Dentalmikroskop – und zeigen Ihnen, welche Zahnschicht betroffen ist. Der Erstbesuch ist kostenlos, und Sie gehen mit einem ${to('pricing', 'klaren Kostenvoranschlag und 0 %-Finanzierung')} für die meisten Behandlungen nach Hause.`,
+        `Vom Zentrum von Cuevas sind es ${km} km über die ${join(roads, 'und')}: rund ${min} Minuten ohne Verkehr bis zur Av. de Baria in Vera.`,
+      ],
+      coreTitle: 'Bohrkern der Strecke',
+      facts: [[`${km} km`, 'Entfernung'], [`${min} Min.`, 'mit dem Auto'], [roads.join(' → '), 'Straßen'], ['Gratis', 'Erstbesuch']],
+    },
+    morph: {
+      eyebrow: 'Von der Sierra zum Zahn',
+      h2: 'Die Schichten der Sierra, die Schichten Ihres Zahns',
+      lead: 'In der Sierra Almagrera erzählt jede Gesteinsschicht von einer anderen Epoche. Ein Zahn ist ähnlich aufgebaut: Der Zahnschmelz schützt, das Dentin trägt und die Pulpa im Inneren hält ihn lebendig. Wie tief ein Problem reicht, bestimmt die Behandlung – und je früher wir es sehen, desto mehr Zahn bleibt erhalten.',
+      strata: ['Oberste Schicht', 'Mittlere Schicht', 'Tiefe Schicht'],
+      toTooth: 'Zahn zeigen',
+      toStrata: 'Schichten zeigen',
+      svgTitle: 'Gesteinsschichten der Sierra Almagrera, die sich in die Schichten eines Zahns verwandeln: Zahnschmelz, Dentin und Pulpa',
+      layers: [
+        ['Zahnschmelz', 'Das härteste Gewebe des Körpers. Hier geht es um Vorsorge: regelmäßige Kontrollen, professionelle Zahnreinigung und gute Gewohnheiten zu Hause, vor allem bei Kindern.'],
+        ['Dentin', 'Weicher und empfindlich bei Kälte oder Süßem. Erreicht Karies diese Schicht, stoppen wir sie mit einer substanzschonenden Füllung, bevor sie weiter vordringt.'],
+        ['Pulpa', 'Der Nerv des Zahns. Ist sie entzündet oder infiziert, ermöglicht eine Wurzelbehandlung unter dem Mikroskop, sie zu reinigen und den eigenen Zahn zu erhalten.'],
+      ],
+    },
+    descent: {
+      eyebrow: 'Abstieg durch die Schichten',
+      h2: 'Zahnarztpraxis nahe Cuevas del Almanzora – für jede Tiefe',
+      lead: 'Wir gehen so tief, wie es Ihr Mund verlangt, ohne Sie bei jedem Schritt in eine andere Praxis zu schicken. So betreuen wir eine Familie aus Cuevas, von der Oberfläche bis zum Knochen.',
+      level: 'Ebene',
+      levels: [
+        { tag: 'Oberfläche', title: 'Kostenloser Erstbesuch für die ganze Familie', text: `Wir hören zu und untersuchen den gesamten Mund; wenn nötig, ergänzen wir die Diagnose mit 3D-Bildgebung. Sie erhalten einen schriftlichen Plan, einen unverbindlichen Kostenvoranschlag und auf Wunsch eine ${to('pricing', '0 %-Finanzierung für die meisten Behandlungen')}.` },
+        { tag: 'Zahnschmelz', title: 'Kinder ohne Angst', text: `Dr. Ana Soler kümmert sich um die ${to('odontopediatria', 'Kinderzahnheilkunde für Familien aus Cuevas del Almanzora')}: ruhige erste Besuche, Vorsorge und Behandlungen, die jedem Kind in seiner Sprache erklärt werden. Wer die Milchzähne pflegt, schützt die bleibenden Zähne.` },
+        { tag: 'Dentin', title: 'Kieferorthopädie zum richtigen Zeitpunkt', text: `Dr. Soler begleitet auch das Wachstum von Kiefer und Zähnen und schlägt ${to('ortodoncia', 'Kieferorthopädie für Kinder und Erwachsene')} vor, wenn es sinnvoll ist – mit Brackets oder mit transparenten Alignern. Rechtzeitig korrigiert, lassen sich Abnutzung und tiefere Probleme vermeiden.` },
+        { tag: 'Pulpa', title: 'Den Zahn retten statt ziehen', text: `Kommt der Schmerz von innen, übernimmt Dr. Ángeles Parra die ${to('endodoncia', 'Wurzelkanalbehandlung mit dem Dentalmikroskop')}: Jeder Kanal wird präzise gefunden und gereinigt, damit Ihr eigener Zahn noch viele Jahre bleibt.` },
+        { tag: 'Knochen', title: 'Fehlendes ersetzen – mit Garantie', text: `Lässt sich ein Zahn nicht mehr retten, plant Dr. Ana Padilla ${to('implantes', 'Straumann-Zahnimplantate mit lebenslanger Garantie')}, immer mit 3D-Diagnostik (DVT), um den Knochen vorab genau zu vermessen.` },
+      ],
+      team: `Lernen Sie alle Zahnärztinnen auf der Seite ${to('team', 'Team der Clínica Dental Koral')} kennen.`,
+    },
+    roof: {
+      eyebrow: 'Unter einem Dach',
+      h2: 'Spezialistinnen für die ganze Familie aus Cuevas, in einer Praxis',
+      lead: 'Für eine Familie aus Cuevas del Almanzora bedeutet jede Behandlung in einer anderen Praxis mehr Kilometer und mehr verlorene Vormittage. Bei Koral arbeiten Kinderzahnärztin, Endodontologin und Chirurgin Tür an Tür – wie die Höhlenhäuser an einem Hang. Ihre Krankengeschichte geht mit, niemand fängt bei null an.',
+      doctors: [
+        ['Dr. Ana Soler', 'Kinderzahnheilkunde und Kieferorthopädie: Ansprechpartnerin für Kinder und Jugendliche.'],
+        ['Dr. Ángeles Parra', 'Wurzelbehandlung unter dem Mikroskop, um den eigenen Zahn zu erhalten.'],
+        ['Dr. Ana Padilla', 'Oralchirurgie, Straumann-Implantate und ästhetische Zahnmedizin.'],
+      ],
+      langs: 'Und wenn zu Hause Deutsch, Englisch, Niederländisch oder Französisch gesprochen wird: in der Praxis auch. Wir behandeln in fünf Sprachen.',
+      cta: 'Das Team kennenlernen',
+    },
+    route: {
+      eyebrow: 'Echte Route · OpenStreetMap',
+      paras: [
+        `Sie verlassen das Zentrum von Cuevas mit der Burg im Rücken und folgen der ${join(roads, 'und dann der')} Richtung Vera. Es sind ${km} km und etwa ${min} Minuten ohne Verkehr bis zur Av. de Baria, 4, wo die Praxis liegt.`,
+        `Sie wohnen im Küstenteil der Gemeinde? Palomares hat eine eigene Seite: ${to('palomares', 'Zahnarzt nahe Palomares')}. Außerdem gibt es Seiten für ${to('vera', 'Patienten aus Vera')} und ${to('antas', 'Zahnarzt für Antas')}.`,
+      ],
+      hours: 'Öffnungszeiten',
+      days: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'],
+      weekend: 'Samstag und Sonntag: geschlossen',
+      maps: 'Route in Google Maps öffnen',
+      all: `Alle ${to('areas', 'Orte, die wir im Levante Almeriense betreuen')}.`,
+    },
+    faqTitle: 'Fragen von Patienten aus Cuevas del Almanzora',
+    faqs: [
+      ['Haben Sie eine Praxis in Cuevas del Almanzora?', `Nein. Die Clínica Dental Koral befindet sich in Vera (Av. de Baria, 4), etwa ${min} Minuten von Cuevas del Almanzora über die ${join(roads, 'und')}. Wir sagen es lieber offen: In Cuevas gibt es keine Filiale, aber die Fahrt ist kurz und wir haben vormittags und nachmittags geöffnet.`],
+      ['Welcher Zahnarzt nahe Cuevas del Almanzora ist der beste für Kinder?', `Der, der alles erklärt und dafür sorgt, dass sich Ihr Kind wohlfühlt. Bei Koral behandelt Dr. Ana Soler die Kleinen; sie ist für ${to('odontopediatria', 'Kinderzahnheilkunde')} und Kieferorthopädie zuständig, sodass eine Person das Wachstum begleitet. Der Erstbesuch ist kostenlos – überzeugen Sie sich selbst.`],
+      ['Kann ein stark schmerzender Zahn gerettet statt gezogen werden?', `Oft ja. Liegt das Problem in der Pulpa, kann eine Wurzelbehandlung unter dem Mikroskop bei Dr. Ángeles Parra den eigenen Zahn erhalten. Das hängt von der Diagnose ab, die wir bei Bedarf mit 3D-Bildgebung bestätigen. Mehr dazu unter ${to('endodoncia', 'Endodontie')}.`],
+      ['Was kostet der Erstbesuch, wenn ich aus Cuevas komme?', `Nichts: Der Erstbesuch ist kostenlos. Wir untersuchen Ihren Mund, erklären die Möglichkeiten und erstellen einen detaillierten Kostenvoranschlag. Die meisten Behandlungen sind mit 0 %-Finanzierung möglich – siehe ${to('pricing', 'Preise und Finanzierung')}.`],
+      ['Behandeln Sie auch auf Deutsch?', 'Ja. Wir behandeln auf Spanisch, Englisch, Deutsch, Niederländisch und Französisch, damit Sie Ihre Beschwerden schildern und Ihre Behandlung in Ihrer Sprache verstehen können.'],
+      ['Welche Öffnungszeiten gelten für Patienten aus Cuevas del Almanzora?', `Montag 10:00–20:00, Dienstag 8:00–16:00, Mittwoch 10:00–18:00, Donnerstag und Freitag 8:00–16:00 Uhr. Termine unter +34 950 39 53 19, per WhatsApp unter +34 634 68 36 39 oder über die ${to('contact', 'Kontaktseite')}.`],
+    ],
+  },
+  nl: {
+    metaTitle: `Tandarts Cuevas del Almanzora, ${min} min | Clínica Dental Koral`,
+    metaDesc: `Tandarts voor Cuevas del Almanzora, op ${min} min in Vera: kindertandheelkunde, orthodontie, wortelkanaalbehandeling met microscoop. Eerste bezoek gratis.`,
+    hero: {
+      eyebrow: 'Tandartspraktijk bij Cuevas del Almanzora',
+      h1: 'Uw tandarts voor Cuevas del Almanzora,',
+      accent: 'laag voor laag',
+      lead: `Zoekt u een tandarts in Cuevas del Almanzora? Clínica Dental Koral ligt op ${min} minuten, in Vera. We zorgen voor het hele gezin – van de eerste controle van de kleintjes tot de wortelkanaalbehandeling die een tand redt – met alle specialismen onder één dak.`,
+      note: 'Onze praktijk is in Vera (Av. de Baria, 4); in Cuevas hebben we geen vestiging.',
+      svgTitle: 'Cuevas del Almanzora: het kasteel van de Marqués de los Vélez boven de grotwoningen en de aardlagen van de sierra',
+      river: 'Río Almanzora',
+    },
+    intro: {
+      eyebrow: 'Van het kasteel naar de praktijk',
+      h2: `Uw tandarts voor Cuevas del Almanzora, op ${min} minuten van huis`,
+      paras: [
+        'Cuevas del Almanzora laat zich lezen als een doorsnede. Bovenaan het Castillo del Marqués de los Vélez uit de 16e eeuw. Op de helling de in de rots uitgehakte grotwoningen waaraan het dorp zijn naam dankt. Daaronder het mijnbouwverleden van de Sierra Almagrera en het dal van de rivier de Almanzora – en daaromheen een uitgestrekte gemeente die met kernen als Palomares en Villaricos tot aan zee reikt.',
+        `Zo werken wij ook: laag voor laag. Voordat we een behandeling voorstellen, kijken we naar wat je met het blote oog niet ziet – met 3D-diagnostiek (CBCT) en een tandheelkundige microscoop – en laten we zien in welke laag van de tand het probleem zit. Het eerste bezoek is gratis en u gaat naar huis met een ${to('pricing', 'duidelijke offerte en 0%-financiering')} voor de meeste behandelingen.`,
+        `Vanuit het centrum van Cuevas is het ${km} km via de ${join(roads, 'en')}: zo'n ${min} minuten zonder verkeer tot aan de Av. de Baria in Vera.`,
+      ],
+      coreTitle: 'Boorkern van de rit',
+      facts: [[`${km} km`, 'afstand'], [`${min} min`, 'met de auto'], [roads.join(' → '), 'wegen'], ['Gratis', 'eerste bezoek']],
+    },
+    morph: {
+      eyebrow: 'Van de sierra naar de tand',
+      h2: 'De lagen van de sierra, de lagen van uw tand',
+      lead: 'In de Sierra Almagrera vertelt elke aardlaag over een ander tijdperk. Een tand is op een vergelijkbare manier opgebouwd: het glazuur beschermt, het dentine draagt en de pulpa in het midden houdt de tand levend. Hoe diep een probleem zit, bepaalt de behandeling – en hoe eerder we het zien, hoe meer tand we behouden.',
+      strata: ['Bovenste laag', 'Middelste laag', 'Diepe laag'],
+      toTooth: 'Toon de tand',
+      toStrata: 'Toon de aardlagen',
+      svgTitle: 'Aardlagen van de Sierra Almagrera die veranderen in de lagen van een tand: glazuur, dentine en pulpa',
+      layers: [
+        ['Glazuur', 'Het hardste weefsel van het lichaam. Hier draait alles om preventie: regelmatige controles, professionele reiniging en goede gewoonten thuis, vooral bij kinderen.'],
+        ['Dentine', 'Zachter en gevoelig voor kou of zoet. Bereikt cariës deze laag, dan stoppen we die met een sparende vulling voordat ze verder gaat.'],
+        ['Pulpa', 'De zenuw van de tand. Raakt die ontstoken of geïnfecteerd, dan kunnen we haar met een wortelkanaalbehandeling onder de microscoop reinigen en uw eigen tand behouden.'],
+      ],
+    },
+    descent: {
+      eyebrow: 'Laag voor laag omlaag',
+      h2: 'Tandartspraktijk bij Cuevas del Almanzora, voor elke diepte',
+      lead: 'We gaan zo diep als uw mond nodig heeft, zonder u bij elke stap naar een andere praktijk te sturen. Zo zorgen we voor een gezin uit Cuevas, van het oppervlak tot aan het bot.',
+      level: 'Niveau',
+      levels: [
+        { tag: 'Oppervlak', title: 'Gratis eerste bezoek voor het hele gezin', text: `We luisteren en controleren uw hele mond; waar nodig vullen we de diagnose aan met 3D-beelden. U krijgt een schriftelijk plan, een vrijblijvende offerte en, als dat helpt, ${to('pricing', '0%-financiering voor de meeste behandelingen')}.` },
+        { tag: 'Glazuur', title: 'Kinderen, zonder angst', text: `Dr. Ana Soler verzorgt de ${to('odontopediatria', 'kindertandheelkunde voor gezinnen uit Cuevas del Almanzora')}: rustige eerste bezoeken, preventie en behandelingen die op kindhoogte worden uitgelegd. Wie de melktanden goed verzorgt, zorgt ook voor de tanden die erna komen.` },
+        { tag: 'Dentine', title: 'Orthodontie op het juiste moment', text: `Dr. Soler volgt ook de groei van de mond en stelt ${to('ortodoncia', 'orthodontie voor kinderen en volwassenen')} voor wanneer het tijd is, met beugels of met transparante aligners. Op tijd corrigeren voorkomt slijtage en diepere problemen.` },
+        { tag: 'Pulpa', title: 'De tand redden in plaats van trekken', text: `Komt de pijn van binnenuit, dan voert Dr. Ángeles Parra de ${to('endodoncia', 'wortelkanaalbehandeling met de tandheelkundige microscoop')} uit: elk kanaal wordt nauwkeurig gevonden en gereinigd, zodat uw eigen tand nog jaren meegaat.` },
+        { tag: 'Bot', title: 'Vervangen wat ontbreekt, met garantie', text: `Is een tand niet meer te redden, dan plant Dr. Ana Padilla ${to('implantes', 'Straumann-tandimplantaten met levenslange garantie')}, altijd met 3D-diagnostiek (CBCT) om het bot vooraf te meten.` },
+      ],
+      team: `Maak kennis met alle tandartsen op de pagina ${to('team', 'team van Clínica Dental Koral')}.`,
+    },
+    roof: {
+      eyebrow: 'Onder één dak',
+      h2: 'Specialisten voor het hele gezin uit Cuevas, in één praktijk',
+      lead: 'Voor een gezin uit Cuevas del Almanzora betekent elke behandeling in een andere praktijk meer kilometers en meer verloren ochtenden. Bij Koral werken de kindertandarts, de endodontist en de chirurg deur aan deur – zoals de grotwoningen op één helling. Uw dossier gaat mee en niemand begint opnieuw.',
+      doctors: [
+        ['Dr. Ana Soler', 'Kindertandheelkunde en orthodontie: het vaste aanspreekpunt voor kinderen en tieners.'],
+        ['Dr. Ángeles Parra', 'Wortelkanaalbehandeling onder de microscoop om de eigen tand te behouden.'],
+        ['Dr. Ana Padilla', 'Mondchirurgie, Straumann-implantaten en esthetische tandheelkunde.'],
+      ],
+      langs: 'En wordt er thuis Nederlands, Engels, Duits of Frans gesproken? In de praktijk ook: we behandelen in vijf talen.',
+      cta: 'Maak kennis met het team',
+    },
+    route: {
+      eyebrow: 'Echte route · OpenStreetMap',
+      paras: [
+        `U verlaat het centrum van Cuevas met het kasteel in de rug en volgt de ${join(roads, 'en daarna de')} richting Vera. Het is ${km} km en ongeveer ${min} minuten zonder verkeer tot aan de Av. de Baria, 4, waar de praktijk ligt.`,
+        `Woont u in het kustgedeelte van de gemeente? Palomares heeft een eigen pagina: ${to('palomares', 'tandarts bij Palomares')}. Er zijn ook pagina's voor ${to('vera', 'patiënten uit Vera')} en ${to('antas', 'tandarts voor Antas')}.`,
+      ],
+      hours: 'Openingstijden',
+      days: ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'],
+      weekend: 'Zaterdag en zondag: gesloten',
+      maps: 'Open de route in Google Maps',
+      all: `Bekijk ${to('areas', 'alle plaatsen in de Levante Almeriense die we bedienen')}.`,
+    },
+    faqTitle: 'Vragen van patiënten uit Cuevas del Almanzora',
+    faqs: [
+      ['Heeft u een praktijk in Cuevas del Almanzora?', `Nee. Clínica Dental Koral zit in Vera (Av. de Baria, 4), op zo'n ${min} minuten van Cuevas del Almanzora via de ${join(roads, 'en')}. We zeggen het liever eerlijk: in Cuevas is er geen vestiging, maar de rit is kort en we zijn 's ochtends en 's middags open.`],
+      ['Wat is de beste tandarts bij Cuevas del Almanzora voor kinderen?', `Degene die alles uitlegt en ervoor zorgt dat uw kind zich op zijn gemak voelt. Bij Koral worden kinderen behandeld door Dr. Ana Soler, die zowel ${to('odontopediatria', 'kindertandheelkunde')} als orthodontie doet, zodat één persoon de groei volgt. Het eerste bezoek is gratis: overtuig uzelf.`],
+      ['Kan een tand met veel pijn gered worden in plaats van getrokken?', `Vaak wel. Zit het probleem in de pulpa, dan kan een wortelkanaalbehandeling onder de microscoop bij Dr. Ángeles Parra de eigen tand behouden. Dat hangt af van de diagnose, die we zo nodig met 3D-beelden bevestigen. Meer op onze pagina ${to('endodoncia', 'endodontie')}.`],
+      ['Wat kost het eerste bezoek als ik uit Cuevas kom?', `Niets: het eerste bezoek is gratis. We onderzoeken uw mond, leggen de mogelijkheden uit en geven u een gedetailleerde offerte. De meeste behandelingen kunnen met 0%-financiering worden betaald – zie ${to('pricing', 'prijzen en financiering')}.`],
+      ['Spreekt u Nederlands?', 'Ja. We behandelen in het Spaans, Engels, Duits, Nederlands en Frans, zodat u uw klachten kunt uitleggen en uw behandeling in uw eigen taal begrijpt.'],
+      ['Wat zijn de openingstijden voor patiënten uit Cuevas del Almanzora?', `Maandag 10:00–20:00, dinsdag 8:00–16:00, woensdag 10:00–18:00, donderdag en vrijdag 8:00–16:00. Maak een afspraak via +34 950 39 53 19, via WhatsApp op +34 634 68 36 39 of via de ${to('contact', 'contactpagina')}.`],
+    ],
+  },
+  fr: {
+    metaTitle: `Dentiste Cuevas del Almanzora, ${min} min | Clínica Dental Koral`,
+    metaDesc: `Votre dentiste pour Cuevas del Almanzora, à ${min} min à Vera : pédodontie, orthodontie, endodontie au microscope et implants. Première visite gratuite.`,
+    hero: {
+      eyebrow: 'Cabinet dentaire près de Cuevas del Almanzora',
+      h1: 'Votre dentiste pour Cuevas del Almanzora,',
+      accent: 'couche par couche',
+      lead: `Vous cherchez un dentiste à Cuevas del Almanzora ? La Clínica Dental Koral vous reçoit à ${min} minutes, à Vera. Nous soignons toute la famille – du premier contrôle des petits au traitement de canal qui sauve une dent – avec toutes les spécialités sous le même toit.`,
+      note: 'Notre cabinet se trouve à Vera (Av. de Baria, 4) ; nous n’avons pas d’antenne à Cuevas.',
+      svgTitle: 'Cuevas del Almanzora : le château du Marqués de los Vélez au-dessus des maisons troglodytes et des strates de la sierra',
+      river: 'Río Almanzora',
+    },
+    intro: {
+      eyebrow: 'Du château au cabinet',
+      h2: `Votre dentiste pour Cuevas del Almanzora, à ${min} minutes de chez vous`,
+      paras: [
+        'Cuevas del Almanzora se lit comme une coupe géologique. Tout en haut, le Castillo del Marqués de los Vélez, élevé au XVIe siècle. Sur le versant, les maisons troglodytes creusées dans la roche qui ont donné son nom au village. En dessous, la mémoire minière de la Sierra Almagrera et la vallée du fleuve Almanzora – et tout autour, une vaste commune qui rejoint la mer avec des hameaux comme Palomares et Villaricos.',
+        `Nous travaillons de la même façon : couche par couche. Avant de proposer un traitement, nous regardons ce que l’œil ne voit pas, grâce à l’imagerie 3D (CBCT) et au microscope dentaire, et nous vous montrons quelle couche de la dent est touchée. La première visite est gratuite et vous repartez avec ${to('pricing', 'un devis clair et un financement à 0 %')} pour la plupart des traitements.`,
+        `Depuis le centre de Cuevas, il y a ${km} km par l’${join(roads, 'et l’')} : environ ${min} minutes sans circulation jusqu’à l’Av. de Baria, à Vera.`,
+      ],
+      coreTitle: 'Carotte du trajet',
+      facts: [[`${km} km`, 'de distance'], [`${min} min`, 'en voiture'], [roads.join(' → '), 'routes'], ['Gratuite', 'première visite']],
+    },
+    morph: {
+      eyebrow: 'De la sierra à la dent',
+      h2: 'Les strates de la sierra, les couches de votre dent',
+      lead: 'Dans la Sierra Almagrera, chaque strate raconte une autre époque. Une dent est construite de façon semblable : l’émail protège, la dentine soutient et la pulpe, au centre, la garde vivante. La profondeur atteinte par un problème décide du traitement – et plus tôt nous le voyons, plus nous conservons de dent.',
+      strata: ['Couche superficielle', 'Couche intermédiaire', 'Couche profonde'],
+      toTooth: 'Voir la dent',
+      toStrata: 'Voir les strates',
+      svgTitle: 'Strates de la Sierra Almagrera qui se transforment en couches d’une dent : émail, dentine et pulpe',
+      layers: [
+        ['Émail', 'Le tissu le plus dur du corps. Ici, tout est prévention : contrôles réguliers, détartrage professionnel et bonnes habitudes à la maison, surtout chez les enfants.'],
+        ['Dentine', 'Plus tendre et sensible au froid ou au sucré. Si une carie atteint cette couche, nous l’arrêtons par un soin conservateur avant qu’elle n’avance.'],
+        ['Pulpe', 'Le nerf de la dent. Lorsqu’elle s’enflamme ou s’infecte, un traitement de canal au microscope permet de la nettoyer et de garder votre dent naturelle.'],
+      ],
+    },
+    descent: {
+      eyebrow: 'Descente couche par couche',
+      h2: 'Cabinet dentaire près de Cuevas del Almanzora, à toutes les profondeurs',
+      lead: 'Nous descendons aussi profond que votre bouche le demande, sans vous envoyer dans un autre cabinet à chaque étape. Voici comment nous suivons une famille de Cuevas, de la surface jusqu’à l’os.',
+      level: 'Niveau',
+      levels: [
+        { tag: 'Surface', title: 'Une première visite gratuite pour toute la famille', text: `Nous commençons par vous écouter et examiner toute la bouche ; si besoin, nous complétons le diagnostic par une imagerie 3D. Vous repartez avec un plan écrit, un devis sans engagement et, si cela vous aide, ${to('pricing', 'un financement à 0 % pour la plupart des traitements')}.` },
+        { tag: 'Émail', title: 'Les enfants, sans la peur', text: `La Dre Ana Soler s’occupe de la ${to('odontopediatria', 'pédodontie pour les familles de Cuevas del Almanzora')} : premières visites en douceur, prévention et soins expliqués à hauteur d’enfant. Prendre soin des dents de lait, c’est préparer les dents définitives.` },
+        { tag: 'Dentine', title: 'L’orthodontie au bon moment', text: `La Dre Soler suit aussi la croissance de la bouche et propose ${to('ortodoncia', 'une orthodontie pour enfants et adultes')} au moment opportun, avec bagues ou aligneurs transparents. Corriger tôt évite l’usure et des problèmes plus profonds.` },
+        { tag: 'Pulpe', title: 'Sauver la dent plutôt que l’arracher', text: `Quand la douleur vient de l’intérieur, la Dre Ángeles Parra réalise le ${to('endodoncia', 'traitement de canal au microscope dentaire')} : chaque canal est repéré et nettoyé avec précision pour que votre dent naturelle reste en place de longues années.` },
+        { tag: 'Os', title: 'Remplacer ce qui manque, avec garantie', text: `Si une dent ne peut plus être sauvée, la Dre Ana Padilla planifie des ${to('implantes', 'implants dentaires Straumann garantis à vie')}, toujours avec une imagerie 3D (CBCT) pour mesurer l’os avant de commencer.` },
+      ],
+      team: `Découvrez toutes nos praticiennes sur la page ${to('team', 'équipe de la Clínica Dental Koral')}.`,
+    },
+    roof: {
+      eyebrow: 'Sous le même toit',
+      h2: 'Des spécialistes pour toute la famille de Cuevas, dans un seul cabinet',
+      lead: 'Pour une famille de Cuevas del Almanzora, changer de cabinet à chaque traitement, c’est plus de kilomètres et plus de matinées perdues. Chez Koral, la pédodontiste, l’endodontiste et la chirurgienne travaillent porte à porte – comme les maisons troglodytes d’un même versant : votre dossier vous suit et personne ne repart de zéro.',
+      doctors: [
+        ['Dre Ana Soler', 'Pédodontie et orthodontie : la référence des enfants et des adolescents.'],
+        ['Dre Ángeles Parra', 'Traitement de canal au microscope pour conserver la dent naturelle.'],
+        ['Dre Ana Padilla', 'Chirurgie orale, implants Straumann et esthétique dentaire.'],
+      ],
+      langs: 'Et si l’on parle français, anglais, allemand ou néerlandais à la maison, on le parle aussi au cabinet : nous soignons en cinq langues.',
+      cta: 'Découvrir l’équipe',
+    },
+    route: {
+      eyebrow: 'Itinéraire réel · OpenStreetMap',
+      paras: [
+        `Quittez le centre de Cuevas, le château dans le dos, et suivez l’${join(roads, 'puis l’')} en direction de Vera. Comptez ${km} km et environ ${min} minutes sans circulation jusqu’à l’Av. de Baria, 4, où se trouve le cabinet.`,
+        `Vous habitez la partie côtière de la commune ? Palomares a sa propre page : ${to('palomares', 'dentiste près de Palomares')}. Nous avons aussi des pages pour ${to('vera', 'les patients de Vera')} et ${to('antas', 'dentiste pour Antas')}.`,
+      ],
+      hours: 'Horaires',
+      days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
+      weekend: 'Samedi et dimanche : fermé',
+      maps: 'Ouvrir l’itinéraire dans Google Maps',
+      all: `Voir ${to('areas', 'toutes les communes du Levante Almeriense que nous servons')}.`,
+    },
+    faqTitle: 'Questions des patients de Cuevas del Almanzora',
+    faqs: [
+      ['Avez-vous un cabinet à Cuevas del Almanzora ?', `Non. La Clínica Dental Koral se trouve à Vera (Av. de Baria, 4), à environ ${min} minutes de Cuevas del Almanzora par l’${join(roads, 'et l’')}. Nous préférons être clairs : il n’y a pas d’antenne à Cuevas, mais le trajet est court et nous sommes ouverts le matin comme l’après-midi.`],
+      ['Quel est le meilleur dentiste près de Cuevas del Almanzora pour les enfants ?', `Celui qui explique tout et met votre enfant en confiance. Chez Koral, les enfants sont suivis par la Dre Ana Soler, qui assure la ${to('odontopediatria', 'pédodontie')} et l’orthodontie : une seule personne accompagne leur croissance. La première visite est gratuite, vous pourrez juger par vous-même.`],
+      ['Peut-on sauver une dent très douloureuse au lieu de l’arracher ?', `Souvent, oui. Si le problème se situe dans la pulpe, un traitement de canal au microscope avec la Dre Ángeles Parra peut conserver la dent naturelle. Tout dépend du diagnostic, confirmé par imagerie 3D si nécessaire. Plus d’informations sur la page ${to('endodoncia', 'endodontie')}.`],
+      ['Combien coûte la première visite si je viens de Cuevas ?', `Rien : la première visite est gratuite. Nous examinons votre bouche, vous expliquons les options et vous remettons un devis détaillé. La plupart des traitements peuvent être réglés avec un financement à 0 % – voir ${to('pricing', 'tarifs et financement')}.`],
+      ['Parlez-vous français ?', 'Oui. Nous recevons en espagnol, anglais, allemand, néerlandais et français, pour que vous puissiez décrire vos symptômes et comprendre votre traitement dans votre langue.'],
+      ['Quels sont vos horaires pour les patients de Cuevas del Almanzora ?', `Lundi 10h00–20h00, mardi 8h00–16h00, mercredi 10h00–18h00, jeudi et vendredi 8h00–16h00. Prenez rendez-vous au +34 950 39 53 19, par WhatsApp au +34 634 68 36 39 ou via la ${to('contact', 'page de contact')}.`],
+    ],
+  },
+} as const)[lang];
+
+const title = copy.metaTitle;
+const description = copy.metaDesc;
+const schema = townSchema({ town: 'cuevas', lang, title, description, serviceName: fill(t('areas.dentist.in'), { town: town.name }) });
+const crumbs = [{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }];
+const fmtH = (h: number) => (lang === 'fr' ? `${h}h00` : `${h}:00`);
+
+/* ---------- Hero landscape (viewBox 1440 × 600) ---------- */
+const hill =
+  'M500 600C590 560 680 486 760 424C840 362 900 312 960 272C1020 232 1062 206 1110 197L1340 191C1382 193 1412 204 1440 214L1440 600Z';
+// Dipping strata inside the hill: each line also closes downwards so the bands stack.
+const strataLines = Array.from({ length: 11 }, (_, i) => {
+  const y = 214 + i * 36;
+  return `M430 ${y + 34}C640 ${y + 8} 860 ${y + 44} 1080 ${y + 14}S1380 ${y - 18} 1500 ${y - 10}`;
+});
+const bandFills = ['#5B3E2F', '#4A3227', '#6E4834', '#3F2B23', '#7B5139', '#4D3429', '#60412F', '#3B2821', '#6A4535', '#47302A', '#563A2C'];
+const strataStrokes = ['#D9A66B', '#E6D8C6', '#C0714F', '#2CC5D2', '#E6D8C6', '#D9A66B', '#F2617A', '#E6D8C6', '#C0714F', '#D9A66B', '#E6D8C6'];
+// Cave houses: [x, y, lit window]
+const houses: [number, number, boolean][] = [
+  [700, 498, false], [782, 492, true], [866, 500, false], [952, 494, false], [1040, 500, true], [1130, 494, false], [1222, 500, false], [1318, 494, true],
+  [846, 416, false], [930, 410, true], [1014, 418, false], [1104, 410, false], [1198, 418, true], [1296, 412, false],
+  [968, 332, false], [1050, 326, false], [1142, 334, true], [1236, 328, false], [1338, 334, false],
+  [1060, 250, true], [1370, 256, false],
+];
+const merlons = (x0: number, x1: number, y: number, step = 14, w = 8, h = 9) =>
+  Array.from({ length: Math.floor((x1 - x0) / step) + 1 }, (_, i) => `M${x0 + i * step} ${y}h${w}v-${h}h-${w}Z`).join('');
+const stars: [number, number, number][] = [[1000, 40, 1.4], [1060, 120, 1], [1180, 34, 1.2], [1290, 70, 1.6], [1400, 40, 1], [1390, 140, 1.2], [930, 150, 1], [1120, 70, 0.9]];
+
+/* ---------- Strata → tooth morph (viewBox 800 × 520) ---------- */
+type Pt = [number, number];
+const r1 = (n: number) => Math.round(n * 10) / 10;
+/** Closed Catmull-Rom spline: always N cubic segments, so shapes with N points can morph. */
+const spline = (pts: Pt[]) => {
+  const n = pts.length;
+  let d = `M${r1(pts[0][0])} ${r1(pts[0][1])}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    d += `C${r1(p1[0] + (p2[0] - p0[0]) / 6)} ${r1(p1[1] + (p2[1] - p0[1]) / 6)} ${r1(p2[0] - (p3[0] - p1[0]) / 6)} ${r1(p2[1] - (p3[1] - p1[1]) / 6)} ${r1(p2[0])} ${r1(p2[1])}`;
+  }
+  return `${d}Z`;
+};
+const band = (top: number, bottom: number, phase: number): Pt[] => {
+  const xs = Array.from({ length: 12 }, (_, i) => -90 + i * (980 / 11));
+  const wave = (x: number, a: number) => a * Math.sin(x / 120 + phase);
+  return [...xs.map((x) => [x, top + wave(x, 9)] as Pt), ...xs.slice().reverse().map((x) => [x, bottom + wave(x + 60, 11)] as Pt)];
+};
+const toothOuter: Pt[] = [[285, 120], [300, 78], [335, 58], [370, 72], [400, 88], [430, 72], [465, 58], [500, 78], [515, 120], [520, 180], [505, 250], [495, 330], [485, 420], [465, 470], [445, 440], [432, 360], [400, 300], [368, 360], [355, 440], [335, 470], [315, 420], [305, 330], [295, 250], [280, 180]];
+const toothDentin: Pt[] = [[303, 128], [316, 96], [340, 82], [370, 94], [400, 108], [430, 94], [460, 82], [484, 96], [497, 128], [500, 180], [500, 252], [491, 330], [481, 418], [464, 462], [448, 436], [436, 358], [400, 306], [364, 358], [352, 436], [336, 462], [319, 418], [309, 330], [300, 252], [300, 180]];
+const toothPulp: Pt[] = [[346, 178], [350, 146], [362, 140], [376, 160], [400, 168], [424, 160], [438, 140], [450, 146], [454, 178], [457, 215], [452, 256], [461, 330], [463, 408], [459, 446], [453, 408], [448, 336], [400, 266], [352, 336], [347, 408], [341, 446], [337, 408], [339, 330], [348, 256], [343, 215]];
+const morphLayers = [
+  { strata: spline(band(64, 150, 0)), tooth: spline(toothOuter), fill: '#F6EFE6' },
+  { strata: spline(band(160, 286, 1.3)), tooth: spline(toothDentin), fill: '#E0B27A' },
+  { strata: spline(band(296, 444, 2.4)), tooth: spline(toothPulp), fill: '#F2617A' },
+];
+const strataLabelY = [112, 228, 376];
+// Leader lines: [point on the layer, index of the layer name]
+const toothLabels: { from: Pt; layer: number }[] = [
+  { from: [508, 104], layer: 0 },
+  { from: [442, 206], layer: 2 },
+  { from: [482, 330], layer: 1 },
+];
+
+/* ---------- Descent levels ---------- */
+const levelStyle = [
+  { bg: '#F3ECE3', fg: '#0A1F33', icon: 'tooth' as const },
+  { bg: '#EADBC4', fg: '#0A1F33', icon: 'odontopediatria' as const },
+  { bg: '#DDB27C', fg: '#0A1F33', icon: 'ortodoncia' as const },
+  { bg: '#F2617A', fg: '#0A1F33', icon: 'endodoncia' as const },
+  { bg: '#7A4B39', fg: '#FFFFFF', icon: 'implantes' as const },
+];
+const doctorPhotos = ['/equipo/ana-soler.jpg', '/equipo/angeles-parrar.jpg', '/equipo/Ana-padilla.jpg'];
+const doctorRoles = [t('role.ortho'), t('role.endo'), t('role.director')];
+const mapsUrl = 'https://www.google.com/maps/dir/?api=1&origin=Cuevas+del+Almanzora,+Almer%C3%ADa&destination=Clinica+Dental+Koral+Vera+Almeria';
+---
+
+<Layout title={title} description={description} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main" class="cue-page">
+    <!-- 1 · Hero: castle, cave houses and strata at dusk -->
+    <section class="cue-hero relative isolate overflow-hidden text-white">
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <div class="absolute -left-40 top-10 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(44,197,210,0.14)_0%,transparent_65%)]"></div>
+        <div class="absolute bottom-0 right-0 h-[600px] w-[760px] bg-[radial-gradient(50%_50%_at_60%_70%,rgba(217,166,107,0.22)_0%,transparent_70%)]"></div>
+      </div>
+
+      <div class="container-k relative z-10 pt-32 md:pt-44">
+        <Breadcrumbs items={crumbs} />
+        <div class="mt-8 max-w-[38rem]">
+          <p class="eyebrow eyebrow-light" data-reveal>{copy.hero.eyebrow}</p>
+          <h1 class="mt-5 text-[2.45rem] leading-[1.03] text-white sm:text-[3.4rem] lg:text-[4.1rem]" data-reveal style="--d:.06s">
+            {copy.hero.h1}
+            <span class="accent-italic block text-[#F3C9A0]">{copy.hero.accent}</span>
+          </h1>
+          <p class="mt-6 max-w-[34rem] text-[17px] leading-relaxed text-white/75 md:text-lg" data-reveal style="--d:.12s">{copy.hero.lead}</p>
+          <div class="mt-8 flex flex-wrap gap-3" data-reveal style="--d:.18s">
+            <a href="#appointment" class="btn btn-coral">
+              {t('nav.appointment')}
+              <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+            <a href="tel:+34950395319" class="btn btn-ghost-light tabular">+34 950 39 53 19</a>
+          </div>
+          <ul class="mt-8 flex flex-wrap gap-2 text-[13px] font-medium text-white/80" data-reveal style="--d:.24s">
+            <li class="rounded-full bg-white/[0.07] px-3.5 py-1.5 ring-1 ring-white/10 tabular">{fill(t('areas.drive'), { min, km })}</li>
+            <li class="rounded-full bg-white/[0.07] px-3.5 py-1.5 ring-1 ring-white/10">{roads.join(' → ')}</li>
+            <li class="rounded-full bg-white/[0.07] px-3.5 py-1.5 ring-1 ring-white/10">{t('trust.7')}</li>
+          </ul>
+          <p class="mt-5 text-[13px] text-white/50" data-reveal style="--d:.28s">{copy.hero.note}</p>
+        </div>
+      </div>
+
+      <div class="cue-land relative mt-6 aspect-[390/330] sm:aspect-[1440/600] lg:-mt-[17vw]" data-reveal="fade">
+        <svg viewBox="0 0 1440 600" preserveAspectRatio="xMaxYMax slice" class="absolute inset-0 h-full w-full" role="img" aria-labelledby="cue-hero-t">
+          <title id="cue-hero-t">{copy.hero.svgTitle}</title>
+          <defs>
+            <linearGradient id="cue-stone" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#F3E6D3" />
+              <stop offset="1" stop-color="#C9A47A" />
+            </linearGradient>
+            <linearGradient id="cue-ridge" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#8FE3EA" stop-opacity=".12" />
+              <stop offset="1" stop-color="#8FE3EA" stop-opacity="0" />
+            </linearGradient>
+            <clipPath id="cue-hill-clip"><path d={hill} /></clipPath>
+            <mask id="cue-moon">
+              <rect width="1440" height="600" fill="#000" />
+              <circle cx="1004" cy="92" r="22" fill="#fff" />
+              <circle cx="1014" cy="84" r="19" fill="#000" />
+            </mask>
+            <radialGradient id="cue-moon-glow">
+              <stop offset="0" stop-color="#F3E6D3" stop-opacity=".35" />
+              <stop offset="1" stop-color="#F3E6D3" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- Sky -->
+          <g class="cue-stars" fill="#F3E6D3">
+            {stars.map(([x, y, r]) => <circle cx={x} cy={y} r={r} />)}
+          </g>
+          <circle cx="1000" cy="92" r="70" fill="url(#cue-moon-glow)" />
+          <rect width="1440" height="600" fill="#F3E6D3" mask="url(#cue-moon)" />
+
+          <!-- Far ridge of the Sierra Almagrera -->
+          <path d="M560 600C700 470 820 430 940 380C1060 330 1150 300 1240 290C1320 282 1390 286 1440 296L1440 600Z" fill="url(#cue-ridge)" />
+
+          <!-- Hill with dipping strata -->
+          <path d={hill} fill="#3A2820" />
+          <g clip-path="url(#cue-hill-clip)">
+            {strataLines.map((d, i) => <path d={`${d}L1500 700L430 700Z`} fill={bandFills[i]} />)}
+            <g class="draw">
+              {strataLines.map((d, i) => (
+                <path d={d} fill="none" stroke={strataStrokes[i]} stroke-opacity={strataStrokes[i] === '#2CC5D2' || strataStrokes[i] === '#F2617A' ? 0.55 : 0.32} stroke-width={i % 3 === 0 ? 1.6 : 1} pathLength="1" style={`--dd:${0.2 + i * 0.12}s`} />
+              ))}
+            </g>
+          </g>
+
+          <!-- Cave houses: whitewashed fronts, arched doors, chimneys on the slope -->
+          <g class="cue-houses">
+            {houses.map(([x, y, lit], i) => (
+              <g class="cue-house" style={`--hd:${0.5 + (i % 8) * 0.08}s`}>
+                <rect x={x + 9} y={y - 27} width="7" height="17" rx="1.5" fill="#F6EFE6" />
+                <rect x={x + 7} y={y - 30} width="11" height="4" rx="1" fill="#F6EFE6" />
+                <rect x={x} y={y} width="46" height="31" rx="3" fill="#F6EFE6" fill-opacity=".93" />
+                <path d={`M${x + 15} ${y + 31}v-13a7 7 0 0 1 14 0v13Z`} fill="#2A1D18" />
+                <rect x={i % 2 ? x + 5 : x + 34} y={y + 9} width="7" height="8" rx="1" fill={lit ? '#F2B25C' : '#2A1D18'} />
+              </g>
+            ))}
+          </g>
+
+          <!-- Castillo del Marqués de los Vélez (silhouette) -->
+          <g class="cue-castle">
+            <path d="M1118 197V150H1330V197Z" fill="url(#cue-stone)" />
+            <path d={merlons(1150, 1324, 150)} fill="url(#cue-stone)" />
+            <path d="M1104 197V128H1146V197Z" fill="#E7D3B6" />
+            <path d={merlons(1104, 1140, 128, 12, 7, 8)} fill="#E7D3B6" />
+            <path d="M1186 197V88H1258V197Z" fill="url(#cue-stone)" />
+            <path d={merlons(1186, 1252, 88, 12, 7, 10)} fill="url(#cue-stone)" />
+            <path d="M1186 197V88H1206V197Z" fill="#000" fill-opacity=".12" />
+            <rect x="1218" y="108" width="5" height="16" rx="2" fill="#2A1D18" />
+            <rect x="1236" y="134" width="5" height="16" rx="2" fill="#2A1D18" />
+            <rect x="1122" y="146" width="4" height="13" rx="2" fill="#2A1D18" />
+            <path d="M1286 197v-22a10 10 0 0 1 20 0v22Z" fill="#2A1D18" />
+          </g>
+
+          <!-- Valley floor and the Almanzora river -->
+          <path d="M0 548C240 532 470 566 720 548S1200 530 1440 552L1440 600L0 600Z" fill="#FBF8F4" />
+          <path d="M0 574C300 562 520 584 760 572S1200 560 1440 576" fill="none" stroke="#2CC5D2" stroke-width="2.4" stroke-linecap="round" class="draw-me" pathLength="1" style="--dd:1s" />
+          <text x="1410" y="596" text-anchor="end" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="15" fill="#0B7C86">{copy.hero.river}</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 2 · Intro: the town in layers + core sample of the route -->
+    <section class="section-y relative overflow-hidden bg-sand !pt-12 md:!pt-16">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-7">
+            <p class="eyebrow" data-reveal>{copy.intro.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.8rem]" data-reveal style="--d:.05s">{copy.intro.h2}</h2>
+            <div class="mt-8 space-y-5 text-[17px] leading-relaxed text-slate-700">
+              {copy.intro.paras.map((p, i) => <p data-reveal style={`--d:${0.08 + i * 0.05}s`} set:html={p} />)}
+            </div>
+          </div>
+          <div class="lg:col-span-5">
+            <figure class="cue-core mx-auto max-w-[23rem] lg:sticky lg:top-32" data-reveal="right">
+              <figcaption class="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">{copy.intro.coreTitle}</figcaption>
+              <dl class="cue-core-body">
+                {copy.intro.facts.map(([value, label], i) => (
+                  <div class={`cue-core-band cue-core-${i}`}>
+                    <dt class="order-2 text-[12px] font-semibold uppercase tracking-[0.18em] opacity-75">{label}</dt>
+                    <dd class="font-display order-1 text-[1.9rem] leading-none tabular">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · Strata → tooth morph -->
+    <section class="cue-deep relative isolate overflow-hidden text-white">
+      <svg class="pointer-events-none absolute inset-x-0 top-0 h-16 w-full md:h-24" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 0H1440V40C1180 70 900 22 640 48S200 72 0 44Z" fill="#FBF8F4" />
+        <path d="M0 44C200 72 420 52 640 48S1180 70 1440 40V58C1180 86 900 40 640 66S200 90 0 62Z" fill="#E6D8C6" />
+        <path d="M0 62C200 90 420 70 640 66S1180 86 1440 58V72C1180 98 900 56 640 80S200 100 0 76Z" fill="#B98A5C" />
+        <path d="M0 76C200 100 420 82 640 80S1180 98 1440 72V82C1180 104 900 66 640 92S200 106 0 88Z" fill="#5B3E2F" />
+      </svg>
+      <div class="container-k relative pb-24 pt-32 md:pb-32 md:pt-40">
+        <div class="mx-auto max-w-3xl text-center">
+          <p class="eyebrow eyebrow-light" data-reveal>{copy.morph.eyebrow}</p>
+          <h2 class="mt-5 text-[2.1rem] leading-tight text-white md:text-[2.9rem]" data-reveal style="--d:.05s">{copy.morph.h2}</h2>
+          <p class="mt-6 text-[17px] leading-relaxed text-white/70" data-reveal style="--d:.1s">{copy.morph.lead}</p>
+        </div>
+
+        <figure class="cue-morph relative mx-auto mt-12 max-w-[860px]" data-cue-morph data-reveal="fade">
+          <svg viewBox="0 0 800 520" class="block h-auto w-full rounded-[1.75rem]" role="img" aria-labelledby="cue-morph-t">
+            <title id="cue-morph-t">{copy.morph.svgTitle}</title>
+            <g class="cue-rock" stroke="#E6D8C6" stroke-opacity=".14" fill="none">
+              {[30, 156, 291, 452, 500].map((y, i) => <path d={`M-20 ${y}C200 ${y - 14} 420 ${y + 16} 820 ${y - 6}`} stroke-dasharray={i % 2 ? '3 9' : undefined} />)}
+              {Array.from({ length: 26 }, (_, i) => <circle cx={(i * 131) % 800} cy={40 + ((i * 197) % 440)} r={1 + (i % 3) * 0.6} fill="#E6D8C6" fill-opacity=".2" stroke="none" />)}
+            </g>
+            {morphLayers.map((l) => (
+              <path d={l.strata} data-strata={l.strata} data-tooth={l.tooth} fill={l.fill}>
+                <animate attributeName="d" dur="2.4s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.65 0 0.25 1" values={`${l.strata};${l.tooth}`} />
+              </path>
+            ))}
+            <g class="cue-strata-labels" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" letter-spacing="2">
+              {copy.morph.strata.map((s, i) => (
+                <text x="34" y={strataLabelY[i]} fill={i === 2 ? '#0A1F33' : '#0A1F33'} fill-opacity=".7">{s.toUpperCase()}</text>
+              ))}
+            </g>
+            <g class="cue-tooth-labels" font-family="Fraunces, Georgia, serif" font-size="24" font-style="italic">
+              {toothLabels.map((l) => (
+                <g>
+                  <path d={`M${l.from[0]} ${l.from[1]}H602`} stroke="#8FE3EA" stroke-opacity=".6" stroke-dasharray="2 5" />
+                  <circle cx={l.from[0]} cy={l.from[1]} r="4" fill="#0A1F33" stroke="#8FE3EA" stroke-width="2" />
+                  <text x="614" y={l.from[1] + 8} fill="#FFFFFF">{copy.morph.layers[l.layer][0]}</text>
+                </g>
+              ))}
+            </g>
+          </svg>
+          <button type="button" class="cue-toggle btn btn-ghost-light mx-auto mt-6 flex !py-2.5 text-sm" data-cue-toggle aria-pressed="false" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5" /></svg>
+            <span class="cue-to-tooth">{copy.morph.toTooth}</span>
+            <span class="cue-to-strata">{copy.morph.toStrata}</span>
+          </button>
+        </figure>
+
+        <ul class="mt-14 grid gap-5 md:grid-cols-3">
+          {copy.morph.layers.map(([name, text], i) => (
+            <li class="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-7" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class="mb-5 block h-2 w-14 rounded-full" style={`background:${morphLayers[i].fill}`} aria-hidden="true"></span>
+              <h3 class="text-2xl text-white">{name}</h3>
+              <p class="mt-3 text-[15px] leading-relaxed text-white/65">{text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <svg class="pointer-events-none absolute inset-x-0 bottom-0 h-14 w-full md:h-20" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 60C260 30 520 84 820 56S1260 30 1440 52V100H0Z" fill="#FFFFFF" />
+      </svg>
+    </section>
+
+    <!-- 4 · Descent: levels of care, surface to bone -->
+    <section class="cue-descent section-y relative bg-white">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-4">
+            <div class="lg:sticky lg:top-28">
+              <p class="eyebrow" data-reveal>{copy.descent.eyebrow}</p>
+              <h2 class="mt-5 text-[2rem] leading-tight md:text-[2.5rem]" data-reveal style="--d:.05s">{copy.descent.h2}</h2>
+              <p class="mt-5 text-[16px] leading-relaxed text-slate-600" data-reveal style="--d:.1s">{copy.descent.lead}</p>
+              <div class="cue-column mt-10 hidden lg:flex" aria-hidden="true">
+                <div class="cue-column-bands">
+                  {levelStyle.map((s, i) => (
+                    <span style={`background:${s.bg};color:${s.fg}`}><b class="font-display italic">{String(i + 1).padStart(2, '0')}</b>{copy.descent.levels[i].tag}</span>
+                  ))}
+                </div>
+                <span class="cue-column-marker"></span>
+              </div>
+            </div>
+          </div>
+
+          <ol class="cue-levels relative lg:col-span-8">
+            {copy.descent.levels.map((lv, i) => (
+              <li class="cue-level relative grid grid-cols-[3.25rem_1fr] gap-5 pb-12 last:pb-0 sm:grid-cols-[4.5rem_1fr] sm:gap-7" data-reveal style={`--d:${0.04 * i}s`}>
+                <div class="relative flex flex-col items-center">
+                  <span class="cue-level-chip flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-2xl sm:h-[4.5rem] sm:w-[4.5rem]" style={`background:${levelStyle[i].bg};color:${levelStyle[i].fg}`}>
+                    <TreatmentIcon name={levelStyle[i].icon} size={30} />
+                  </span>
+                  <span class="cue-level-shaft mt-3 w-px flex-1" style={`background:linear-gradient(${levelStyle[i].bg},${levelStyle[Math.min(i + 1, 4)].bg})`} aria-hidden="true"></span>
+                </div>
+                <article class="pt-1">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    {copy.descent.level} {String(i + 1).padStart(2, '0')} · <span class="text-accent">{lv.tag}</span>
+                  </p>
+                  <h3 class="mt-2 text-[1.6rem] leading-snug md:text-[1.9rem]">{lv.title}</h3>
+                  <p class="mt-3 text-[16px] leading-relaxed text-slate-600" set:html={lv.text} />
+                </article>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <p class="mt-14 border-t border-ocean-900/[0.07] pt-8 text-[15px] text-slate-600 lg:ml-[33.4%] lg:pl-16" data-reveal set:html={copy.descent.team} />
+      </div>
+    </section>
+
+    <!-- 5 · Under one roof: doctors framed as cave-house doorways -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <svg class="pointer-events-none absolute inset-x-0 top-0 h-full w-full opacity-[0.5]" viewBox="0 0 1440 800" preserveAspectRatio="none" aria-hidden="true">
+        {[120, 180, 240].map((y, i) => <path d={`M0 ${y}C360 ${y - 40} 720 ${y + 30} 1080 ${y - 10}S1440 ${y - 30} 1440 ${y - 30}`} fill="none" stroke="#E6D8C6" stroke-width={2 - i * 0.5} />)}
+      </svg>
+      <div class="container-k relative">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <p class="eyebrow" data-reveal>{copy.roof.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.8rem]" data-reveal style="--d:.05s">{copy.roof.h2}</h2>
+          </div>
+          <p class="text-[16px] leading-relaxed text-slate-600 lg:col-span-5" data-reveal style="--d:.1s">{copy.roof.lead}</p>
+        </div>
+
+        <ul class="mt-16 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+          {copy.roof.doctors.map(([name, line], i) => (
+            <li class="cue-door relative flex flex-col pt-8" data-reveal style={`--d:${i * 0.1}s`}>
+              <span class="cue-chimney" aria-hidden="true"></span>
+              <div class="relative flex-1 rounded-[1.75rem] bg-white p-5 pb-7 shadow-[var(--shadow-soft)] ring-1 ring-ocean-900/[0.05]">
+                <div class="cue-arch overflow-hidden bg-sand-200">
+                  <Picture src={doctorPhotos[i]} alt={`${name} · ${doctorRoles[i]} · Clínica Dental Koral`} width={600} height={600} class="aspect-[5/6] h-auto w-full object-cover object-top" />
+                </div>
+                <h3 class="mt-6 px-2 text-[1.5rem]">{name}</h3>
+                <p class="mt-1 px-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-accent">{doctorRoles[i]}</p>
+                <p class="mt-3 px-2 text-[15px] leading-relaxed text-slate-600">{line}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div class="mt-14 flex flex-col items-start gap-5 rounded-[1.75rem] border border-accent/15 bg-white/70 p-7 sm:flex-row sm:items-center sm:justify-between" data-reveal>
+          <p class="max-w-2xl text-[16px] leading-relaxed text-slate-700">{copy.roof.langs}</p>
+          <a href={pathFor('team', lang)} class="btn btn-teal shrink-0">
+            {copy.roof.cta}
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · Route -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <p class="eyebrow" data-reveal>{copy.route.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.7rem]" data-reveal style="--d:.05s">{fill(t('areas.route'), { town: town.name })}</h2>
+            <div class="mt-7 space-y-5 text-[16px] leading-relaxed text-slate-700">
+              {copy.route.paras.map((p, i) => <p data-reveal style={`--d:${0.08 + i * 0.05}s`} set:html={p} />)}
+            </div>
+            <div class="mt-9 rounded-[1.5rem] bg-sand p-6" data-reveal>
+              <p class="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-500">{copy.route.hours}</p>
+              <dl class="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
+                {HOURS.map(([o, c], i) => (
+                  <>
+                    <dt class="text-slate-600">{copy.route.days[i]}</dt>
+                    <dd class="text-right font-semibold text-ocean-900 tabular">{fmtH(o)}–{fmtH(c)}</dd>
+                  </>
+                ))}
+              </dl>
+              <p class="mt-3 border-t border-ocean-900/[0.07] pt-3 text-[13px] text-slate-500">{copy.route.weekend}</p>
+            </div>
+            <div class="mt-7 flex flex-wrap gap-3" data-reveal>
+              <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn-dark">{copy.route.maps}</a>
+              <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-outline">WhatsApp</a>
+            </div>
+          </div>
+          <div class="lg:col-span-7" data-reveal="right">
+            <div class="overflow-hidden rounded-[2rem] shadow-[var(--shadow-card)] ring-1 ring-ocean-900/[0.06]">
+              <TownRouteMap town="cuevas" tone="light" seaLabel={t('areas.sea')} />
+            </div>
+            <p class="mt-4 text-[14px] text-slate-500" set:html={copy.route.all} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow="FAQ" title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="cuevas" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<script>
+  // Descent: the marker on the stratigraphic column follows the level being read.
+  document.querySelectorAll<HTMLElement>('.cue-column').forEach((col) => {
+    const section = col.closest('.cue-descent');
+    if (!section) return;
+    const levels = [...section.querySelectorAll<HTMLElement>('.cue-level')];
+    const bands = [...col.querySelectorAll<HTMLElement>('.cue-column-bands span')];
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const line = window.innerHeight * 0.45;
+      let active = 0;
+      levels.forEach((l, i) => {
+        if (l.getBoundingClientRect().top < line) active = i;
+      });
+      const band = bands[active];
+      if (!band) return;
+      col.style.setProperty('--marker', `${band.offsetTop + band.offsetHeight / 2}px`);
+      bands.forEach((b, i) => b.toggleAttribute('data-active', i === active));
+    };
+    window.addEventListener('scroll', () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  });
+
+  // Strata → tooth morph (SMIL), started when the figure scrolls into view.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-cue-morph]').forEach((fig) => {
+    const paths = [...fig.querySelectorAll<SVGPathElement>('path[data-strata]')];
+    const button = fig.querySelector<HTMLButtonElement>('[data-cue-toggle]');
+    let tooth = false;
+    const show = (toTooth: boolean, animate: boolean) => {
+      const wasTooth = tooth;
+      tooth = toTooth;
+      fig.classList.toggle('is-tooth', toTooth);
+      button?.setAttribute('aria-pressed', String(toTooth));
+      paths.forEach((p) => {
+        const from = wasTooth ? p.dataset.tooth! : p.dataset.strata!;
+        const target = toTooth ? p.dataset.tooth! : p.dataset.strata!;
+        const anim = p.querySelector<SVGAnimateElement>('animate');
+        if (!animate || !anim || typeof anim.beginElement !== 'function') {
+          anim?.remove();
+          p.setAttribute('d', target);
+          return;
+        }
+        anim.setAttribute('values', `${from};${target}`);
+        anim.beginElement();
+      });
+    };
+    if (button) {
+      button.hidden = false;
+      button.addEventListener('click', () => show(!tooth, !reduce));
+    }
+    if (reduce || !('IntersectionObserver' in window)) {
+      show(true, false);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        window.setTimeout(() => !tooth && show(true, true), 450);
+      },
+      { threshold: 0.45 },
+    );
+    io.observe(fig);
+  });
+</script>
+
+<style is:global>
+  .cue-hero {
+    background:
+      radial-gradient(70% 60% at 85% 0%, rgba(44, 197, 210, 0.12) 0%, transparent 60%),
+      linear-gradient(180deg, #0a1f33 0%, #132a40 42%, #2e2522 78%, #3a2a22 100%);
+  }
+  .cue-land { pointer-events: none; }
+  .cue-house { opacity: 0; transform: translateY(6px); transition: opacity 0.9s var(--ease-out-expo) var(--hd), transform 0.9s var(--ease-out-expo) var(--hd); }
+  .cue-land.visible .cue-house { opacity: 1; transform: none; }
+  .cue-stars { opacity: 0; transition: opacity 2s ease 0.8s; }
+  .cue-land.visible .cue-stars { opacity: 0.85; }
+
+  /* Core sample of the route */
+  .cue-core-body {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px / 3.2rem;
+    box-shadow: var(--shadow-card), inset 0 0 0 1px rgba(10, 31, 51, 0.06);
+  }
+  .cue-core-body::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3rem;
+    background: radial-gradient(50% 60% at 50% 30%, rgba(255, 255, 255, 0.55), transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .cue-core-band { display: flex; flex-direction: column; align-items: center; gap: 0.45rem; padding: 1.6rem 1.25rem; text-align: center; color: #0a1f33; }
+  .cue-core-band + .cue-core-band { border-top: 1px dashed rgba(10, 31, 51, 0.14); }
+  .cue-core-0 { background: #f3ece3; padding-top: 2.4rem; }
+  .cue-core-1 { background: #eadbc4; }
+  .cue-core-2 { background: #ddb27c; }
+  .cue-core-3 { background: #7a4b39; color: #fff; padding-bottom: 2.4rem; }
+  .cue-core-3 dd { color: #ffd2b0; }
+
+  /* Strata → tooth */
+  .cue-deep {
+    background:
+      radial-gradient(60% 50% at 50% 45%, rgba(242, 97, 122, 0.12) 0%, transparent 65%),
+      linear-gradient(180deg, #0a1f33 0%, #1c1d24 55%, #261c18 100%);
+  }
+  .cue-morph .cue-rock { transition: opacity 1.4s ease 0.4s; }
+  .cue-morph .cue-strata-labels { transition: opacity 0.6s ease; }
+  .cue-morph .cue-tooth-labels { opacity: 0; transition: opacity 0.9s ease; }
+  .cue-morph.is-tooth .cue-rock { opacity: 0.35; }
+  .cue-morph.is-tooth .cue-strata-labels { opacity: 0; }
+  .cue-morph.is-tooth .cue-tooth-labels { opacity: 1; transition-delay: 1.8s; }
+  .cue-toggle .cue-to-strata, .cue-morph.is-tooth .cue-toggle .cue-to-tooth { display: none; }
+  .cue-morph.is-tooth .cue-toggle .cue-to-strata { display: inline; }
+  @media (max-width: 639px) {
+    .cue-morph .cue-strata-labels text { font-size: 20px; }
+    .cue-morph .cue-tooth-labels text { font-size: 34px; }
+  }
+
+  /* Descent: stratigraphic column with a marker that follows the scroll */
+  .cue-column { position: relative; padding-left: 1.75rem; }
+  .cue-column-bands { display: flex; width: 100%; flex-direction: column; overflow: hidden; border-radius: 1.25rem; box-shadow: var(--shadow-soft); }
+  .cue-column-bands span { display: flex; align-items: center; gap: 0.75rem; padding: 0.95rem 1.1rem; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+  .cue-column-bands span:nth-child(1) { padding-block: 0.7rem; }
+  .cue-column-bands span:nth-child(5) { padding-block: 1.35rem; }
+  .cue-column-bands b { font-weight: 400; font-size: 15px; opacity: 0.7; }
+  .cue-column-bands span { transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s ease; }
+  .cue-column-bands span[data-active] { transform: translateX(-6px); box-shadow: inset 4px 0 0 rgba(10, 31, 51, 0.35); }
+  .cue-column-marker {
+    position: absolute;
+    left: 0;
+    top: var(--marker, 1.2rem);
+    width: 0;
+    height: 0;
+    margin-top: -7px;
+    border-block: 7px solid transparent;
+    border-left: 11px solid var(--color-coral);
+    transition: top 0.6s var(--ease-out-expo);
+  }
+  .cue-level:last-child .cue-level-shaft { display: none; }
+
+  /* Doorways */
+  .cue-arch { border-radius: 999px 999px 1.1rem 1.1rem; }
+  .cue-chimney { position: absolute; top: 0; left: 2.25rem; width: 0.9rem; height: 2.4rem; border-radius: 0.3rem 0.3rem 0 0; background: #fff; box-shadow: var(--shadow-soft); }
+  .cue-chimney::before { content: ''; position: absolute; top: -0.25rem; left: -0.25rem; right: -0.25rem; height: 0.45rem; border-radius: 0.2rem; background: #fff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cue-house { opacity: 1; transform: none; transition: none; }
+    .cue-stars { opacity: 0.85; transition: none; }
+    .cue-column-marker { transition: none; }
+  }
+</style>

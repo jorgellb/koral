@@ -1,0 +1,680 @@
+---
+/**
+ * Antas — "El Argar". A museum/catalogue page: dark gallery hero with an
+ * Argaric carinated vessel that turns into a molar, numbered "pieces" with the
+ * clinic's strengths, a timeline from the Bronze Age to CBCT 3D, the real
+ * route along the A-1202/N-340A and the family dentists. The clinic is in
+ * Vera: nothing here claims an address or branch in Antas.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import AntasVessel from '../../components/towns/AntasVessel.astro';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey } from '../../i18n/routes';
+import { TOWNS } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+import { TEAM } from '../../data/team';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.antas;
+const ra = town.routes[0];
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const kmA = num(ra.km);
+const min = ra.min;
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista para Antas: clínica dental a ${min} min | Koral`,
+    metaDesc: `Clínica dental cerca de Antas, a ${min} min por la A-1202 y la N-340A. Implantes Straumann, endodoncia con microscopio y CBCT 3D. Primera visita gratis.`,
+    service: 'Dentista para Antas',
+    heroEyebrow: 'Sala Antas · Valle del río Antas',
+    h1: 'Dentista para Antas',
+    accent: 'precisión con raíces',
+    lead: `Tu clínica dental cerca de Antas está en Vera, a ${min} minutos y ${kmA} km por la A-1202 y la N-340A. En Clínica Dental Koral cuidamos de familias del valle del río Antas con diagnóstico 3D, endodoncia con microscopio e implantes pensados para durar.`,
+    stats: [[`${min}`, 'minutos'], [kmA, 'km'], ['5', 'idiomas']],
+    vesselTitle: 'Dentista para Antas: vaso carenado argárico de El Argar que se transforma en el contorno de un molar',
+    label: { piece: 'Pieza 00', name: 'Vaso carenado argárico → molar', period: 'Edad del Bronce · hoy', note: 'La misma obsesión por la forma exacta, milenios después.' },
+    introEyebrow: 'Texto de sala',
+    introTitle: 'Una clínica dental cerca de Antas, con la mirada de El Argar',
+    intro: [
+      'Antas es tierra de interior: el valle del río Antas, de tradición agrícola, donde la tierra se ha trabajado durante generaciones. En su término municipal está El Argar, el yacimiento arqueológico que dio nombre a toda una cultura de la Edad del Bronce, la argárica, famosa por sus vasos carenados: piezas de perfil quebrado y proporciones muy cuidadas.',
+      `Nos gusta esa idea. Un buen vaso carenado y un buen tratamiento dental se parecen: dependen de medir bien, de respetar la forma y de pensar en que dure. Esta página no anuncia una sucursal en Antas —nuestra clínica está en Vera, en la Av. de Baria, 4—; es una invitación a los vecinos de Antas a conocer una clínica con todas las especialidades a ${min} minutos de casa.`,
+    ],
+    colEyebrow: 'La colección',
+    colTitle: '¿El mejor dentista para Antas? Seis piezas para que juzgues tú',
+    colDesc: 'No te vamos a decir que somos los mejores. Te enseñamos lo que hay en la clínica y por qué importa.',
+    pieceWord: 'Pieza',
+    pieces: [
+      ['Diagnóstico 3D con CBCT', 'Tomografía de haz cónico', 'Antes de tratar, medimos. El CBCT nos da una imagen tridimensional del hueso, las raíces y los nervios, y con ella planificamos [[implantes|implantes dentales]] y [[cirugia|cirugía oral]] sin suposiciones.'],
+      ['Endodoncia con microscopio', 'Magnificación óptica', 'Con el microscopio vemos conductos que a simple vista pasan desapercibidos. El objetivo es conservar tu diente natural: la Dra. Ángeles Parra se dedica a la [[endodoncia|endodoncia]] para salvar dientes antes de pensar en sustituirlos.'],
+      ['Implantes Straumann', 'Garantía de por vida', 'Cuando un diente no se puede salvar, lo sustituimos con implantes Straumann con garantía de por vida, colocados por la Dra. Ana Padilla, directora de la clínica y especialista en cirugía e implantología.'],
+      ['Ortodoncia y niños', 'Para familias', 'La Dra. Ana Soler lleva la [[ortodoncia|ortodoncia]], también con alineadores transparentes, y la [[odontopediatria|odontopediatría]]: la primera revisión de los pequeños y la sonrisa de los mayores, en la misma consulta.'],
+      ['Primera visita gratuita', 'Financiación al 0 %', 'La primera valoración no cuesta nada y sales con un presupuesto claro. La mayoría de tratamientos se pueden pagar con [[pricing|financiación al 0 %]].'],
+      ['Cinco idiomas', 'es · en · de · nl · fr', 'Te atendemos en español, inglés, alemán, neerlandés y francés, para que nadie de la familia se quede sin entender su tratamiento.'],
+    ],
+    tlEyebrow: 'Cronología',
+    tlTitle: 'De la Edad del Bronce al CBCT 3D',
+    tl: [
+      ['Edad del Bronce', 'El Argar', 'En el término de Antas, El Argar da nombre a la cultura argárica, conocida por sus vasos carenados de perfil preciso.'],
+      ['Día 1', 'Primera visita', 'Gratuita: escuchamos, exploramos y te explicamos opciones y presupuesto.'],
+      ['Diagnóstico', 'CBCT 3D', 'Una imagen tridimensional para decidir con datos, no con suposiciones.'],
+      ['Tratamiento', 'Microscopio e implantes', 'Salvar el diente cuando se puede; sustituirlo con un implante Straumann cuando no.'],
+      ['Después', 'Para durar', 'Revisiones periódicas y garantía de por vida en los implantes Straumann.'],
+    ],
+    routeEyebrow: 'La ruta',
+    routeTitle: `De Antas a tu clínica dental: ${kmA} km, ${min} minutos`,
+    route: [
+      `Sales de Antas por la A-1202, enlazas con la N-340A y la A-1200, y entras en Vera por la A-352 hasta la Av. de Baria, 4. Son ${kmA} km y unos ${min} minutos sin tráfico: un trayecto que cabe antes del trabajo, porque martes, jueves y viernes abrimos a las 8:00, y los lunes atendemos hasta las 20:00.`,
+      'Si tienes familia en [[gallardos|Los Gallardos]] o en [[cuevas|Cuevas del Almanzora]], también les queda a un cuarto de hora o menos. Y si quieres saber más de la clínica y su entorno, mira la página de [[vera|dentista en Vera]] o todas las [[areas|zonas que atendemos en el Levante Almeriense]].',
+    ],
+    roadsLabel: 'Carreteras, en orden',
+    routeLabel: 'Pieza 07 · Antas → Vera',
+    mapNote: 'Ruta real calculada con datos de OpenStreetMap, sin tráfico.',
+    famEyebrow: 'Quién te atiende',
+    famTitle: 'Dentistas para toda la familia de Antas',
+    famBody: 'Del primer diente de leche a un implante: en Koral cada etapa tiene su especialista, y todas trabajan en la misma clínica. Así, si tu caso necesita a más de una, se coordinan bajo el mismo techo. [[team|Conoce al equipo completo]].',
+    photoAlt: 'dentista para pacientes de Antas',
+    faqEyebrow: 'Preguntas frecuentes',
+    faqTitle: 'Dudas de pacientes de Antas',
+    faqs: [
+      ['¿Tenéis clínica dental en Antas?', `No. Nuestra clínica está en Vera, en la Av. de Baria, 4. Desde Antas son ${kmA} km por la A-1202, la N-340A, la A-1200 y la A-352, unos ${min} minutos en coche.`],
+      ['¿Cuál es el mejor dentista para Antas?', 'Depende de lo que necesites, y la decisión es tuya. Nosotros te damos razones concretas: primera visita gratuita, diagnóstico 3D con CBCT, endodoncia con microscopio, implantes Straumann con garantía de por vida y financiación al 0 % para la mayoría de tratamientos.'],
+      ['¿Atendéis a niños de Antas?', 'Sí. La Dra. Ana Soler se ocupa de la [[odontopediatria|odontopediatría]] y de la ortodoncia, así que puedes traer a toda la familia a la misma clínica.'],
+      ['¿Se puede salvar un diente en lugar de extraerlo?', 'Muchas veces, sí. Con una [[endodoncia|endodoncia con microscopio]] tratamos el interior del diente para conservarlo. Si no es posible, valoramos un implante Straumann.'],
+      ['¿Puedo pagar el tratamiento a plazos?', 'Sí: para la mayoría de tratamientos ofrecemos [[pricing|financiación al 0 %]]. En la primera visita, que es gratuita, te explicamos el presupuesto con calma.'],
+      ['¿Qué horario tenéis si vengo desde Antas?', 'Lunes de 10:00 a 20:00, martes de 8:00 a 16:00, miércoles de 10:00 a 18:00, y jueves y viernes de 8:00 a 16:00. Pide cita en el +34 950 39 53 19 o por WhatsApp en el +34 634 68 36 39.'],
+    ],
+  },
+  en: {
+    metaTitle: `Dentist near Antas, ${min} min away | Koral Dental Clinic`,
+    metaDesc: `Dental clinic near Antas, ${min} min via the A-1202 and N-340A. Straumann implants, microscope root canals and 3D CBCT. English spoken and a free first visit.`,
+    service: 'Dentist for Antas',
+    heroEyebrow: 'Antas room · Antas river valley',
+    h1: 'Your dentist near Antas',
+    accent: 'precision with deep roots',
+    lead: `The dental clinic for Antas is in Vera, ${min} minutes and ${kmA} km away via the A-1202 and N-340A. At Koral Dental Clinic we look after families from the Antas valley with 3D diagnosis, microscope-assisted root canals and implants built to last — in English, too.`,
+    stats: [[`${min}`, 'minutes'], [kmA, 'km'], ['5', 'languages']],
+    vesselTitle: 'Dentist near Antas: an Argaric carinated vessel from El Argar turning into the outline of a molar',
+    label: { piece: 'Piece 00', name: 'Argaric carinated vessel → molar', period: 'Bronze Age · today', note: 'The same obsession with exact form, millennia apart.' },
+    introEyebrow: 'Wall text',
+    introTitle: 'A dental clinic near Antas, seen through El Argar',
+    intro: [
+      'Antas is inland country: the valley of the river Antas, with a long farming tradition. Within its municipality lies El Argar, the archaeological site that gave its name to a whole Bronze Age culture — the Argaric — known in museums for its carinated vessels: pots with a sharp, angled profile and carefully judged proportions.',
+      `We like that idea. A fine carinated vessel and a good dental treatment have a lot in common: both depend on accurate measurement, respect for form and being made to last. This page does not advertise a branch in Antas — our clinic is in Vera, at Av. de Baria, 4. It is an invitation to people in Antas to discover a clinic with every speciality, ${min} minutes from home.`,
+    ],
+    colEyebrow: 'The collection',
+    colTitle: 'The best dentist for Antas? Six pieces so you can judge',
+    colDesc: 'We won’t tell you we are the best. We’ll show you what is in the clinic and why it matters.',
+    pieceWord: 'Piece',
+    pieces: [
+      ['3D diagnosis with CBCT', 'Cone beam tomography', 'Before we treat, we measure. CBCT gives us a three-dimensional image of bone, roots and nerves, so we can plan [[implantes|dental implants]] and [[cirugia|oral surgery]] without guesswork.'],
+      ['Microscope root canals', 'Optical magnification', 'Under the microscope we see canals that are easy to miss with the naked eye. The goal is to keep your natural tooth: Dr Ángeles Parra focuses on [[endodoncia|endodontics]] to save teeth before replacing them is even considered.'],
+      ['Straumann implants', 'Lifetime warranty', 'When a tooth cannot be saved, we replace it with Straumann implants with a lifetime warranty, placed by Dr Ana Padilla, the clinic’s director and a specialist in surgery and implantology.'],
+      ['Orthodontics & children', 'For families', 'Dr Ana Soler leads [[ortodoncia|orthodontics]], including clear aligners, and [[odontopediatria|children’s dentistry]]: the little ones’ first check-up and the grown-ups’ smiles, in the same practice.'],
+      ['Free first visit', '0% financing', 'Your first assessment costs nothing and you leave with a clear quote. Most treatments can be paid with [[pricing|0% financing]].'],
+      ['Five languages', 'es · en · de · nl · fr', 'We speak Spanish, English, German, Dutch and French, so nobody in the family is left unsure about their treatment.'],
+    ],
+    tlEyebrow: 'Timeline',
+    tlTitle: 'From the Bronze Age to 3D CBCT',
+    tl: [
+      ['Bronze Age', 'El Argar', 'In the municipality of Antas, El Argar gives its name to the Argaric culture, known for its precisely profiled carinated vessels.'],
+      ['Day 1', 'First visit', 'Free: we listen, examine and explain your options and the quote.'],
+      ['Diagnosis', '3D CBCT', 'A three-dimensional image, so decisions rest on data rather than assumptions.'],
+      ['Treatment', 'Microscope & implants', 'Save the tooth whenever possible; replace it with a Straumann implant when not.'],
+      ['Afterwards', 'Built to last', 'Regular check-ups and a lifetime warranty on Straumann implants.'],
+    ],
+    routeEyebrow: 'The route',
+    routeTitle: `From Antas to your dental clinic: ${kmA} km, ${min} minutes`,
+    route: [
+      `Leave Antas on the A-1202, join the N-340A and the A-1200, then enter Vera on the A-352 and carry on to Av. de Baria, 4. It is ${kmA} km and about ${min} minutes without traffic — easy to fit in before work, as we open at 8:00 on Tuesdays, Thursdays and Fridays, and stay open until 20:00 on Mondays.`,
+      'If you have family in [[gallardos|Los Gallardos]] or [[cuevas|Cuevas del Almanzora]], they are a quarter of an hour or less away too. To learn more about the clinic’s home town, see our page for a [[vera|dentist in Vera]], or browse all the [[areas|areas we serve in the Levante Almeriense]].',
+    ],
+    roadsLabel: 'Roads, in order',
+    routeLabel: 'Piece 07 · Antas → Vera',
+    mapNote: 'Real route calculated with OpenStreetMap data, without traffic.',
+    famEyebrow: 'Who will see you',
+    famTitle: 'Dentists for the whole family in Antas',
+    famBody: 'From the first baby tooth to an implant, every stage has its specialist at Koral, and they all work in the same clinic. If your case needs more than one of them, they coordinate under one roof. [[team|Meet the whole team]].',
+    photoAlt: 'dentist for patients from Antas',
+    faqEyebrow: 'FAQ',
+    faqTitle: 'Questions from patients in Antas',
+    faqs: [
+      ['Do you have a dental clinic in Antas?', `No. Our clinic is in Vera, at Av. de Baria, 4. From Antas it is ${kmA} km via the A-1202, N-340A, A-1200 and A-352, about ${min} minutes by car.`],
+      ['Who is the best dentist for Antas?', 'It depends on what you need, and the choice is yours. We offer concrete reasons: a free first visit, 3D CBCT diagnosis, microscope-assisted root canals, Straumann implants with a lifetime warranty and 0% financing for most treatments.'],
+      ['Is there an English-speaking dentist near Antas?', 'Yes. Our team speaks English as well as Spanish, German, Dutch and French, so you can explain your symptoms and understand your treatment plan comfortably.'],
+      ['Can a tooth be saved instead of extracted?', 'Often, yes. With a [[endodoncia|microscope-assisted root canal]] we treat the inside of the tooth so you can keep it. When that isn’t possible, we look at a Straumann implant.'],
+      ['Do you treat children from Antas?', 'Yes. Dr Ana Soler looks after [[odontopediatria|children’s dentistry]] and orthodontics, so the whole family can come to the same clinic.'],
+      ['What are your opening hours if I come from Antas?', 'Monday 10:00–20:00, Tuesday 8:00–16:00, Wednesday 10:00–18:00, Thursday and Friday 8:00–16:00. Book on +34 950 39 53 19 or via WhatsApp on +34 634 68 36 39.'],
+    ],
+  },
+  de: {
+    metaTitle: `Zahnarzt für Antas – ${min} Min. entfernt | Zahnklinik Koral`,
+    metaDesc: `Zahnklinik nahe Antas, ${min} Min. über A-1202 und N-340A: Straumann-Implantate, Wurzelbehandlung mit Mikroskop, 3D-DVT. Wir sprechen Deutsch. Erstbesuch gratis.`,
+    service: 'Zahnarzt für Antas',
+    heroEyebrow: 'Saal Antas · Tal des Río Antas',
+    h1: 'Zahnarzt für Antas',
+    accent: 'Präzision mit Wurzeln',
+    lead: `Ihre Zahnklinik in der Nähe von Antas liegt in Vera, ${min} Minuten und ${kmA} km entfernt über die A-1202 und die N-340A. In der Zahnklinik Koral betreuen wir Familien aus dem Antas-Tal mit 3D-Diagnostik, Wurzelbehandlungen unter dem Mikroskop und Implantaten, die lange halten sollen – auf Wunsch auf Deutsch.`,
+    stats: [[`${min}`, 'Minuten'], [kmA, 'km'], ['5', 'Sprachen']],
+    vesselTitle: 'Zahnarzt für Antas: argarisches Knickwandgefäß aus El Argar, das sich in die Umrisse eines Backenzahns verwandelt',
+    label: { piece: 'Objekt 00', name: 'Argarisches Knickwandgefäß → Backenzahn', period: 'Bronzezeit · heute', note: 'Dieselbe Leidenschaft für die exakte Form, Jahrtausende später.' },
+    introEyebrow: 'Saaltext',
+    introTitle: 'Eine Zahnklinik nahe Antas, mit dem Blick von El Argar',
+    intro: [
+      'Antas liegt im Landesinneren, im landwirtschaftlich geprägten Tal des Río Antas. Auf seinem Gemeindegebiet befindet sich El Argar, die archäologische Fundstätte, die einer ganzen bronzezeitlichen Kultur ihren Namen gab: der Argar-Kultur, in Museen bekannt für ihre Knickwandgefäße – Keramik mit scharf abgesetztem Profil und sorgfältig abgestimmten Proportionen.',
+      `Dieser Gedanke gefällt uns. Ein gutes Knickwandgefäß und eine gute Zahnbehandlung haben viel gemeinsam: genaues Messen, Respekt vor der Form und den Anspruch, lange zu halten. Diese Seite kündigt keine Filiale in Antas an – unsere Klinik ist in Vera, Av. de Baria, 4. Sie ist eine Einladung an alle in Antas, eine Klinik mit allen Fachbereichen kennenzulernen, ${min} Minuten von zu Hause.`,
+    ],
+    colEyebrow: 'Die Sammlung',
+    colTitle: 'Der beste Zahnarzt für Antas? Sechs Objekte – urteilen Sie selbst',
+    colDesc: 'Wir behaupten nicht, die Besten zu sein. Wir zeigen Ihnen, was die Klinik bietet und warum es zählt.',
+    pieceWord: 'Objekt',
+    pieces: [
+      ['3D-Diagnostik mit DVT', 'Digitale Volumentomographie (CBCT)', 'Vor der Behandlung wird gemessen. Die DVT liefert ein dreidimensionales Bild von Knochen, Wurzeln und Nerven – so planen wir [[implantes|Zahnimplantate]] und [[cirugia|Oralchirurgie]] ohne Rätselraten.'],
+      ['Wurzelbehandlung unter dem Mikroskop', 'Optische Vergrößerung', 'Unter dem Mikroskop sehen wir Kanäle, die dem bloßen Auge leicht entgehen. Das Ziel: Ihren eigenen Zahn erhalten. Dr. Ángeles Parra widmet sich der [[endodoncia|Endodontie]], damit Zähne gerettet werden, bevor man an Ersatz denkt.'],
+      ['Straumann-Implantate', 'Lebenslange Garantie', 'Lässt sich ein Zahn nicht retten, ersetzen wir ihn durch Straumann-Implantate mit lebenslanger Garantie, gesetzt von Dr. Ana Padilla, Leiterin der Klinik und spezialisiert auf Chirurgie und Implantologie.'],
+      ['Kieferorthopädie & Kinder', 'Für Familien', 'Dr. Ana Soler betreut die [[ortodoncia|Kieferorthopädie]], auch mit transparenten Alignern, und die [[odontopediatria|Kinderzahnheilkunde]]: die erste Kontrolle der Kleinen und das Lächeln der Großen in derselben Praxis.'],
+      ['Kostenloser Ersttermin', '0 % Finanzierung', 'Die erste Untersuchung kostet nichts, und Sie gehen mit einem klaren Kostenvoranschlag nach Hause. Die meisten Behandlungen lassen sich mit [[pricing|0 % Finanzierung]] bezahlen.'],
+      ['Fünf Sprachen', 'es · en · de · nl · fr', 'Wir sprechen Spanisch, Englisch, Deutsch, Niederländisch und Französisch – damit niemand in der Familie über seine Behandlung im Unklaren bleibt.'],
+    ],
+    tlEyebrow: 'Zeitleiste',
+    tlTitle: 'Von der Bronzezeit zur 3D-DVT',
+    tl: [
+      ['Bronzezeit', 'El Argar', 'Auf dem Gemeindegebiet von Antas gibt El Argar der Argar-Kultur ihren Namen, bekannt für ihre präzise geformten Knickwandgefäße.'],
+      ['Tag 1', 'Ersttermin', 'Kostenlos: Wir hören zu, untersuchen und erklären Optionen und Kosten.'],
+      ['Diagnose', '3D-DVT', 'Ein dreidimensionales Bild, damit Entscheidungen auf Daten beruhen statt auf Vermutungen.'],
+      ['Behandlung', 'Mikroskop & Implantate', 'Den Zahn retten, wann immer es geht – sonst durch ein Straumann-Implantat ersetzen.'],
+      ['Danach', 'Auf Dauer angelegt', 'Regelmäßige Kontrollen und lebenslange Garantie auf Straumann-Implantate.'],
+    ],
+    routeEyebrow: 'Die Strecke',
+    routeTitle: `Von Antas zu Ihrer Zahnklinik: ${kmA} km, ${min} Minuten`,
+    route: [
+      `Sie verlassen Antas über die A-1202, fahren weiter auf die N-340A und die A-1200 und erreichen Vera über die A-352 bis zur Av. de Baria, 4. Das sind ${kmA} km und etwa ${min} Minuten ohne Verkehr – gut vor der Arbeit machbar, denn dienstags, donnerstags und freitags öffnen wir um 8:00 Uhr, und montags sind wir bis 20:00 Uhr da.`,
+      'Wohnt Familie in [[gallardos|Los Gallardos]] oder [[cuevas|Cuevas del Almanzora]]? Auch von dort ist es höchstens eine Viertelstunde. Mehr über den Ort der Klinik erfahren Sie auf der Seite [[vera|Zahnarzt in Vera]] oder in der Übersicht [[areas|unser Einzugsgebiet im Levante Almeriense]].',
+    ],
+    roadsLabel: 'Straßen, in Reihenfolge',
+    routeLabel: 'Objekt 07 · Antas → Vera',
+    mapNote: 'Echte Route, berechnet mit OpenStreetMap-Daten, ohne Verkehr.',
+    famEyebrow: 'Wer Sie behandelt',
+    famTitle: 'Zahnärztinnen für die ganze Familie aus Antas',
+    famBody: 'Vom ersten Milchzahn bis zum Implantat: Bei Koral hat jede Phase ihre Spezialistin, und alle arbeiten in derselben Klinik. Braucht Ihr Fall mehr als eine von ihnen, stimmen sie sich unter einem Dach ab. [[team|Das ganze Team kennenlernen]].',
+    photoAlt: 'Zahnärztin für Patienten aus Antas',
+    faqEyebrow: 'Häufige Fragen',
+    faqTitle: 'Fragen von Patienten aus Antas',
+    faqs: [
+      ['Haben Sie eine Zahnklinik in Antas?', `Nein. Unsere Klinik ist in Vera, Av. de Baria, 4. Von Antas sind es ${kmA} km über die A-1202, N-340A, A-1200 und A-352, etwa ${min} Autominuten.`],
+      ['Wer ist der beste Zahnarzt für Antas?', 'Das hängt davon ab, was Sie brauchen – und die Entscheidung liegt bei Ihnen. Wir bieten konkrete Gründe: kostenloser Ersttermin, 3D-Diagnostik per DVT, Wurzelbehandlung unter dem Mikroskop, Straumann-Implantate mit lebenslanger Garantie und 0 % Finanzierung für die meisten Behandlungen.'],
+      ['Gibt es einen deutschsprachigen Zahnarzt in der Nähe von Antas?', 'Ja. Unser Team spricht Deutsch, dazu Spanisch, Englisch, Niederländisch und Französisch – Sie können Beschwerden und Fragen in Ruhe in Ihrer Sprache besprechen.'],
+      ['Kann ein Zahn erhalten statt gezogen werden?', 'Oft ja. Mit einer [[endodoncia|Wurzelbehandlung unter dem Mikroskop]] behandeln wir das Zahninnere, damit Sie den Zahn behalten. Ist das nicht möglich, prüfen wir ein Straumann-Implantat.'],
+      ['Behandeln Sie auch Kinder aus Antas?', 'Ja. Dr. Ana Soler betreut die [[odontopediatria|Kinderzahnheilkunde]] und die Kieferorthopädie – die ganze Familie kann in dieselbe Klinik kommen.'],
+      ['Wie sind Ihre Sprechzeiten, wenn ich aus Antas komme?', 'Montag 10–20 Uhr, Dienstag 8–16 Uhr, Mittwoch 10–18 Uhr, Donnerstag und Freitag 8–16 Uhr. Termine unter +34 950 39 53 19 oder per WhatsApp unter +34 634 68 36 39.'],
+    ],
+  },
+  nl: {
+    metaTitle: `Tandarts voor Antas, op ${min} min | Tandkliniek Koral`,
+    metaDesc: `Tandkliniek vlak bij Antas, ${min} min via de A-1202 en N-340A. Straumann-implantaten, wortelkanaalbehandeling met microscoop en 3D-CBCT. Wij spreken Nederlands.`,
+    service: 'Tandarts voor Antas',
+    heroEyebrow: 'Zaal Antas · Dal van de Río Antas',
+    h1: 'Tandarts voor Antas',
+    accent: 'precisie met wortels',
+    lead: `Uw tandkliniek vlak bij Antas ligt in Vera, op ${min} minuten en ${kmA} km via de A-1202 en de N-340A. Bij Tandkliniek Koral zorgen we voor gezinnen uit het dal van de Antas met 3D-diagnose, wortelkanaalbehandelingen met microscoop en implantaten die lang meegaan – ook in het Nederlands.`,
+    stats: [[`${min}`, 'minuten'], [kmA, 'km'], ['5', 'talen']],
+    vesselTitle: 'Tandarts voor Antas: een gekielde Argar-vaas uit El Argar die verandert in de omtrek van een kies',
+    label: { piece: 'Object 00', name: 'Gekielde Argar-vaas → kies', period: 'Bronstijd · vandaag', note: 'Dezelfde liefde voor de exacte vorm, millennia later.' },
+    introEyebrow: 'Zaaltekst',
+    introTitle: 'Een tandkliniek vlak bij Antas, met de blik van El Argar',
+    intro: [
+      'Antas ligt in het binnenland, in het dal van de Río Antas, met een lange landbouwtraditie. Binnen de gemeente ligt El Argar, de archeologische vindplaats die zijn naam gaf aan een hele cultuur uit de bronstijd: de Argar-cultuur, in musea bekend om haar gekielde vazen – aardewerk met een scherpe knik in het profiel en zorgvuldig afgewogen verhoudingen.',
+      `Dat idee spreekt ons aan. Een mooie gekielde vaas en een goede tandheelkundige behandeling hebben veel gemeen: nauwkeurig meten, respect voor de vorm en gemaakt om lang mee te gaan. Deze pagina kondigt geen vestiging in Antas aan – onze kliniek staat in Vera, aan de Av. de Baria, 4. Het is een uitnodiging aan iedereen in Antas om kennis te maken met een kliniek met alle specialismen, op ${min} minuten van huis.`,
+    ],
+    colEyebrow: 'De collectie',
+    colTitle: 'De beste tandarts voor Antas? Zes objecten, oordeel zelf',
+    colDesc: 'We gaan niet beweren dat we de beste zijn. We laten zien wat de kliniek in huis heeft en waarom dat telt.',
+    pieceWord: 'Object',
+    pieces: [
+      ['3D-diagnose met CBCT', 'Conebeam-tomografie', 'Eerst meten, dan behandelen. De CBCT geeft een driedimensionaal beeld van bot, wortels en zenuwen, zodat we [[implantes|tandimplantaten]] en [[cirugia|orale chirurgie]] zonder giswerk plannen.'],
+      ['Wortelkanaalbehandeling met microscoop', 'Optische vergroting', 'Onder de microscoop zien we kanalen die met het blote oog makkelijk over het hoofd worden gezien. Het doel: uw eigen tand behouden. Dr. Ángeles Parra legt zich toe op [[endodoncia|endodontie]], zodat tanden gered worden voordat aan vervanging wordt gedacht.'],
+      ['Straumann-implantaten', 'Levenslange garantie', 'Is een tand niet te redden, dan vervangen we hem door een Straumann-implantaat met levenslange garantie, geplaatst door dr. Ana Padilla, directeur van de kliniek en gespecialiseerd in chirurgie en implantologie.'],
+      ['Orthodontie & kinderen', 'Voor gezinnen', 'Dr. Ana Soler verzorgt de [[ortodoncia|orthodontie]], ook met transparante aligners, en de [[odontopediatria|kindertandheelkunde]]: de eerste controle van de kleintjes en de glimlach van de ouders, in dezelfde praktijk.'],
+      ['Gratis eerste bezoek', '0% financiering', 'Het eerste onderzoek kost niets en u gaat naar huis met een duidelijke offerte. De meeste behandelingen kunt u betalen met [[pricing|0% financiering]].'],
+      ['Vijf talen', 'es · en · de · nl · fr', 'We spreken Spaans, Engels, Duits, Nederlands en Frans, zodat niemand in het gezin twijfelt over zijn behandeling.'],
+    ],
+    tlEyebrow: 'Tijdlijn',
+    tlTitle: 'Van de bronstijd tot 3D-CBCT',
+    tl: [
+      ['Bronstijd', 'El Argar', 'In de gemeente Antas geeft El Argar zijn naam aan de Argar-cultuur, bekend om haar nauwkeurig gevormde gekielde vazen.'],
+      ['Dag 1', 'Eerste bezoek', 'Gratis: we luisteren, onderzoeken en leggen opties en offerte uit.'],
+      ['Diagnose', '3D-CBCT', 'Een driedimensionaal beeld, zodat beslissingen op gegevens rusten en niet op aannames.'],
+      ['Behandeling', 'Microscoop & implantaten', 'De tand redden waar het kan; vervangen door een Straumann-implantaat waar het niet kan.'],
+      ['Daarna', 'Gemaakt om te blijven', 'Regelmatige controles en levenslange garantie op Straumann-implantaten.'],
+    ],
+    routeEyebrow: 'De route',
+    routeTitle: `Van Antas naar uw tandkliniek: ${kmA} km, ${min} minuten`,
+    route: [
+      `U verlaat Antas via de A-1202, rijdt verder over de N-340A en de A-1200 en komt via de A-352 Vera binnen, tot aan de Av. de Baria, 4. Dat is ${kmA} km en ongeveer ${min} minuten zonder verkeer – makkelijk vóór het werk, want op dinsdag, donderdag en vrijdag gaan we om 8:00 uur open en op maandag zijn we er tot 20:00 uur.`,
+      'Woont er familie in [[gallardos|Los Gallardos]] of [[cuevas|Cuevas del Almanzora]]? Ook voor hen is het een kwartier of minder. Meer over de plaats van de kliniek leest u op de pagina [[vera|tandarts in Vera]], of bekijk [[areas|alle plaatsen in de Levante Almeriense]].',
+    ],
+    roadsLabel: 'Wegen, in volgorde',
+    routeLabel: 'Object 07 · Antas → Vera',
+    mapNote: 'Echte route, berekend met gegevens van OpenStreetMap, zonder verkeer.',
+    famEyebrow: 'Wie u behandelt',
+    famTitle: 'Tandartsen voor het hele gezin uit Antas',
+    famBody: 'Van het eerste melktandje tot een implantaat: bij Koral heeft elke fase zijn specialist, en ze werken allemaal in dezelfde kliniek. Heeft uw situatie er meer dan één nodig, dan stemmen ze dat onder één dak af. [[team|Maak kennis met het hele team]].',
+    photoAlt: 'tandarts voor patiënten uit Antas',
+    faqEyebrow: 'Veelgestelde vragen',
+    faqTitle: 'Vragen van patiënten uit Antas',
+    faqs: [
+      ['Hebben jullie een tandkliniek in Antas?', `Nee. Onze kliniek staat in Vera, aan de Av. de Baria, 4. Vanuit Antas is het ${kmA} km via de A-1202, N-340A, A-1200 en A-352, ongeveer ${min} minuten rijden.`],
+      ['Wie is de beste tandarts voor Antas?', 'Dat hangt af van wat u nodig heeft, en de keuze is aan u. Wij geven concrete redenen: een gratis eerste bezoek, 3D-diagnose met CBCT, wortelkanaalbehandeling met microscoop, Straumann-implantaten met levenslange garantie en 0% financiering voor de meeste behandelingen.'],
+      ['Is er een Nederlandstalige tandarts in de buurt van Antas?', 'Ja. Ons team spreekt Nederlands, en daarnaast Spaans, Engels, Duits en Frans, zodat u klachten en vragen rustig in uw eigen taal kunt bespreken.'],
+      ['Kan een tand gered worden in plaats van getrokken?', 'Vaak wel. Met een [[endodoncia|wortelkanaalbehandeling met microscoop]] behandelen we de binnenkant van de tand, zodat u hem kunt houden. Lukt dat niet, dan bekijken we een Straumann-implantaat.'],
+      ['Behandelen jullie ook kinderen uit Antas?', 'Ja. Dr. Ana Soler verzorgt de [[odontopediatria|kindertandheelkunde]] en de orthodontie, zodat het hele gezin in dezelfde kliniek terechtkan.'],
+      ['Wat zijn de openingstijden als ik uit Antas kom?', 'Maandag 10:00–20:00, dinsdag 8:00–16:00, woensdag 10:00–18:00, donderdag en vrijdag 8:00–16:00. Een afspraak maakt u via +34 950 39 53 19 of WhatsApp +34 634 68 36 39.'],
+    ],
+  },
+  fr: {
+    metaTitle: `Dentiste pour Antas, à ${min} min | Clinique Dentaire Koral`,
+    metaDesc: `Clinique dentaire près d’Antas, à ${min} min par l’A-1202 et la N-340A : implants Straumann, endodontie au microscope, CBCT 3D. En français. 1re visite offerte.`,
+    service: 'Dentiste pour Antas',
+    heroEyebrow: 'Salle Antas · Vallée du río Antas',
+    h1: 'Dentiste pour Antas',
+    accent: 'la précision a des racines',
+    lead: `Votre clinique dentaire près d’Antas se trouve à Vera, à ${min} minutes et ${kmA} km par l’A-1202 et la N-340A. À la Clinique Dentaire Koral, nous soignons des familles de la vallée de l’Antas avec un diagnostic 3D, des traitements de canal au microscope et des implants conçus pour durer – en français aussi.`,
+    stats: [[`${min}`, 'minutes'], [kmA, 'km'], ['5', 'langues']],
+    vesselTitle: 'Dentiste pour Antas : un vase caréné argarique d’El Argar qui se transforme en contour de molaire',
+    label: { piece: 'Pièce 00', name: 'Vase caréné argarique → molaire', period: 'Âge du bronze · aujourd’hui', note: 'La même passion pour la forme exacte, à des millénaires d’écart.' },
+    introEyebrow: 'Texte de salle',
+    introTitle: 'Une clinique dentaire près d’Antas, avec le regard d’El Argar',
+    intro: [
+      'Antas est une terre de l’intérieur : la vallée du río Antas, de tradition agricole. Sur son territoire communal se trouve El Argar, le site archéologique qui a donné son nom à toute une culture de l’âge du bronze, la culture argarique, connue dans les musées pour ses vases carénés : des céramiques au profil anguleux et aux proportions très soignées.',
+      `L’idée nous plaît. Un beau vase caréné et un bon soin dentaire se ressemblent : tous deux exigent de mesurer juste, de respecter la forme et de penser à la durée. Cette page n’annonce pas un cabinet à Antas – notre clinique est à Vera, Av. de Baria, 4. C’est une invitation aux habitants d’Antas à découvrir une clinique qui réunit toutes les spécialités, à ${min} minutes de chez eux.`,
+    ],
+    colEyebrow: 'La collection',
+    colTitle: 'Le meilleur dentiste pour Antas ? Six pièces pour juger par vous-même',
+    colDesc: 'Nous ne dirons pas que nous sommes les meilleurs. Nous vous montrons ce que la clinique propose et pourquoi cela compte.',
+    pieceWord: 'Pièce',
+    pieces: [
+      ['Diagnostic 3D par CBCT', 'Tomographie à faisceau conique', 'Avant de soigner, on mesure. Le CBCT donne une image en trois dimensions de l’os, des racines et des nerfs, pour planifier [[implantes|implants dentaires]] et [[cirugia|chirurgie orale]] sans approximation.'],
+      ['Endodontie au microscope', 'Grossissement optique', 'Au microscope, nous voyons des canaux qui échappent facilement à l’œil nu. L’objectif : garder votre dent naturelle. La Dre Ángeles Parra se consacre à l’[[endodoncia|endodontie]] pour sauver les dents avant même d’envisager de les remplacer.'],
+      ['Implants Straumann', 'Garantie à vie', 'Quand une dent ne peut pas être sauvée, nous la remplaçons par un implant Straumann garanti à vie, posé par la Dre Ana Padilla, directrice de la clinique, spécialisée en chirurgie et implantologie.'],
+      ['Orthodontie & enfants', 'Pour les familles', 'La Dre Ana Soler s’occupe de l’[[ortodoncia|orthodontie]], y compris par aligneurs transparents, et de la [[odontopediatria|pédodontie]] : le premier contrôle des petits et le sourire des grands, au même cabinet.'],
+      ['Première visite gratuite', 'Financement à 0 %', 'Le premier bilan ne coûte rien et vous repartez avec un devis clair. La plupart des traitements peuvent être réglés avec un [[pricing|financement à 0 %]].'],
+      ['Cinq langues', 'es · en · de · nl · fr', 'Nous parlons espagnol, anglais, allemand, néerlandais et français, pour que personne dans la famille ne reste dans le flou sur son traitement.'],
+    ],
+    tlEyebrow: 'Chronologie',
+    tlTitle: 'De l’âge du bronze au CBCT 3D',
+    tl: [
+      ['Âge du bronze', 'El Argar', 'Sur la commune d’Antas, El Argar donne son nom à la culture argarique, connue pour ses vases carénés au profil précis.'],
+      ['Jour 1', 'Première visite', 'Gratuite : nous écoutons, examinons et expliquons les options et le devis.'],
+      ['Diagnostic', 'CBCT 3D', 'Une image en trois dimensions, pour décider sur des données et non sur des suppositions.'],
+      ['Traitement', 'Microscope & implants', 'Sauver la dent dès que possible ; la remplacer par un implant Straumann sinon.'],
+      ['Ensuite', 'Fait pour durer', 'Contrôles réguliers et garantie à vie sur les implants Straumann.'],
+    ],
+    routeEyebrow: 'L’itinéraire',
+    routeTitle: `D’Antas à votre clinique dentaire : ${kmA} km, ${min} minutes`,
+    route: [
+      `Vous quittez Antas par l’A-1202, rejoignez la N-340A puis l’A-1200, et entrez dans Vera par l’A-352 jusqu’à l’Av. de Baria, 4. Cela fait ${kmA} km et environ ${min} minutes sans trafic – facile avant le travail : nous ouvrons à 8 h le mardi, le jeudi et le vendredi, et restons ouverts jusqu’à 20 h le lundi.`,
+      'De la famille à [[gallardos|Los Gallardos]] ou à [[cuevas|Cuevas del Almanzora]] ? Pour eux aussi, c’est un quart d’heure au plus. Pour en savoir plus sur la ville de la clinique, voyez la page [[vera|dentiste à Vera]] ou [[areas|toutes les communes du Levante Almeriense]].',
+    ],
+    roadsLabel: 'Routes, dans l’ordre',
+    routeLabel: 'Pièce 07 · Antas → Vera',
+    mapNote: 'Itinéraire réel calculé avec les données d’OpenStreetMap, sans trafic.',
+    famEyebrow: 'Qui vous soigne',
+    famTitle: 'Des dentistes pour toute la famille à Antas',
+    famBody: 'De la première dent de lait à l’implant : chez Koral, chaque étape a sa spécialiste, et toutes travaillent dans la même clinique. Si votre cas en demande plusieurs, elles se coordonnent sous un même toit. [[team|Découvrir toute l’équipe]].',
+    photoAlt: 'dentiste pour les patients d’Antas',
+    faqEyebrow: 'Questions fréquentes',
+    faqTitle: 'Questions des patients d’Antas',
+    faqs: [
+      ['Avez-vous une clinique dentaire à Antas ?', `Non. Notre clinique est à Vera, Av. de Baria, 4. Depuis Antas, ${kmA} km par l’A-1202, la N-340A, l’A-1200 et l’A-352, environ ${min} minutes en voiture.`],
+      ['Quel est le meilleur dentiste pour Antas ?', 'Cela dépend de vos besoins, et c’est à vous de choisir. Nous vous donnons des raisons concrètes : première visite gratuite, diagnostic 3D par CBCT, endodontie au microscope, implants Straumann garantis à vie et financement à 0 % pour la plupart des traitements.'],
+      ['Y a-t-il un dentiste francophone près d’Antas ?', 'Oui. Notre équipe parle français, ainsi qu’espagnol, anglais, allemand et néerlandais : vous pouvez expliquer vos symptômes et comprendre votre plan de traitement en toute sérénité.'],
+      ['Peut-on sauver une dent au lieu de l’extraire ?', 'Souvent, oui. Avec une [[endodoncia|endodontie au microscope]], nous traitons l’intérieur de la dent pour la conserver. Si ce n’est pas possible, nous étudions un implant Straumann.'],
+      ['Soignez-vous les enfants d’Antas ?', 'Oui. La Dre Ana Soler s’occupe de la [[odontopediatria|pédodontie]] et de l’orthodontie : toute la famille peut venir à la même clinique.'],
+      ['Quels sont vos horaires si je viens d’Antas ?', 'Lundi 10 h–20 h, mardi 8 h–16 h, mercredi 10 h–18 h, jeudi et vendredi 8 h–16 h. Rendez-vous au +34 950 39 53 19 ou sur WhatsApp au +34 634 68 36 39.'],
+    ],
+  },
+} as const)[lang];
+
+/** Turns [[routeKey|anchor]] into an internal link. */
+const linkify = (s: string, cls = 'prose-link') =>
+  s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, (_, k: string, txt: string) => `<a href="${pathFor(k as RouteKey, lang)}" class="${cls}">${txt}</a>`);
+
+// Small line icons for the six "pieces" (40×40)
+const ICONS = [
+  'M20 4a16 16 0 1 0 0 32 16 16 0 1 0 0-32M4 20h32M15 13c0 4 2 6 2 10 0 3 1 6 2 6s1-3 1-4 0 4 1 4 2-3 2-6c0-4 2-6 2-10 0-3-2-4-5-4s-5 1-5 4',
+  'M12 35h18M21 35v-6M15 29h13M18 29l6-17M20 7l7 3.5-3 6-7-3.5zM27 22a7 7 0 0 1-4 11',
+  'M15 6h10l-1 6h-8zM16 12l1 17 3 5 3-5 1-17M15.5 17h9M16 22h8M16.5 27h7',
+  'M14 9a4 4 0 1 0 0 8 4 4 0 1 0 0-8M27 14a3 3 0 1 0 0 6 3 3 0 1 0 0-6M6 34c0-5 3-9 8-9s8 4 8 9M21 34c0-4 3-7 6-7s6 3 6 7',
+  'M20 5a15 15 0 1 0 0 30 15 15 0 1 0 0-30M14 26l12-12M15.5 14a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3M24.5 23a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3',
+  'M5 8h21v13H14l-6 5v-5H5zM30 14h5v13h-3v4l-5-4h-9v-3',
+];
+
+const doctors = TEAM.filter((m) => m.doctor);
+const faqs = copy.faqs.map(([q, a]) => ({ question: q, answer: linkify(a) }));
+const title = copy.metaTitle;
+const schema = townSchema({ town: 'antas', lang, title, description: copy.metaDesc, serviceName: copy.service });
+---
+
+<Layout title={title} description={copy.metaDesc} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main">
+    <!-- Hero: dark gallery, spotlight on the exhibit -->
+    <section class="ant-hero relative isolate overflow-hidden pb-24 pt-36 text-white md:pb-32 md:pt-44">
+      <div class="ant-beam pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="container-k">
+        <div class="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+          <div class="lg:col-span-6">
+            <div data-reveal><Breadcrumbs items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} class="mb-8" /></div>
+            <p class="ant-kicker mb-6" data-reveal style="--d:.05s">{copy.heroEyebrow}</p>
+            <h1 class="text-[2.7rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.5rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="ant-accent block">{copy.accent}</span>
+            </h1>
+            <p class="mt-7 max-w-xl text-lg leading-relaxed text-white/70 md:text-xl" data-reveal style="--d:.2s">{copy.lead}</p>
+            <dl class="mt-9 grid max-w-md grid-cols-3 border-y border-white/10" data-reveal style="--d:.25s">
+              {copy.stats.map(([v, l], i) => (
+                <div class:list={['py-4', i > 0 && 'border-l border-white/10 pl-5']}>
+                  <dt class="sr-only">{l}</dt>
+                  <dd class="font-display text-3xl tabular text-white">{v}</dd>
+                  <dd class="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">{l}</dd>
+                </div>
+              ))}
+            </dl>
+            <div class="mt-10 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.3s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-ghost-light tabular">+34 950 39 53 19</a>
+            </div>
+          </div>
+
+          <div class="relative lg:col-span-6" data-reveal="fade" style="--d:.15s">
+            <div class="ant-case relative mx-auto max-w-[480px]">
+              <AntasVessel title={copy.vesselTitle} class="relative px-8 pt-10" />
+              <div class="ant-plinth" aria-hidden="true"></div>
+            </div>
+            <div class="ant-label relative z-10 -mt-10 ml-auto mr-2 max-w-[290px] sm:mr-8 lg:-mt-16" data-reveal style="--d:.6s">
+              <p class="ant-label-no">{copy.label.piece}</p>
+              <p class="mt-1 font-display text-lg leading-snug text-ocean-900">{copy.label.name}</p>
+              <p class="mt-1 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#9C4E2C]">{copy.label.period}</p>
+              <p class="mt-3 border-t border-ocean-900/10 pt-3 text-[13px] leading-relaxed text-slate-600">{copy.label.note}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wall text -->
+    <section class="ant-wall section-y relative">
+      <div class="container-k grid gap-12 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <p class="ant-kicker ant-kicker-dark mb-5" data-reveal>{copy.introEyebrow}</p>
+          <h2 class="text-[2.2rem] leading-[1.08] sm:text-5xl" data-reveal style="--d:.05s">{copy.introTitle}</h2>
+        </div>
+        <div class="ant-walltext space-y-6 text-lg leading-relaxed text-slate-700 lg:col-span-7 lg:col-start-6 lg:columns-1" data-reveal style="--d:.1s">
+          {copy.intro.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+    </section>
+
+    <!-- The collection -->
+    <section class="section-y relative bg-white">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.colEyebrow} title={copy.colTitle} description={copy.colDesc} split />
+        <ol class="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {copy.pieces.map(([name, tech, body], i) => (
+            <li class="ant-piece" data-reveal style={`--d:${(i % 3) * 0.08}s`}>
+              <div class="flex items-start justify-between gap-4">
+                <p class="ant-piece-no">{copy.pieceWord} {String(i + 1).padStart(2, '0')}</p>
+                <svg width="40" height="40" viewBox="0 0 40 40" class="ant-piece-icon" aria-hidden="true"><path d={ICONS[i]} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </div>
+              <h3 class="mt-6 text-2xl leading-tight">{name}</h3>
+              <p class="mt-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#9C4E2C]">{tech}</p>
+              <p class="mt-4 text-[15px] leading-relaxed text-slate-600" set:html={linkify(body)} />
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <SectionHeading eyebrow={copy.tlEyebrow} title={copy.tlTitle} align="center" />
+        <div class="relative mt-16">
+          <svg class="ant-tl-line pointer-events-none absolute left-0 top-[11px] hidden h-[2px] w-full lg:block" viewBox="0 0 1000 2" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="ant-tl-g" x1="0" x2="1"><stop offset="0" stop-color="#C77A55" /><stop offset="1" stop-color="#0B7C86" /></linearGradient></defs>
+            <g class="draw"><path d="M0 1H1000" stroke="url(#ant-tl-g)" stroke-width="2" pathLength="1" /></g>
+          </svg>
+          <ol class="ant-tl grid gap-10 lg:grid-cols-5 lg:gap-6">
+            {copy.tl.map(([when, what, body], i) => (
+              <li class="relative pl-10 lg:pl-0" data-reveal style={`--d:${i * 0.12}s`}>
+                <span class:list={['ant-tl-dot', i === 0 && 'ant-tl-dot-clay']} aria-hidden="true"></span>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 lg:mt-9">{when}</p>
+                <h3 class="mt-2 text-2xl">{what}</h3>
+                <p class="mt-3 text-[15px] leading-relaxed text-slate-600">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- The route -->
+    <section class="ant-route section-y relative isolate overflow-hidden text-white">
+      <div class="container-k grid items-center gap-14 lg:grid-cols-12">
+        <div class="lg:col-span-5">
+          <SectionHeading eyebrow={copy.routeEyebrow} title={copy.routeTitle} tone="dark" />
+          <div class="mt-8 space-y-5 text-[17px] leading-relaxed text-white/70" data-reveal style="--d:.1s">
+            {copy.route.map((p) => <p set:html={linkify(p, 'ant-link-light')} />)}
+          </div>
+          <p class="mt-9 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45" data-reveal>{copy.roadsLabel}</p>
+          <ol class="mt-3 flex flex-wrap items-center gap-2" data-reveal style="--d:.15s">
+            {ra.roads.map((r, i) => (
+              <li class="flex items-center gap-2">
+                <span class="ant-road">{r}</span>
+                {i < ra.roads.length - 1 && <span class="text-white/30" aria-hidden="true">→</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+        <figure class="lg:col-span-7" data-reveal="scale">
+          <div class="ant-frame">
+            <TownRouteMap town="antas" tone="dark" />
+          </div>
+          <figcaption class="mt-4 flex flex-wrap items-baseline justify-between gap-3 text-[13px] text-white/50">
+            <span class="font-semibold uppercase tracking-[0.16em] text-[#E3A27F]">{copy.routeLabel}</span>
+            <span>{copy.mapNote}</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Family dentists, framed -->
+    <section class="ant-wall section-y relative">
+      <div class="container-k">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <p class="ant-kicker ant-kicker-dark mb-5" data-reveal>{copy.famEyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.08] sm:text-5xl" data-reveal style="--d:.05s">{copy.famTitle}</h2>
+          </div>
+          <p class="text-lg leading-relaxed text-slate-700 lg:col-span-5" data-reveal style="--d:.1s" set:html={linkify(copy.famBody)} />
+        </div>
+        <ul class="mt-14 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-8">
+          {doctors.map((m, i) => (
+            <li data-reveal style={`--d:${i * 0.08}s`}>
+              <div class="ant-portrait">
+                <Picture src={m.image} alt={`${m.name}, ${t(m.role)} – ${copy.photoAlt}`} width={600} height={600} class="aspect-[4/5] w-full object-cover" />
+              </div>
+              <div class="ant-plaque">
+                <h3 class="font-sans text-[15px] font-semibold tracking-tight text-ocean-900 md:text-base">{m.name}</h3>
+                <p class="mt-1 text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-slate-500">{t(m.role)}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <FaqSection eyebrow={copy.faqEyebrow} title={copy.faqTitle} faqs={faqs} />
+
+    <TownNearby current="antas" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  .ant-hero { background: #050d16; }
+  .ant-beam {
+    background:
+      radial-gradient(36% 70% at 74% -6%, rgba(255, 236, 214, 0.2) 0%, rgba(255, 236, 214, 0.05) 45%, transparent 70%),
+      radial-gradient(30% 18% at 74% 88%, rgba(255, 230, 205, 0.1) 0%, transparent 70%),
+      radial-gradient(50% 50% at 0% 100%, rgba(44, 197, 210, 0.08) 0%, transparent 70%),
+      linear-gradient(180deg, #050d16 0%, #0a1f33 100%);
+    animation: ant-lights 2.4s var(--ease-out-expo) both;
+  }
+  @keyframes ant-lights {
+    0% { opacity: 0.25; }
+    18% { opacity: 0.8; }
+    24% { opacity: 0.45; }
+    100% { opacity: 1; }
+  }
+  .ant-kicker { display: inline-flex; align-items: center; gap: 0.75rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: #e3a27f; }
+  .ant-kicker::before { content: ""; width: 1.75rem; height: 1px; background: currentColor; }
+  .ant-kicker-dark { color: #9c4e2c; }
+  .ant-accent { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: #e3a27f; }
+  .ant-link-light { color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(227, 162, 127, 0.55); text-underline-offset: 4px; }
+  .ant-link-light:hover { text-decoration-color: #e3a27f; }
+
+  /* Glass case + plinth */
+  .ant-case {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 0;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 60%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .ant-case::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 12%;
+    width: 18%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    pointer-events: none;
+  }
+  .ant-plinth {
+    height: 64px;
+    margin-inline: -1px;
+    background: linear-gradient(180deg, #13283d 0%, #0b1a29 100%);
+    border-top: 1px solid rgba(255, 236, 214, 0.25);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+  }
+  .ant-label {
+    background: #f6f1eb;
+    color: var(--color-ocean-900);
+    padding: 1.1rem 1.25rem;
+    border-radius: 3px;
+    box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.7);
+  }
+  .ant-label-no, .ant-piece-no { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #9c4e2c; }
+
+  .ant-wall { background: #f6f1eb; }
+  .ant-walltext > p:first-child::first-letter {
+    float: left;
+    font-family: var(--font-serif);
+    font-size: 4.4rem;
+    line-height: 0.85;
+    padding: 0.35rem 0.6rem 0 0;
+    color: #9c4e2c;
+  }
+
+  /* Museum-label cards */
+  .ant-piece {
+    position: relative;
+    padding: 1.75rem;
+    background: #fff;
+    border: 1px solid rgba(10, 31, 51, 0.08);
+    border-top: 2px solid var(--color-ocean-900);
+    border-radius: 2px;
+    transition: transform 0.6s var(--ease-out-expo), box-shadow 0.6s var(--ease-out-expo), border-color 0.3s ease;
+  }
+  .ant-piece:hover { transform: translateY(-4px); box-shadow: var(--shadow-elevated); border-top-color: #c77a55; }
+  .ant-piece-icon { color: var(--color-accent); flex-shrink: 0; }
+
+  /* Timeline */
+  .ant-tl-dot {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--color-accent);
+    box-shadow: 0 0 0 6px rgba(11, 124, 134, 0.1);
+  }
+  .ant-tl-dot-clay { border-color: #c77a55; box-shadow: 0 0 0 6px rgba(199, 122, 85, 0.14); }
+  @media (max-width: 1023px) {
+    .ant-tl { border-left: 2px solid rgba(11, 124, 134, 0.25); margin-left: 11px; }
+    .ant-tl > li { padding-left: 2rem; }
+    .ant-tl-dot { left: -13px; }
+  }
+
+  .ant-route {
+    background:
+      radial-gradient(40% 60% at 80% 0%, rgba(255, 236, 214, 0.08), transparent 70%),
+      linear-gradient(180deg, #071421 0%, #0a1f33 100%);
+  }
+  .ant-road {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .ant-frame {
+    padding: 14px;
+    background: linear-gradient(145deg, #1a3550, #0c1d2e);
+    border-radius: 4px;
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  .ant-frame > svg { border-radius: 2px; }
+
+  /* Framed portraits with plaques */
+  .ant-portrait {
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(10, 31, 51, 0.12), 0 26px 44px -26px rgba(10, 31, 51, 0.55);
+  }
+  .ant-portrait img { filter: saturate(0.9); transition: filter 0.6s ease; }
+  .ant-portrait:hover img { filter: none; }
+  .ant-plaque {
+    margin: 1rem auto 0;
+    max-width: 92%;
+    padding: 0.7rem 0.9rem;
+    background: #fff;
+    border-left: 2px solid #c77a55;
+    box-shadow: 0 6px 16px -10px rgba(10, 31, 51, 0.35);
+  }
+  @media (prefers-reduced-motion: reduce) { .ant-beam { animation: none; } }
+</style>

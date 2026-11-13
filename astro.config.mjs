@@ -50,6 +50,12 @@ export default defineConfig({
     },
   },
 
+  // The shared stylesheet stays a separate, long-cached file (measured faster
+  // than inlining it in every page); tiny per-page styles are inlined.
+  build: {
+    inlineStylesheets: 'auto',
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },

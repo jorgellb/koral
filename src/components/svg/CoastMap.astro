@@ -3,12 +3,21 @@
  * Stylised map of the Levante Almeriense coast with the towns the clinic serves.
  * Coordinates are real (lat/lon) projected into the viewBox, simplified for design.
  */
+import { pathFor, type Lang } from '../../i18n/routes';
+
 interface Props {
   seaLabel?: string;
+  /** When set, each town links to its landing page in this language. */
+  linkLang?: Lang;
   class?: string;
 }
 
-const { seaLabel = 'Mar Mediterráneo', class: className = '' } = Astro.props;
+const { seaLabel = 'Mar Mediterráneo', linkLang, class: className = '' } = Astro.props;
+const townKey: Record<string, Parameters<typeof pathFor>[0]> = {
+  'Cuevas del Almanzora': 'cuevas', Antas: 'antas', Palomares: 'palomares', Garrucha: 'garrucha',
+  'Los Gallardos': 'gallardos', Turre: 'turre', 'Mojácar': 'mojacar', Vera: 'vera',
+};
+const href = (name: string) => (linkLang ? pathFor(townKey[name], linkLang) : undefined);
 
 const W = 420;
 const H = 490;
@@ -119,16 +128,24 @@ const uid = `map-${Math.random().toString(36).slice(2, 7)}`;
 
   <!-- Towns -->
   <g font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500" fill="#E2EEF2">
-    {towns.map((t) => (
-      <g>
-        <circle cx={t.x} cy={t.y} r="3.6" fill="#0A1F33" stroke="#8FE3EA" stroke-width="1.6" />
-        <text x={t.x + t.dx} y={t.y + t.dy} text-anchor={t.anchor} fill-opacity="0.85">{t.name}</text>
-      </g>
-    ))}
+    {towns.map((t) =>
+      linkLang ? (
+        <a href={href(t.name)} class="map-town">
+          <circle cx={t.x} cy={t.y} r="12" fill="transparent" />
+          <circle cx={t.x} cy={t.y} r="3.6" fill="#0A1F33" stroke="#8FE3EA" stroke-width="1.6" class="map-town-dot" />
+          <text x={t.x + t.dx} y={t.y + t.dy} text-anchor={t.anchor} fill-opacity="0.85" text-decoration="underline" text-decoration-color="rgba(143,227,234,.4)">{t.name}</text>
+        </a>
+      ) : (
+        <g>
+          <circle cx={t.x} cy={t.y} r="3.6" fill="#0A1F33" stroke="#8FE3EA" stroke-width="1.6" />
+          <text x={t.x + t.dx} y={t.y + t.dy} text-anchor={t.anchor} fill-opacity="0.85">{t.name}</text>
+        </g>
+      ),
+    )}
   </g>
 
   <!-- Vera (clinic) -->
-  <g>
+  <a href={href('Vera')}>
     <circle cx={vera.x} cy={vera.y} r="34" fill={`url(#${uid}-glow)`} />
     <circle cx={vera.x} cy={vera.y} r="10" fill="none" stroke="#F2617A" stroke-width="1.5" class="map-pulse" />
     <path
@@ -146,7 +163,7 @@ const uid = `map-${Math.random().toString(36).slice(2, 7)}`;
       font-style="italic"
       fill="#fff">Vera</text>
     <text x={vera.x + 15} y={vera.y - 4} font-family="Inter, system-ui, sans-serif" font-size="8.5" letter-spacing="1.6" fill="#FF9AAA">KORAL</text>
-  </g>
+  </a>
 
   <!-- Sea label -->
   <text
@@ -171,6 +188,9 @@ const uid = `map-${Math.random().toString(36).slice(2, 7)}`;
 
 <style is:global>
   .coast-map { display: block; width: 100%; height: auto; }
+  .coast-map .map-town text { transition: fill 0.2s ease; }
+  .coast-map .map-town:hover text, .coast-map .map-town:focus-visible text { fill: #ff9aaa; fill-opacity: 1; }
+  .coast-map .map-town:hover .map-town-dot { fill: #f2617a; stroke: #fff; }
   .map-pulse {
     transform-box: fill-box;
     transform-origin: center;

@@ -75,6 +75,16 @@ export const ROUTES = {
     fr: '/fr/politique-de-confidentialite/',
   },
   cookies: { es: '/cookies/', en: '/en/cookie-policy/', de: '/de/cookies/', nl: '/nl/cookies/', fr: '/fr/cookies/' },
+  // Local landing pages: the hub and one page per town the clinic serves.
+  areas: {es: '/dentista-levante-almeriense/', en: '/en/dentist-levante-almeriense/', de: '/de/zahnarzt-levante-almeriense/', nl: '/nl/tandarts-levante-almeriense/', fr: '/fr/dentiste-levante-almeriense/' },
+  vera: {es: '/dentista-vera/', en: '/en/dentist-vera/', de: '/de/zahnarzt-vera/', nl: '/nl/tandarts-vera/', fr: '/fr/dentiste-vera/' },
+  garrucha: {es: '/dentista-garrucha/', en: '/en/dentist-garrucha/', de: '/de/zahnarzt-garrucha/', nl: '/nl/tandarts-garrucha/', fr: '/fr/dentiste-garrucha/' },
+  mojacar: {es: '/dentista-mojacar/', en: '/en/dentist-mojacar/', de: '/de/zahnarzt-mojacar/', nl: '/nl/tandarts-mojacar/', fr: '/fr/dentiste-mojacar/' },
+  cuevas: {es: '/dentista-cuevas-del-almanzora/', en: '/en/dentist-cuevas-del-almanzora/', de: '/de/zahnarzt-cuevas-del-almanzora/', nl: '/nl/tandarts-cuevas-del-almanzora/', fr: '/fr/dentiste-cuevas-del-almanzora/' },
+  palomares: {es: '/dentista-palomares/', en: '/en/dentist-palomares/', de: '/de/zahnarzt-palomares/', nl: '/nl/tandarts-palomares/', fr: '/fr/dentiste-palomares/' },
+  antas: {es: '/dentista-antas/', en: '/en/dentist-antas/', de: '/de/zahnarzt-antas/', nl: '/nl/tandarts-antas/', fr: '/fr/dentiste-antas/' },
+  turre: {es: '/dentista-turre/', en: '/en/dentist-turre/', de: '/de/zahnarzt-turre/', nl: '/nl/tandarts-turre/', fr: '/fr/dentiste-turre/' },
+  gallardos: {es: '/dentista-los-gallardos/', en: '/en/dentist-los-gallardos/', de: '/de/zahnarzt-los-gallardos/', nl: '/nl/tandarts-los-gallardos/', fr: '/fr/dentiste-los-gallardos/' },
 } as const satisfies Record<string, Record<Lang, string>>;
 
 export type RouteKey = keyof typeof ROUTES;
@@ -121,6 +131,11 @@ export const RELATED: Record<TreatmentKey, TreatmentKey[]> = {
   cirugia: ['implantes', 'periodoncia', 'rehabilitacion'],
   armonia: ['estetica', 'ortodoncia', 'rehabilitacion'],
 };
+
+export type TownKey = 'vera' | 'garrucha' | 'mojacar' | 'cuevas' | 'palomares' | 'antas' | 'turre' | 'gallardos';
+
+/** Towns with their own landing page, ordered by distance to the clinic. */
+export const TOWN_KEYS: TownKey[] = ['vera', 'garrucha', 'cuevas', 'palomares', 'antas', 'gallardos', 'turre', 'mojacar'];
 
 export const HTML_LANG: Record<Lang, string> = { es: 'es-ES', en: 'en-GB', de: 'de-DE', nl: 'nl-NL', fr: 'fr-FR' };
 export const OG_LOCALE: Record<Lang, string> = { es: 'es_ES', en: 'en_GB', de: 'de_DE', nl: 'nl_NL', fr: 'fr_FR' };

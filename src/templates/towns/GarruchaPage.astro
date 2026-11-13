@@ -1,0 +1,825 @@
+---
+/**
+ * Garrucha landing page — "Carta náutica". The real route to the clinic drawn
+ * as a navigation chart, a fishing-port illustration, the 10-minute trip in four
+ * legs, practical care for families, hours as a tide table and a local FAQ.
+ * The clinic is in Vera: copy always says "for / near Garrucha", never "in".
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import Picture from '../../components/ui/Picture.astro';
+import TreatmentIcon from '../../components/svg/TreatmentIcon.astro';
+import GarruchaChart from '../../components/towns/GarruchaChart.astro';
+import GarruchaPort from '../../components/towns/GarruchaPort.astro';
+import { garruchaLegs, GARRUCHA_ROUTE } from '../../components/towns/GarruchaLegs';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type TreatmentKey } from '../../i18n/routes';
+import { TOWNS, CLINIC } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.garrucha;
+const route = GARRUCHA_ROUTE;
+const legs = garruchaLegs();
+
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+const KM = num(route.km);
+const MIN = route.min;
+const [R1, R2, R3] = route.roads;
+const [N1, N2, N3] = route.roads.map((r) => `<span class="whitespace-nowrap">${r}</span>`);
+const coord = (v: number, hemi: string) => {
+  const a = Math.abs(v);
+  const d = Math.floor(a);
+  return `${d}°${num(Math.round((a - d) * 600) / 10)}′${hemi}`;
+};
+const coords = `${coord(town.lat, 'N')} ${coord(town.lon, 'W')} → ${coord(CLINIC.lat, 'N')} ${coord(CLINIC.lon, 'W')}`;
+
+const L = {
+  implantes: pathFor('implantes', lang),
+  periodoncia: pathFor('periodoncia', lang),
+  rehabilitacion: pathFor('rehabilitacion', lang),
+  odontopediatria: pathFor('odontopediatria', lang),
+  endodoncia: pathFor('endodoncia', lang),
+  estetica: pathFor('estetica', lang),
+  ortodoncia: pathFor('ortodoncia', lang),
+  team: pathFor('team', lang),
+  pricing: pathFor('pricing', lang),
+  contact: pathFor('contact', lang),
+  areas: pathFor('areas', lang),
+  mojacar: pathFor('mojacar', lang),
+  vera: pathFor('vera', lang),
+  palomares: pathFor('palomares', lang),
+};
+const A = (href: string, text: string) => `<a class="prose-link" href="${href}">${text}</a>`;
+const WA = '<a class="prose-link" href="https://wa.me/34634683639" target="_blank" rel="noopener">+34 634 68 36 39</a>';
+const TEL = '<a class="prose-link" href="tel:+34950395319">+34 950 39 53 19</a>';
+
+const copy = ({
+  es: {
+    metaTitle: 'Dentista Garrucha: clínica dental a 10 min | Clínica Koral',
+    metaDesc: `Dentista para Garrucha: Clínica Dental Koral, en Vera, a ${KM} km y unos ${MIN} min en coche. Revisiones, encías, implantes Straumann. Primera visita gratis.`,
+    serviceName: 'Dentista para pacientes de Garrucha',
+    eyebrow: 'Carta de navegación · Garrucha → Vera',
+    h1: 'Dentista para Garrucha,',
+    h1Accent: 'a diez minutos del puerto',
+    lead: `¿Buscas dentista en Garrucha? La Clínica Dental Koral está en Vera, a <strong>${KM}&nbsp;km y unos ${MIN} minutos</strong> en coche por la ${N1}, la ${N2} y la ${N3}. Revisiones, higiene, implantes y citas cuando duele, con especialistas en cada área y la primera visita gratuita.`,
+    stats: ['km por carretera', 'minutos en coche', 'carreteras'],
+    call: 'Llamar',
+    chartTitle: `Carta de la ruta real de Garrucha a la Clínica Dental Koral en Vera: ${KM} km y ${MIN} minutos por ${R1}, ${R2} y ${R3}`,
+    chartCaption: 'Fig. 1 · Derrota real Garrucha → Koral (datos de OpenStreetMap)',
+    sea: 'Mar Mediterráneo',
+    clinicSub: 'AV. DE BARIA, 4 · VERA',
+    logEyebrow: 'Cuaderno de bitácora',
+    logTitle: 'Clínica dental cerca de Garrucha, sin perder la mañana',
+    logP: [
+      `Garrucha vive mirando al mar: el puerto pesquero que sigue trabajando cada día, la lonja donde se vende la pesca y la famosa gamba roja, el paseo marítimo que llega hasta el Castillo de Jesús Nazareno, la fortaleza costera del siglo XVIII. Es un pueblo de gente que madruga y de familias con la agenda llena, y nadie quiere dejarse media jornada en el dentista.`,
+      `Por eso conviene tener la clínica dental cerca de Garrucha. Del puerto a nuestra puerta, en la Av. de Baria, 4 de Vera, hay ${KM} km: de todos los pueblos de la costa que atendemos, es el trayecto más rápido hasta la clínica. Aparcas, entras y en un rato estás de vuelta en casa o en el trabajo.`,
+      `Casi todo lo que necesita una boca sana es rutina: una revisión y una limpieza al año, vigilar las encías, tratar a tiempo una caries pequeña. Si tus encías sangran, empieza por nuestra ${A(L.periodoncia, 'periodoncia e higiene dental')}; si te falta una pieza, mira los ${A(L.implantes, 'implantes dentales para pacientes de Garrucha')}. Y si repartes la semana entre Garrucha y ${A(L.mojacar, 'Mojácar')} o trabajas en ${A(L.vera, 'Vera')}, nos tienes de camino.`,
+    ],
+    portTitle: 'Puerto pesquero de Garrucha con barcas, el Castillo de Jesús Nazareno y la gamba roja: ilustración de la clínica dental cerca de Garrucha',
+    portCaption: 'Puerto, lonja y Castillo de Jesús Nazareno: la Garrucha de siempre, a 10 minutos de tu dentista.',
+    stamp: 'GAMBA ROJA · GARRUCHA · GAMBA ROJA ·',
+    tripEyebrow: 'Derrota Garrucha → Koral',
+    tripTitle: `De Garrucha a la clínica en ${MIN} minutos`,
+    tripDesc: `Ruta real calculada con datos de OpenStreetMap, sin contar el tráfico: ${KM} km en cuatro tramos, desde el puerto hasta la Av. de Baria, 4. Al llegar te atendemos en español, inglés, alemán, neerlandés o francés.`,
+    countLabel: 'minutos en coche',
+    countdown: 'Cuenta atrás (min)',
+    start: 'SALIDA',
+    legs: [
+      ['Salida de Garrucha', 'Desde el puerto y el centro, por las calles del pueblo hasta la carretera.'],
+      [R1, 'Rumbo norte, con el mar a la derecha y la costa siempre a la vista.'],
+      [R2, 'El tramo más largo, tierra adentro y en dirección a Vera.'],
+      [`${R3} · Vera`, 'Entrada en Vera y llegada a la Av. de Baria, 4. Fin del trayecto.'],
+    ],
+    legNote: `Reparto aproximado por tramos; el total (${KM} km, ${MIN} min) es el de la ruta calculada.`,
+    maps: 'Abrir la ruta en Google Maps',
+    careEyebrow: 'Cuidado práctico, todo el año',
+    careTitle: 'Tratamientos dentales para pacientes de Garrucha',
+    careDesc: 'Lo que una familia de Garrucha suele necesitar, explicado sin rodeos y con un presupuesto claro desde la primera visita, que es gratuita.',
+    care: [
+      ['periodoncia', 'Revisiones, limpieza y encías', 'Una revisión y una higiene profesional al año evitan la mayoría de sorpresas. Si las encías sangran o se retraen, lo tratamos antes de que afecte al hueso.', 'Periodoncia y limpieza dental'],
+      ['implantes', 'Implantes Straumann', 'Para reponer una o varias piezas: planificación con radiografía 3D (CBCT) e implantes Straumann con garantía de por vida, de la mano de la Dra. Ana Padilla.', 'Implantes dentales en Vera'],
+      ['rehabilitacion', 'Rehabilitación oral', 'Coronas, puentes y prótesis para recuperar una mordida completa cuando faltan o se han desgastado varias piezas.', 'Rehabilitación oral completa'],
+      ['odontopediatria', 'Niños y ortodoncia', 'Primeras visitas, prevención y control del crecimiento con la Dra. Ana Soler, especialista en ortodoncia y en los más pequeños.', 'Dentista infantil para Garrucha'],
+      ['endodoncia', 'Dolor de muelas', 'Cuando una muela duele, la Dra. Ángeles Parra hace la endodoncia con microscopio para conservar el diente siempre que se pueda.', 'Endodoncia con microscopio'],
+      ['estetica', 'Estética dental', 'Blanqueamiento, carillas o alineadores transparentes cuando quieres cambiar el color, la forma o la posición de los dientes.', 'Estética dental'],
+    ],
+    crewTitle: 'La tripulación que te atiende',
+    crewDesc: `Cada especialidad tiene su responsable, en la misma clínica. ${A(L.team, 'Conoce al equipo de Clínica Dental Koral')}.`,
+    crew: ['Cirugía, implantes y estética', 'Ortodoncia e infantil', 'Endodoncia'],
+    dr: 'Dra.',
+    bestEyebrow: 'Sin promesas, con hechos',
+    bestTitle: '¿Buscas la mejor clínica dental cerca de Garrucha?',
+    bestP: 'No te diremos que somos la mejor: eso lo decides tú después de venir. Lo que sí podemos contarte, con datos concretos, es lo que encontrarás a diez minutos de casa.',
+    reasons: [
+      ['Primera visita gratuita', 'Valoración completa y presupuesto claro, sin compromiso.'],
+      ['Diagnóstico 3D y microscopio', 'Radiografía CBCT para planificar y microscopio dental para las endodoncias.'],
+      ['Implantes con garantía de por vida', 'Trabajamos con implantes Straumann.'],
+      ['Financiación al 0 %', `Para la mayoría de tratamientos: consulta ${A(L.pricing, 'precios y financiación')}.`],
+      ['Cinco idiomas', 'Español, inglés, alemán, neerlandés y francés, por si en casa se habla más de uno.'],
+    ],
+    hoursEyebrow: 'Tabla de mareas',
+    hoursTitle: 'Horario pensado para quien trabaja',
+    hoursDesc: 'Martes, jueves y viernes abrimos a las 8:00: puedes venir antes del trabajo y estar de vuelta en Garrucha enseguida. Los lunes, hasta las 20:00.',
+    days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+    quickTitle: 'Cita rápida',
+    quickDesc: `WhatsApp ${WA}, teléfono ${TEL} o el ${A('#appointment', 'formulario de cita')} de esta página. Dirección y mapa en ${A(L.contact, 'contacto')}.`,
+    faqTitle: 'Preguntas de pacientes de Garrucha',
+    faqs: [
+      ['¿Cuánto se tarda de Garrucha a la clínica dental?', `Unos ${MIN} minutos en coche sin tráfico. Son ${KM} km por la ${R1}, la ${R2} y la ${R3} hasta la Av. de Baria, 4, en Vera.`],
+      ['¿Tenéis consulta en Garrucha?', `No. La clínica está en Vera (Av. de Baria, 4, 04620 Vera). No tenemos consulta en Garrucha, pero al estar a ${MIN} minutos muchos pacientes de Garrucha vienen a vernos. Si vives más al sur, mira también la página de ${A(L.mojacar, 'dentista para Mojácar')}; si estás más al norte, la de ${A(L.palomares, 'dentista para Palomares')}.`],
+      ['¿Cada cuánto debería hacerme una revisión y una limpieza?', `Como norma general, una vez al año; si tienes problemas de encías puede hacer falta con más frecuencia. En la primera visita, que es gratuita, te diremos qué te conviene. Más información en ${A(L.periodoncia, 'periodoncia')}.`],
+      ['Me duele una muela, ¿me podéis ver pronto?', `Llámanos al ${TEL} o escríbenos por WhatsApp al ${WA} y te buscamos el hueco más cercano posible.`],
+      ['¿Hacéis implantes a pacientes de Garrucha? ¿Cuánto cuestan?', `Sí. Usamos implantes Straumann con garantía de por vida y planificación en 3D. El precio depende de cada caso: te damos el presupuesto en la primera visita y puedes financiarlo al 0 % en la mayoría de tratamientos. Consulta ${A(L.pricing, 'precios y financiación')}.`],
+      ['¿Atendéis en inglés o en otros idiomas?', 'Sí: en español, inglés, alemán, neerlandés y francés.'],
+    ],
+  },
+  en: {
+    metaTitle: 'Dentist Garrucha: dental clinic 10 min away | Koral Dental',
+    metaDesc: `English-speaking dentist for Garrucha: Koral Dental Clinic in Vera is ${KM} km, about ${MIN} min by car. Check-ups, gum care, Straumann implants. Free first visit.`,
+    serviceName: 'Dentist for patients from Garrucha',
+    eyebrow: 'Navigation chart · Garrucha → Vera',
+    h1: 'Dentist for Garrucha,',
+    h1Accent: 'ten minutes from the harbour',
+    lead: `Looking for a dentist in Garrucha? Koral Dental Clinic is in Vera, just <strong>${KM}&nbsp;km — about ${MIN} minutes</strong> by car along the ${N1}, ${N2} and ${N3}. Check-ups, hygiene, implants and help when it hurts, from specialists in every field, in English and four other languages. Your first visit is free.`,
+    stats: ['km by road', 'minutes by car', 'roads'],
+    call: 'Call',
+    chartTitle: `Chart of the real route from Garrucha to Koral Dental Clinic in Vera: ${KM} km and ${MIN} minutes via ${R1}, ${R2} and ${R3}`,
+    chartCaption: 'Fig. 1 · Real track Garrucha → Koral (OpenStreetMap data)',
+    sea: 'Mediterranean Sea',
+    clinicSub: 'AV. DE BARIA, 4 · VERA',
+    logEyebrow: 'Ship’s log',
+    logTitle: 'A dental clinic near Garrucha that fits around your day',
+    logP: [
+      `Garrucha lives facing the sea: a fishing port that still works every day, the lonja where the catch — famous red prawns included — is sold, and the seafront promenade that leads to the Castillo de Jesús Nazareno, an 18th-century coastal fort. It is a town of early starts and busy families, and nobody wants to lose half a day to a dental appointment.`,
+      `That is why a dental clinic near Garrucha makes sense. From the harbour to our door on Av. de Baria, 4 in Vera it is ${KM} km — of all the coastal towns we serve, the quickest drive to the clinic. Park, come in, and you are soon back home or at work.`,
+      `Most of what keeps a mouth healthy is routine: a yearly check-up and clean, an eye on your gums, a small cavity treated before it grows. If your gums bleed, start with our ${A(L.periodoncia, 'gum treatment and hygiene')}; if a tooth is missing, read about ${A(L.implantes, 'dental implants for Garrucha patients')}. And if you split your week between Garrucha and ${A(L.mojacar, 'Mojácar')} or work in ${A(L.vera, 'Vera')}, we are right on your way.`,
+    ],
+    portTitle: 'Garrucha fishing port with boats, the Castillo de Jesús Nazareno and the red prawn: illustration for the dental clinic near Garrucha',
+    portCaption: 'Harbour, fish market and the Castillo de Jesús Nazareno: Garrucha as ever, 10 minutes from your dentist.',
+    stamp: 'RED PRAWN · GARRUCHA · RED PRAWN ·',
+    tripEyebrow: 'Track Garrucha → Koral',
+    tripTitle: `From Garrucha to the clinic in ${MIN} minutes`,
+    tripDesc: `A real route calculated with OpenStreetMap data, without traffic: ${KM} km in four legs, from the harbour to Av. de Baria, 4. When you arrive, we speak English, Spanish, German, Dutch and French.`,
+    countLabel: 'minutes by car',
+    countdown: 'Countdown (min)',
+    start: 'START',
+    legs: [
+      ['Leaving Garrucha', 'From the harbour and the town centre, through the streets to the main road.'],
+      [R1, 'Heading north, the sea on your right and the coast in sight.'],
+      [R2, 'The longest leg, inland and straight towards Vera.'],
+      [`${R3} · Vera`, 'Into Vera and onto Av. de Baria, 4. Journey’s end.'],
+    ],
+    legNote: `Approximate split by leg; the total (${KM} km, ${MIN} min) is that of the calculated route.`,
+    maps: 'Open the route in Google Maps',
+    careEyebrow: 'Practical care, all year round',
+    careTitle: 'Dental treatments for patients from Garrucha',
+    careDesc: 'What a Garrucha household usually needs, explained plainly, with a clear quote from the first visit — which is free.',
+    care: [
+      ['periodoncia', 'Check-ups, cleaning and gums', 'A yearly check-up and professional clean prevent most surprises. If your gums bleed or recede, we treat them before the bone is affected.', 'Gum treatment and dental cleaning'],
+      ['implantes', 'Straumann implants', 'To replace one tooth or several: 3D (CBCT) planning and Straumann implants with a lifetime warranty, led by Dr Ana Padilla.', 'Dental implants in Vera'],
+      ['rehabilitacion', 'Full-mouth restoration', 'Crowns, bridges and dentures to restore a complete bite when several teeth are missing or worn.', 'Oral rehabilitation'],
+      ['odontopediatria', 'Children and orthodontics', 'First visits, prevention and growth monitoring with Dr Ana Soler, our orthodontics and children’s specialist.', 'Children’s dentist for Garrucha'],
+      ['endodoncia', 'Toothache', 'When a tooth hurts, Dr Ángeles Parra performs the root canal under the microscope to save the tooth whenever possible.', 'Microscope root canal treatment'],
+      ['estetica', 'Cosmetic dentistry', 'Whitening, veneers or clear aligners when you want to change the colour, shape or position of your teeth.', 'Cosmetic dentistry'],
+    ],
+    crewTitle: 'The crew looking after you',
+    crewDesc: `Every speciality has its own lead, all in the same clinic. ${A(L.team, 'Meet the Koral Dental Clinic team')}.`,
+    crew: ['Surgery, implants and cosmetic', 'Orthodontics and children', 'Root canals'],
+    dr: 'Dr',
+    bestEyebrow: 'No promises, just facts',
+    bestTitle: 'Looking for the best dental clinic near Garrucha?',
+    bestP: 'We won’t tell you we are the best — that is for you to decide once you have been. What we can do is list, in concrete terms, what you will find ten minutes from home.',
+    reasons: [
+      ['Free first visit', 'A full assessment and a clear, no-obligation quote.'],
+      ['3D imaging and microscope', 'CBCT scans for planning and a dental microscope for root canals.'],
+      ['Implants with a lifetime warranty', 'We work with Straumann implants.'],
+      ['0% financing', `For most treatments: see ${A(L.pricing, 'pricing and financing')}.`],
+      ['Five languages', 'English, Spanish, German, Dutch and French — handy if your household speaks more than one.'],
+    ],
+    hoursEyebrow: 'Tide table',
+    hoursTitle: 'Opening hours that suit working days',
+    hoursDesc: 'On Tuesdays, Thursdays and Fridays we open at 8:00, so you can come before work and be back in Garrucha in no time. On Mondays we stay open until 20:00.',
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    quickTitle: 'Quick appointment',
+    quickDesc: `WhatsApp ${WA}, phone ${TEL} or the ${A('#appointment', 'appointment form')} on this page. Address and map on our ${A(L.contact, 'contact page')}.`,
+    faqTitle: 'Questions from Garrucha patients',
+    faqs: [
+      ['How long does it take from Garrucha to the dental clinic?', `About ${MIN} minutes by car without traffic: ${KM} km along the ${R1}, ${R2} and ${R3} to Av. de Baria, 4 in Vera.`],
+      ['Do you have a practice in Garrucha?', `No. The clinic is in Vera (Av. de Baria, 4, 04620 Vera); we have no practice in Garrucha, but at ${MIN} minutes away many Garrucha patients come to see us. If you live further south, see our page for a ${A(L.mojacar, 'dentist for Mojácar')}, or further north, a ${A(L.palomares, 'dentist for Palomares')}.`],
+      ['How often should I have a check-up and a clean?', `As a rule, once a year; if you have gum problems you may need them more often. At your free first visit we will tell you what suits you. More on ${A(L.periodoncia, 'gum treatment')}.`],
+      ['I have toothache — can you see me soon?', `Call ${TEL} or WhatsApp ${WA} and we will find you the earliest slot we can.`],
+      ['Do you place implants for Garrucha patients? How much do they cost?', `Yes. We use Straumann implants with a lifetime warranty and 3D planning. The price depends on each case: you get a quote at the first visit and can spread the cost at 0% for most treatments. See ${A(L.pricing, 'pricing and financing')}.`],
+      ['Is there an English-speaking dentist?', 'Yes. We see patients in English, Spanish, German, Dutch and French.'],
+    ],
+  },
+  de: {
+    metaTitle: 'Zahnarzt Garrucha: Zahnklinik in 10 Min. | Zahnklinik Koral',
+    metaDesc: `Zahnarzt für Garrucha: Die Zahnklinik Koral in Vera liegt ${KM} km bzw. rund ${MIN} Autominuten entfernt. Wir sprechen Deutsch. Erster Termin kostenlos.`,
+    serviceName: 'Zahnarzt für Patienten aus Garrucha',
+    eyebrow: 'Seekarte · Garrucha → Vera',
+    h1: 'Zahnarzt für Garrucha,',
+    h1Accent: 'zehn Minuten vom Hafen',
+    lead: `Sie suchen einen Zahnarzt in Garrucha? Die Zahnklinik Koral liegt in Vera, nur <strong>${KM}&nbsp;km bzw. rund ${MIN} Minuten</strong> mit dem Auto über die ${N1}, ${N2} und ${N3}. Kontrolle, Prophylaxe, Implantate und schnelle Hilfe bei Schmerzen – mit Fachärztinnen für jeden Bereich, auf Deutsch und in vier weiteren Sprachen. Der erste Termin ist kostenlos.`,
+    stats: ['km Fahrstrecke', 'Minuten mit dem Auto', 'Straßen'],
+    call: 'Anrufen',
+    chartTitle: `Seekarte der echten Route von Garrucha zur Zahnklinik Koral in Vera: ${KM} km und ${MIN} Minuten über ${R1}, ${R2} und ${R3}`,
+    chartCaption: 'Abb. 1 · Echter Kurs Garrucha → Koral (Daten: OpenStreetMap)',
+    sea: 'Mittelmeer',
+    clinicSub: 'AV. DE BARIA, 4 · VERA',
+    logEyebrow: 'Logbuch',
+    logTitle: 'Zahnklinik bei Garrucha – ohne den halben Tag zu verlieren',
+    logP: [
+      `Garrucha lebt mit Blick aufs Meer: ein Fischereihafen, in dem noch jeden Tag gearbeitet wird, die Lonja, in der der Fang – darunter die berühmte rote Garnele – verkauft wird, und die Strandpromenade bis zum Castillo de Jesús Nazareno, einer Küstenfestung aus dem 18. Jahrhundert. Hier steht man früh auf, Familien haben volle Terminkalender, und niemand möchte einen halben Tag beim Zahnarzt verbringen.`,
+      `Deshalb lohnt sich eine Zahnklinik in der Nähe von Garrucha. Vom Hafen bis zu unserer Tür in der Av. de Baria, 4 in Vera sind es ${KM} km – von allen Küstenorten, die wir betreuen, die schnellste Anfahrt zur Klinik. Parken, hereinkommen, und schon bald sind Sie wieder zu Hause oder bei der Arbeit.`,
+      `Gesunde Zähne sind vor allem Routine: einmal im Jahr Kontrolle und Prophylaxe, das Zahnfleisch im Blick behalten, kleine Karies früh behandeln. Blutet Ihr Zahnfleisch, beginnen Sie mit unserer ${A(L.periodoncia, 'Parodontologie und Zahnreinigung')}; fehlt ein Zahn, lesen Sie mehr über ${A(L.implantes, 'Zahnimplantate für Patienten aus Garrucha')}. Und wenn Sie Ihre Woche zwischen Garrucha und ${A(L.mojacar, 'Mojácar')} aufteilen oder in ${A(L.vera, 'Vera')} arbeiten, liegen wir direkt auf Ihrem Weg.`,
+    ],
+    portTitle: 'Fischereihafen von Garrucha mit Booten, dem Castillo de Jesús Nazareno und der roten Garnele: Illustration der Zahnklinik bei Garrucha',
+    portCaption: 'Hafen, Fischmarkt und Castillo de Jesús Nazareno: das Garrucha von immer, 10 Minuten von Ihrem Zahnarzt.',
+    stamp: 'ROTE GARNELE · GARRUCHA · ROTE GARNELE ·',
+    tripEyebrow: 'Kurs Garrucha → Koral',
+    tripTitle: `Von Garrucha zur Klinik in ${MIN} Minuten`,
+    tripDesc: `Echte Route, berechnet mit Daten von OpenStreetMap, ohne Verkehr: ${KM} km in vier Etappen, vom Hafen bis zur Av. de Baria, 4. Bei uns angekommen, sprechen wir Deutsch, Spanisch, Englisch, Niederländisch und Französisch.`,
+    countLabel: 'Minuten mit dem Auto',
+    countdown: 'Countdown (Min.)',
+    start: 'START',
+    legs: [
+      ['Abfahrt in Garrucha', 'Vom Hafen und aus dem Zentrum durch die Straßen des Ortes bis zur Landstraße.'],
+      [R1, 'Kurs Nord, das Meer rechts und die Küste immer im Blick.'],
+      [R2, 'Die längste Etappe, landeinwärts in Richtung Vera.'],
+      [`${R3} · Vera`, 'Einfahrt nach Vera und Ankunft in der Av. de Baria, 4. Ziel erreicht.'],
+    ],
+    legNote: `Ungefähre Aufteilung nach Etappen; die Gesamtwerte (${KM} km, ${MIN} Min.) stammen aus der berechneten Route.`,
+    maps: 'Route in Google Maps öffnen',
+    careEyebrow: 'Praktische Versorgung, das ganze Jahr',
+    careTitle: 'Zahnbehandlungen für Patienten aus Garrucha',
+    careDesc: 'Was eine Familie aus Garrucha typischerweise braucht – klar erklärt und mit einem transparenten Kostenvoranschlag ab dem ersten, kostenlosen Termin.',
+    care: [
+      ['periodoncia', 'Kontrolle, Reinigung und Zahnfleisch', 'Eine jährliche Kontrolle mit professioneller Zahnreinigung erspart die meisten Überraschungen. Blutet oder schwindet das Zahnfleisch, behandeln wir es, bevor der Knochen leidet.', 'Parodontologie und Zahnreinigung'],
+      ['implantes', 'Straumann-Implantate', 'Ersatz für einen oder mehrere Zähne: Planung mit 3D-Röntgen (DVT) und Straumann-Implantate mit lebenslanger Garantie, unter der Leitung von Dr. Ana Padilla.', 'Zahnimplantate in Vera'],
+      ['rehabilitacion', 'Zahnersatz und Rehabilitation', 'Kronen, Brücken und Prothesen für einen vollständigen Biss, wenn mehrere Zähne fehlen oder abgenutzt sind.', 'Orale Rehabilitation'],
+      ['odontopediatria', 'Kinder und Kieferorthopädie', 'Erste Besuche, Vorsorge und Wachstumskontrolle bei Dr. Ana Soler, Fachärztin für Kieferorthopädie und Kinderzahnheilkunde.', 'Kinderzahnarzt für Garrucha'],
+      ['endodoncia', 'Zahnschmerzen', 'Wenn ein Zahn schmerzt, führt Dr. Ángeles Parra die Wurzelbehandlung unter dem Mikroskop durch, um den Zahn wenn möglich zu erhalten.', 'Wurzelbehandlung unter dem Mikroskop'],
+      ['estetica', 'Ästhetische Zahnheilkunde', 'Bleaching, Veneers oder transparente Aligner, wenn Sie Farbe, Form oder Stellung Ihrer Zähne verändern möchten.', 'Ästhetische Zahnmedizin'],
+    ],
+    crewTitle: 'Die Crew, die Sie betreut',
+    crewDesc: `Jeder Fachbereich hat seine Verantwortliche – alles in einer Klinik. ${A(L.team, 'Lernen Sie das Team der Zahnklinik Koral kennen')}.`,
+    crew: ['Chirurgie, Implantate, Ästhetik', 'Kieferorthopädie und Kinder', 'Endodontie'],
+    dr: 'Dr.',
+    bestEyebrow: 'Keine Versprechen, nur Fakten',
+    bestTitle: 'Sie suchen die beste Zahnklinik in der Nähe von Garrucha?',
+    bestP: 'Wir behaupten nicht, die beste zu sein – das entscheiden Sie nach Ihrem Besuch. Was wir Ihnen sagen können, ganz konkret: Das erwartet Sie zehn Minuten von zu Hause.',
+    reasons: [
+      ['Kostenloser Ersttermin', 'Gründliche Untersuchung und klarer, unverbindlicher Kostenvoranschlag.'],
+      ['3D-Diagnostik und Mikroskop', 'DVT-Aufnahmen für die Planung und ein Dentalmikroskop für Wurzelbehandlungen.'],
+      ['Implantate mit lebenslanger Garantie', 'Wir arbeiten mit Straumann-Implantaten.'],
+      ['0 % Finanzierung', `Für die meisten Behandlungen: siehe ${A(L.pricing, 'Preise und Finanzierung')}.`],
+      ['Fünf Sprachen', 'Deutsch, Spanisch, Englisch, Niederländisch und Französisch – praktisch, wenn zu Hause mehr als eine Sprache gesprochen wird.'],
+    ],
+    hoursEyebrow: 'Gezeitentafel',
+    hoursTitle: 'Öffnungszeiten für Berufstätige',
+    hoursDesc: 'Dienstags, donnerstags und freitags öffnen wir um 8:00 Uhr: Sie können vor der Arbeit kommen und sind schnell wieder in Garrucha. Montags haben wir bis 20:00 Uhr geöffnet.',
+    days: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'],
+    quickTitle: 'Schnell einen Termin',
+    quickDesc: `WhatsApp ${WA}, Telefon ${TEL} oder das ${A('#appointment', 'Terminformular')} auf dieser Seite. Adresse und Karte finden Sie unter ${A(L.contact, 'Kontakt')}.`,
+    faqTitle: 'Fragen von Patienten aus Garrucha',
+    faqs: [
+      ['Wie lange fährt man von Garrucha zur Zahnklinik?', `Rund ${MIN} Minuten mit dem Auto ohne Verkehr: ${KM} km über die ${R1}, ${R2} und ${R3} bis zur Av. de Baria, 4 in Vera.`],
+      ['Haben Sie eine Praxis in Garrucha?', `Nein. Die Klinik befindet sich in Vera (Av. de Baria, 4, 04620 Vera); in Garrucha haben wir keine Praxis, doch bei nur ${MIN} Minuten Fahrt kommen viele Patienten aus Garrucha zu uns. Wohnen Sie weiter südlich, sehen Sie sich auch unsere Seite ${A(L.mojacar, 'Zahnarzt für Mojácar')} an; weiter nördlich die Seite ${A(L.palomares, 'Zahnarzt für Palomares')}.`],
+      ['Wie oft sollte ich zur Kontrolle und Zahnreinigung?', `In der Regel einmal im Jahr; bei Zahnfleischproblemen kann es öfter nötig sein. Beim kostenlosen Ersttermin sagen wir Ihnen, was für Sie sinnvoll ist. Mehr unter ${A(L.periodoncia, 'Parodontologie')}.`],
+      ['Ich habe Zahnschmerzen – bekomme ich schnell einen Termin?', `Rufen Sie ${TEL} an oder schreiben Sie per WhatsApp an ${WA}; wir suchen Ihnen den frühestmöglichen Termin.`],
+      ['Setzen Sie Implantate für Patienten aus Garrucha? Was kosten sie?', `Ja. Wir verwenden Straumann-Implantate mit lebenslanger Garantie und 3D-Planung. Der Preis hängt vom Einzelfall ab: Den Kostenvoranschlag erhalten Sie beim ersten Termin, und die meisten Behandlungen lassen sich zu 0 % finanzieren. Siehe ${A(L.pricing, 'Preise und Finanzierung')}.`],
+      ['Spricht man bei Ihnen Deutsch?', 'Ja. Wir behandeln auf Deutsch, Spanisch, Englisch, Niederländisch und Französisch.'],
+    ],
+  },
+  nl: {
+    metaTitle: 'Tandarts Garrucha: tandkliniek op 10 min | Tandkliniek Koral',
+    metaDesc: `Tandarts voor Garrucha: Tandkliniek Koral in Vera ligt op ${KM} km, zo’n ${MIN} minuten rijden. Wij spreken Nederlands. Controle, implantaten, gratis eerste bezoek.`,
+    serviceName: 'Tandarts voor patiënten uit Garrucha',
+    eyebrow: 'Zeekaart · Garrucha → Vera',
+    h1: 'Tandarts voor Garrucha,',
+    h1Accent: 'tien minuten van de haven',
+    lead: `Op zoek naar een tandarts in Garrucha? Tandkliniek Koral zit in Vera, op slechts <strong>${KM}&nbsp;km, zo’n ${MIN} minuten</strong> rijden via de ${N1}, ${N2} en ${N3}. Controles, mondhygiëne, implantaten en snelle hulp bij pijn, met specialisten voor elk vakgebied, in het Nederlands en vier andere talen. Het eerste bezoek is gratis.`,
+    stats: ['km over de weg', 'minuten met de auto', 'wegen'],
+    call: 'Bellen',
+    chartTitle: `Kaart van de echte route van Garrucha naar Tandkliniek Koral in Vera: ${KM} km en ${MIN} minuten via ${R1}, ${R2} en ${R3}`,
+    chartCaption: 'Fig. 1 · Echte koers Garrucha → Koral (gegevens van OpenStreetMap)',
+    sea: 'Middellandse Zee',
+    clinicSub: 'AV. DE BARIA, 4 · VERA',
+    logEyebrow: 'Logboek',
+    logTitle: 'Een tandkliniek bij Garrucha die in uw dag past',
+    logP: [
+      `Garrucha leeft met het gezicht naar zee: een vissershaven waar nog elke dag wordt gewerkt, de lonja waar de vangst wordt verkocht – inclusief de beroemde rode garnaal – en de boulevard die doorloopt tot het Castillo de Jesús Nazareno, een kustfort uit de 18e eeuw. Het is een plaats van vroege ochtenden en drukke gezinnen, en niemand wil een halve dag kwijt zijn aan de tandarts.`,
+      `Daarom is een tandkliniek dicht bij Garrucha zo handig. Van de haven tot onze deur aan de Av. de Baria, 4 in Vera is het ${KM} km: van alle kustplaatsen die wij bedienen de snelste rit naar de kliniek. Parkeren, naar binnen, en u bent zo weer thuis of op het werk.`,
+      `Gezonde tanden zijn vooral een kwestie van routine: één keer per jaar controle en een professionele reiniging, het tandvlees in de gaten houden, een klein gaatje op tijd behandelen. Bloedt uw tandvlees, begin dan bij onze ${A(L.periodoncia, 'parodontologie en mondhygiëne')}; mist u een tand, lees dan over ${A(L.implantes, 'tandimplantaten voor patiënten uit Garrucha')}. En verdeelt u uw week tussen Garrucha en ${A(L.mojacar, 'Mojácar')} of werkt u in ${A(L.vera, 'Vera')}, dan ligt de kliniek gewoon op uw route.`,
+    ],
+    portTitle: 'Vissershaven van Garrucha met boten, het Castillo de Jesús Nazareno en de rode garnaal: illustratie van de tandkliniek bij Garrucha',
+    portCaption: 'Haven, visafslag en Castillo de Jesús Nazareno: het Garrucha van altijd, op 10 minuten van uw tandarts.',
+    stamp: 'RODE GARNAAL · GARRUCHA · RODE GARNAAL ·',
+    tripEyebrow: 'Koers Garrucha → Koral',
+    tripTitle: `Van Garrucha naar de kliniek in ${MIN} minuten`,
+    tripDesc: `Echte route, berekend met gegevens van OpenStreetMap, zonder verkeer: ${KM} km in vier etappes, van de haven tot de Av. de Baria, 4. Bij aankomst spreken wij Nederlands, Spaans, Engels, Duits en Frans.`,
+    countLabel: 'minuten met de auto',
+    countdown: 'Aftellen (min)',
+    start: 'START',
+    legs: [
+      ['Vertrek uit Garrucha', 'Vanaf de haven en het centrum door de straten van het dorp naar de doorgaande weg.'],
+      [R1, 'Koers noord, met de zee rechts en de kust steeds in zicht.'],
+      [R2, 'De langste etappe, landinwaarts richting Vera.'],
+      [`${R3} · Vera`, 'Vera binnen en aankomst aan de Av. de Baria, 4. Eindpunt bereikt.'],
+    ],
+    legNote: `Benaderde verdeling per etappe; het totaal (${KM} km, ${MIN} min) is dat van de berekende route.`,
+    maps: 'Route openen in Google Maps',
+    careEyebrow: 'Praktische zorg, het hele jaar',
+    careTitle: 'Tandheelkundige behandelingen voor patiënten uit Garrucha',
+    careDesc: 'Wat een gezin uit Garrucha meestal nodig heeft, helder uitgelegd en met een duidelijke offerte vanaf het eerste bezoek, dat gratis is.',
+    care: [
+      ['periodoncia', 'Controle, reiniging en tandvlees', 'Eén controle en professionele reiniging per jaar voorkomen de meeste verrassingen. Bloedt of trekt het tandvlees terug, dan behandelen we het voordat het bot wordt aangetast.', 'Parodontologie en gebitsreiniging'],
+      ['implantes', 'Straumann-implantaten', 'Voor één of meer ontbrekende tanden: planning met 3D-röntgen (CBCT) en Straumann-implantaten met levenslange garantie, onder leiding van Dr. Ana Padilla.', 'Tandimplantaten in Vera'],
+      ['rehabilitacion', 'Mondrehabilitatie', 'Kronen, bruggen en prothesen voor een volledige beet wanneer meerdere tanden ontbreken of versleten zijn.', 'Orale rehabilitatie'],
+      ['odontopediatria', 'Kinderen en orthodontie', 'Eerste bezoekjes, preventie en groeicontrole bij Dr. Ana Soler, specialist in orthodontie en kindertandheelkunde.', 'Kindertandarts voor Garrucha'],
+      ['endodoncia', 'Kiespijn', 'Doet een kies pijn, dan voert Dr. Ángeles Parra de wortelkanaalbehandeling uit met de microscoop, om de tand waar mogelijk te behouden.', 'Wortelkanaalbehandeling met microscoop'],
+      ['estetica', 'Esthetische tandheelkunde', 'Bleken, facings of transparante aligners als u de kleur, vorm of stand van uw tanden wilt veranderen.', 'Esthetische tandheelkunde'],
+    ],
+    crewTitle: 'De bemanning die u helpt',
+    crewDesc: `Elk specialisme heeft een eigen verantwoordelijke, allemaal in dezelfde kliniek. ${A(L.team, 'Maak kennis met het team van Tandkliniek Koral')}.`,
+    crew: ['Chirurgie, implantaten, esthetiek', 'Orthodontie en kinderen', 'Endodontie'],
+    dr: 'Dr.',
+    bestEyebrow: 'Geen beloftes, wel feiten',
+    bestTitle: 'Op zoek naar de beste tandkliniek bij Garrucha?',
+    bestP: 'Wij gaan u niet vertellen dat we de beste zijn – dat beslist u zelf na uw bezoek. Wel kunnen we u concreet vertellen wat u op tien minuten van huis vindt.',
+    reasons: [
+      ['Gratis eerste bezoek', 'Volledig onderzoek en een duidelijke, vrijblijvende offerte.'],
+      ['3D-diagnose en microscoop', 'CBCT-scans voor de planning en een tandheelkundige microscoop voor wortelkanaalbehandelingen.'],
+      ['Implantaten met levenslange garantie', 'Wij werken met Straumann-implantaten.'],
+      ['0% financiering', `Voor de meeste behandelingen: zie ${A(L.pricing, 'prijzen en financiering')}.`],
+      ['Vijf talen', 'Nederlands, Spaans, Engels, Duits en Frans – handig als er thuis meer dan één taal wordt gesproken.'],
+    ],
+    hoursEyebrow: 'Getijdentabel',
+    hoursTitle: 'Openingstijden voor wie werkt',
+    hoursDesc: 'Op dinsdag, donderdag en vrijdag gaan we om 8:00 uur open: u kunt vóór het werk langskomen en bent zo weer in Garrucha. Op maandag zijn we open tot 20:00 uur.',
+    days: ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'],
+    quickTitle: 'Snel een afspraak',
+    quickDesc: `WhatsApp ${WA}, telefoon ${TEL} of het ${A('#appointment', 'afspraakformulier')} op deze pagina. Adres en kaart vindt u bij ${A(L.contact, 'contact')}.`,
+    faqTitle: 'Vragen van patiënten uit Garrucha',
+    faqs: [
+      ['Hoe lang rijd je van Garrucha naar de tandkliniek?', `Zo’n ${MIN} minuten zonder verkeer: ${KM} km via de ${R1}, ${R2} en ${R3} naar de Av. de Baria, 4 in Vera.`],
+      ['Hebben jullie een praktijk in Garrucha?', `Nee. De kliniek is in Vera (Av. de Baria, 4, 04620 Vera); in Garrucha hebben we geen praktijk, maar omdat het maar ${MIN} minuten rijden is, komen veel patiënten uit Garrucha naar ons toe. Woont u verder naar het zuiden, kijk dan ook op onze pagina ${A(L.mojacar, 'tandarts voor Mojácar')}; verder naar het noorden, ${A(L.palomares, 'tandarts voor Palomares')}.`],
+      ['Hoe vaak moet ik op controle en voor een reiniging?', `In het algemeen één keer per jaar; bij tandvleesproblemen kan het vaker nodig zijn. Tijdens het gratis eerste bezoek vertellen we wat bij u past. Meer bij ${A(L.periodoncia, 'parodontologie')}.`],
+      ['Ik heb kiespijn, kunnen jullie me snel helpen?', `Bel ${TEL} of stuur een WhatsApp naar ${WA}; we zoeken het vroegst mogelijke moment voor u.`],
+      ['Plaatsen jullie implantaten bij patiënten uit Garrucha? Wat kost dat?', `Ja. We gebruiken Straumann-implantaten met levenslange garantie en 3D-planning. De prijs hangt af van uw situatie: u krijgt de offerte bij het eerste bezoek en de meeste behandelingen kunt u tegen 0% financieren. Zie ${A(L.pricing, 'prijzen en financiering')}.`],
+      ['Spreken jullie Nederlands?', 'Ja. Wij helpen u in het Nederlands, Spaans, Engels, Duits en Frans.'],
+    ],
+  },
+  fr: {
+    metaTitle: 'Dentiste Garrucha : clinique dentaire à 10 min | Koral',
+    metaDesc: `Dentiste pour Garrucha : la Clinique Dentaire Koral, à Vera, est à ${KM} km, environ ${MIN} min en voiture. Nous parlons français. Première visite gratuite.`,
+    serviceName: 'Dentiste pour les patients de Garrucha',
+    eyebrow: 'Carte marine · Garrucha → Vera',
+    h1: 'Dentiste pour Garrucha,',
+    h1Accent: 'à dix minutes du port',
+    lead: `Vous cherchez un dentiste à Garrucha ? La Clinique Dentaire Koral se trouve à Vera, à seulement <strong>${KM}&nbsp;km, soit une dizaine de minutes</strong> en voiture par l’${N1}, l’${N2} et l’${N3}. Contrôles, hygiène, implants et rendez-vous quand ça fait mal, avec des spécialistes dans chaque domaine, en français et dans quatre autres langues. La première visite est gratuite.`,
+    stats: ['km par la route', 'minutes en voiture', 'routes'],
+    call: 'Appeler',
+    chartTitle: `Carte du trajet réel de Garrucha à la Clinique Dentaire Koral à Vera : ${KM} km et ${MIN} minutes par ${R1}, ${R2} et ${R3}`,
+    chartCaption: 'Fig. 1 · Route réelle Garrucha → Koral (données OpenStreetMap)',
+    sea: 'Mer Méditerranée',
+    clinicSub: 'AV. DE BARIA, 4 · VERA',
+    logEyebrow: 'Journal de bord',
+    logTitle: 'Une clinique dentaire près de Garrucha, sans y passer la matinée',
+    logP: [
+      `Garrucha vit face à la mer : un port de pêche toujours en activité, la lonja où se vend la pêche du jour – dont la célèbre crevette rouge –, et la promenade du front de mer qui mène au Castillo de Jesús Nazareno, un fort côtier du XVIIIᵉ siècle. On s’y lève tôt, les familles ont des agendas bien remplis, et personne n’a envie de perdre une demi-journée chez le dentiste.`,
+      `C’est pourquoi il est utile d’avoir une clinique dentaire près de Garrucha. Du port jusqu’à notre porte, Av. de Baria, 4 à Vera, il y a ${KM} km : de toutes les communes du littoral que nous recevons, c’est le trajet le plus rapide jusqu’à la clinique. Vous vous garez, vous entrez, et vous êtes vite de retour chez vous ou au travail.`,
+      `L’essentiel d’une bouche en bonne santé, c’est la routine : un contrôle et un détartrage par an, surveiller les gencives, soigner une petite carie à temps. Si vos gencives saignent, commencez par notre ${A(L.periodoncia, 'parodontologie et hygiène dentaire')} ; s’il vous manque une dent, découvrez nos ${A(L.implantes, 'implants dentaires pour les patients de Garrucha')}. Et si votre semaine se partage entre Garrucha et ${A(L.mojacar, 'Mojácar')} ou si vous travaillez à ${A(L.vera, 'Vera')}, nous sommes sur votre chemin.`,
+    ],
+    portTitle: 'Port de pêche de Garrucha avec ses bateaux, le Castillo de Jesús Nazareno et la crevette rouge : illustration de la clinique dentaire près de Garrucha',
+    portCaption: 'Le port, la criée et le Castillo de Jesús Nazareno : le Garrucha de toujours, à 10 minutes de votre dentiste.',
+    stamp: 'CREVETTE ROUGE · GARRUCHA · CREVETTE ROUGE ·',
+    tripEyebrow: 'Route Garrucha → Koral',
+    tripTitle: `De Garrucha à la clinique en ${MIN} minutes`,
+    tripDesc: `Trajet réel calculé avec les données d’OpenStreetMap, hors trafic : ${KM} km en quatre étapes, du port jusqu’à l’Av. de Baria, 4. À votre arrivée, nous parlons français, espagnol, anglais, allemand et néerlandais.`,
+    countLabel: 'minutes en voiture',
+    countdown: 'Compte à rebours (min)',
+    start: 'DÉPART',
+    legs: [
+      ['Départ de Garrucha', 'Depuis le port et le centre, par les rues du village jusqu’à la route.'],
+      [R1, 'Cap au nord, la mer à droite et la côte toujours en vue.'],
+      [R2, 'L’étape la plus longue, dans les terres, en direction de Vera.'],
+      [`${R3} · Vera`, 'Entrée dans Vera et arrivée Av. de Baria, 4. Fin du trajet.'],
+    ],
+    legNote: `Répartition approximative par étape ; le total (${KM} km, ${MIN} min) est celui du trajet calculé.`,
+    maps: 'Ouvrir l’itinéraire dans Google Maps',
+    careEyebrow: 'Des soins pratiques, toute l’année',
+    careTitle: 'Soins dentaires pour les patients de Garrucha',
+    careDesc: 'Ce dont une famille de Garrucha a généralement besoin, expliqué simplement, avec un devis clair dès la première visite, qui est gratuite.',
+    care: [
+      ['periodoncia', 'Contrôles, détartrage et gencives', 'Un contrôle et un nettoyage professionnel par an évitent la plupart des mauvaises surprises. Si vos gencives saignent ou se rétractent, nous les traitons avant que l’os ne soit touché.', 'Parodontologie et détartrage'],
+      ['implantes', 'Implants Straumann', 'Pour remplacer une ou plusieurs dents : planification par imagerie 3D (CBCT) et implants Straumann garantis à vie, sous la direction du Dr Ana Padilla.', 'Implants dentaires à Vera'],
+      ['rehabilitacion', 'Réhabilitation orale', 'Couronnes, bridges et prothèses pour retrouver une morsure complète lorsque plusieurs dents manquent ou sont usées.', 'Réhabilitation orale'],
+      ['odontopediatria', 'Enfants et orthodontie', 'Premières visites, prévention et suivi de la croissance avec le Dr Ana Soler, spécialiste en orthodontie et en soins pour enfants.', 'Dentiste pour enfants près de Garrucha'],
+      ['endodoncia', 'Rage de dents', 'Quand une dent fait mal, le Dr Ángeles Parra réalise la dévitalisation au microscope pour conserver la dent chaque fois que c’est possible.', 'Endodontie au microscope'],
+      ['estetica', 'Esthétique dentaire', 'Blanchiment, facettes ou aligneurs transparents si vous souhaitez changer la couleur, la forme ou la position de vos dents.', 'Esthétique dentaire'],
+    ],
+    crewTitle: 'L’équipage qui vous soigne',
+    crewDesc: `Chaque spécialité a sa responsable, dans la même clinique. ${A(L.team, 'Découvrez l’équipe de la Clinique Dentaire Koral')}.`,
+    crew: ['Chirurgie, implants, esthétique', 'Orthodontie et enfants', 'Endodontie'],
+    dr: 'Dr',
+    bestEyebrow: 'Pas de promesses, des faits',
+    bestTitle: 'Vous cherchez la meilleure clinique dentaire près de Garrucha ?',
+    bestP: 'Nous ne prétendrons pas être la meilleure : c’est à vous d’en juger après votre visite. En revanche, voici concrètement ce que vous trouverez à dix minutes de chez vous.',
+    reasons: [
+      ['Première visite gratuite', 'Bilan complet et devis clair, sans engagement.'],
+      ['Imagerie 3D et microscope', 'Scanner CBCT pour planifier et microscope dentaire pour les traitements de canal.'],
+      ['Implants garantis à vie', 'Nous travaillons avec des implants Straumann.'],
+      ['Financement à 0 %', `Pour la plupart des traitements : voir ${A(L.pricing, 'tarifs et financement')}.`],
+      ['Cinq langues', 'Français, espagnol, anglais, allemand et néerlandais – pratique si l’on parle plusieurs langues à la maison.'],
+    ],
+    hoursEyebrow: 'Table des marées',
+    hoursTitle: 'Des horaires pensés pour ceux qui travaillent',
+    hoursDesc: 'Le mardi, le jeudi et le vendredi, nous ouvrons à 8 h : vous pouvez passer avant le travail et être vite de retour à Garrucha. Le lundi, nous sommes ouverts jusqu’à 20 h.',
+    days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
+    quickTitle: 'Rendez-vous rapide',
+    quickDesc: `WhatsApp ${WA}, téléphone ${TEL} ou le ${A('#appointment', 'formulaire de rendez-vous')} de cette page. Adresse et plan sur la page ${A(L.contact, 'contact')}.`,
+    faqTitle: 'Questions des patients de Garrucha',
+    faqs: [
+      ['Combien de temps faut-il pour aller de Garrucha à la clinique dentaire ?', `Environ ${MIN} minutes en voiture hors trafic : ${KM} km par l’${R1}, l’${R2} et l’${R3} jusqu’à l’Av. de Baria, 4, à Vera.`],
+      ['Avez-vous un cabinet à Garrucha ?', `Non. La clinique se trouve à Vera (Av. de Baria, 4, 04620 Vera) ; nous n’avons pas de cabinet à Garrucha, mais à ${MIN} minutes de route, de nombreux patients de Garrucha viennent nous voir. Si vous habitez plus au sud, consultez aussi notre page ${A(L.mojacar, 'dentiste pour Mojácar')} ; plus au nord, la page ${A(L.palomares, 'dentiste pour Palomares')}.`],
+      ['À quelle fréquence faire un contrôle et un détartrage ?', `En règle générale, une fois par an ; en cas de problèmes de gencives, cela peut être plus fréquent. Lors de la première visite, gratuite, nous vous dirons ce qui vous convient. Plus d’informations : ${A(L.periodoncia, 'parodontologie')}.`],
+      ['J’ai mal à une dent : pouvez-vous me recevoir rapidement ?', `Appelez le ${TEL} ou écrivez-nous sur WhatsApp au ${WA} : nous vous proposerons le créneau le plus proche possible.`],
+      ['Posez-vous des implants aux patients de Garrucha ? Combien coûtent-ils ?', `Oui. Nous utilisons des implants Straumann garantis à vie, avec une planification en 3D. Le prix dépend de chaque cas : vous recevez le devis lors de la première visite et pouvez financer la plupart des traitements à 0 %. Voir ${A(L.pricing, 'tarifs et financement')}.`],
+      ['Parlez-vous français ?', 'Oui. Nous recevons nos patients en français, espagnol, anglais, allemand et néerlandais.'],
+    ],
+  },
+} as const)[lang];
+
+const title = copy.metaTitle;
+const description = copy.metaDesc;
+const schema = townSchema({ town: 'garrucha', lang, title, description, serviceName: copy.serviceName });
+
+const care = copy.care.map(([key, name, desc, link]) => ({ key: key as TreatmentKey, name, desc, link, href: pathFor(key as TreatmentKey, lang) }));
+const crew = [
+  { name: 'Ana Padilla', img: '/equipo/Ana-padilla.jpg', role: copy.crew[0] },
+  { name: 'Ana Soler', img: '/equipo/ana-soler.jpg', role: copy.crew[1] },
+  { name: 'Ángeles Parra', img: '/equipo/angeles-parrar.jpg', role: copy.crew[2] },
+];
+const HOURS: [number, number][] = [[10, 20], [8, 16], [10, 18], [8, 16], [8, 16]];
+const DAY0 = 8;
+const SPAN = 12;
+const hh = (h: number) => `${h}:00`;
+const mapsUrl = 'https://www.google.com/maps/dir/?api=1&origin=Garrucha%2C+Almer%C3%ADa&destination=Cl%C3%ADnica+Dental+Koral%2C+Av.+de+Baria+4%2C+Vera&travelmode=driving';
+
+// Countdown track: one tick per minute, legs proportional to their minutes
+const TW = 1000;
+const TX0 = 40;
+const TX1 = 960;
+const pxPerMin = (TX1 - TX0) / MIN;
+let acc = 0;
+const segs = legs.map((leg) => {
+  const s = { x0: TX0 + acc * pxPerMin, x1: TX0 + (acc + leg.min) * pxPerMin, leg };
+  acc += leg.min;
+  return s;
+});
+const segColors = ['#8FE3EA', '#2CC5D2', '#F2617A', '#FF9AAA'];
+---
+
+<Layout title={title} description={description} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main" class="gar-page">
+    <!-- ============ Hero: the chart ============ -->
+    <section class="gar-hero relative isolate overflow-hidden bg-ocean-900 pb-20 pt-32 text-white md:pt-40 lg:pb-28">
+      <div class="gar-grid pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+      <svg class="pointer-events-none absolute -left-40 bottom-[-180px] -z-10 h-[620px] w-[620px] opacity-[0.07]" viewBox="0 0 600 600" fill="none" aria-hidden="true">
+        {[90, 150, 210, 270].map((r, i) => <circle cx="300" cy="300" r={r} stroke="#E6D8C6" stroke-dasharray={i % 2 ? '3 9' : undefined} />)}
+        <path d="M300 20v560M20 300h560M102 102l396 396M498 102 102 498" stroke="#E6D8C6" stroke-opacity=".6" />
+      </svg>
+
+      <div class="container-k relative">
+        <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div class="lg:col-span-6">
+            <div data-reveal><Breadcrumbs items={[{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }]} class="mb-8" /></div>
+            <p class="eyebrow eyebrow-light mb-6" data-reveal style="--d:.05s">{copy.eyebrow}</p>
+            <h1 class="text-[2.55rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]" data-reveal style="--d:.1s">
+              {copy.h1}
+              <span class="accent-italic block text-coral-soft">{copy.h1Accent}</span>
+            </h1>
+            <p class="mt-7 max-w-xl text-lg leading-relaxed text-white/75 md:text-xl [&_strong]:font-semibold [&_strong]:text-white" data-reveal style="--d:.18s" set:html={copy.lead} />
+
+            <dl class="gar-log mt-9 grid max-w-xl grid-cols-3 overflow-hidden rounded-2xl border border-[#E6D8C6]/20" data-reveal style="--d:.26s">
+              {[[KM, copy.stats[0]], [String(MIN), copy.stats[1]], [String(route.roads.length), copy.stats[2]]].map(([v, l]) => (
+                <div class="border-[#E6D8C6]/20 px-4 py-4 [&:not(:first-child)]:border-l sm:px-5">
+                  <dt class="mt-1 text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-[#E6D8C6]/65">{l}</dt>
+                  <dd class="font-display tabular text-3xl text-white sm:text-4xl">{v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div class="mt-9 flex flex-col gap-3 sm:flex-row" data-reveal style="--d:.34s">
+              <a href="#appointment" class="btn btn-coral shine-effect">
+                {t('nav.appointment')}
+                <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="tel:+34950395319" class="btn btn-ghost-light">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" /></svg>
+                {copy.call} · +34 950 39 53 19
+              </a>
+            </div>
+            <p class="mt-7 text-[12px] tabular tracking-[0.12em] text-[#E6D8C6]/55" data-reveal style="--d:.4s">{coords}</p>
+          </div>
+
+          <figure class="relative lg:col-span-6" data-reveal="scale" style="--d:.2s">
+            <div class="gar-chart-frame relative mx-auto max-w-[540px] rounded-[1.75rem] bg-[#0E2B45] p-2.5 shadow-[var(--shadow-premium)] ring-1 ring-[#E6D8C6]/15">
+              <div class="overflow-hidden rounded-[1.3rem]">
+                <GarruchaChart title={copy.chartTitle} seaLabel={copy.sea} clinicSub={copy.clinicSub} />
+              </div>
+            </div>
+            <figcaption class="mx-auto mt-4 max-w-[540px] text-center font-display text-[15px] italic text-[#E6D8C6]/70">{copy.chartCaption}</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="gar-neat absolute inset-x-0 bottom-0 h-2" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============ Logbook + port ============ -->
+    <section class="gar-paper section-y relative overflow-hidden">
+      <div class="container-k relative">
+        <div class="grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-16">
+          <div class="lg:col-span-6">
+            <div data-reveal>
+              <p class="eyebrow mb-5">{copy.logEyebrow}</p>
+              <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.2rem]">{copy.logTitle}</h2>
+            </div>
+            <div class="mt-8 space-y-5 text-[17px] leading-relaxed text-slate-700">
+              {copy.logP.map((p, i) => <p data-reveal style={`--d:${0.05 + i * 0.06}s`} set:html={p} />)}
+            </div>
+          </div>
+          <figure class="lg:col-span-6" data-reveal="right">
+            <div class="relative overflow-hidden rounded-[2rem] bg-[#FBF8F4] p-3 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/[0.07]">
+              <div class="gar-port-frame overflow-hidden rounded-[1.5rem] border border-dashed border-ocean-900/15">
+                <GarruchaPort title={copy.portTitle} stamp={copy.stamp} />
+              </div>
+            </div>
+            <figcaption class="mt-4 font-display text-[15px] italic text-slate-500">{copy.portCaption}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ The 10-minute trip ============ -->
+    <section class="gar-trip relative isolate overflow-hidden bg-ocean-900 text-white">
+      <div class="gar-neat absolute inset-x-0 top-0 h-2" aria-hidden="true"></div>
+      <div class="gar-grid pointer-events-none absolute inset-0 -z-10 opacity-70" aria-hidden="true"></div>
+      <div class="container-k section-y relative">
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-end">
+          <div class="lg:col-span-8" data-reveal>
+            <p class="eyebrow eyebrow-light mb-5">{copy.tripEyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.06] text-white sm:text-5xl lg:text-[3.4rem]">{copy.tripTitle}</h2>
+            <p class="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">{copy.tripDesc}</p>
+          </div>
+          <div class="flex items-end gap-4 lg:col-span-4 lg:justify-end" data-reveal style="--d:.1s">
+            <span class="font-display tabular text-[7.5rem] leading-[0.8] text-[#E6D8C6] md:text-[9.5rem]" data-count={MIN}>{MIN}</span>
+            <span class="pb-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-aqua-soft">{copy.countLabel}</span>
+          </div>
+        </div>
+
+        <!-- Countdown track (md+) -->
+        <div class="mt-16 hidden md:block" data-reveal>
+          <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E6D8C6]/50">{copy.countdown}</p>
+          <svg viewBox={`0 0 ${TW} 110`} class="gar-track h-auto w-full" aria-hidden="true">
+            <g font-family="Inter, system-ui, sans-serif" font-size="13" fill="#E6D8C6" fill-opacity=".6" text-anchor="middle">
+              {Array.from({ length: MIN + 1 }, (_, i) => (
+                <g>
+                  <line x1={TX0 + i * pxPerMin} x2={TX0 + i * pxPerMin} y1="30" y2={i % 5 === 0 ? 50 : 44} stroke="#E6D8C6" stroke-opacity=".45" />
+                  <text x={TX0 + i * pxPerMin} y="20" class="tabular">{MIN - i}</text>
+                </g>
+              ))}
+            </g>
+            <line x1={TX0} x2={TX1} y1="76" y2="76" stroke="#E6D8C6" stroke-opacity=".12" stroke-width="8" stroke-linecap="round" />
+            <g class="draw">
+              {segs.map((s, i) => (
+                <line x1={s.x0 + 6} x2={s.x1 - 6} y1="76" y2="76" stroke={segColors[i]} stroke-width="5" stroke-linecap="round" pathLength="1" style={`--dd:${0.2 + i * 0.35}s`} />
+              ))}
+            </g>
+            {segs.map((s, i) => (
+              <g>
+                <rect x={s.x0 - 7} y="69" width="14" height="14" transform={`rotate(45 ${s.x0} 76)`} fill="#0A1F33" stroke="#E6D8C6" stroke-width="1.5" />
+                {i > 0 && <text x={s.x0} y="104" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" letter-spacing="1" fill="#8FE3EA">WP{i}</text>}
+              </g>
+            ))}
+            <circle cx={TX1} cy="76" r="9" fill="#F2617A" stroke="#fff" stroke-width="2" />
+          </svg>
+        </div>
+
+        <ol class="gar-legs mt-10 grid gap-4 md:mt-8 md:grid-cols-4">
+          {legs.map((leg, i) => (
+            <li class="gar-leg relative rounded-[1.5rem] border border-[#E6D8C6]/15 bg-white/[0.04] p-6 backdrop-blur-sm" data-reveal style={`--d:${i * 0.08}s`}>
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-aqua-soft">{i === 0 ? copy.start : `WP${i}`}</span>
+                <span class="tabular rounded-full bg-[#E6D8C6]/10 px-3 py-1 text-[12px] font-semibold text-[#E6D8C6]">≈ {leg.min} min · {num(leg.km)} km</span>
+              </div>
+              <h3 class="mt-5 font-sans text-xl font-semibold tracking-tight text-white">{copy.legs[i][0]}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-white/65">{copy.legs[i][1]}</p>
+              <span class="mt-5 block h-1 rounded-full" style={`background:${segColors[i]};width:${Math.max(18, leg.share * 100 * 2.2)}%`} aria-hidden="true"></span>
+            </li>
+          ))}
+        </ol>
+
+        <div class="mt-10 flex flex-col gap-5 border-t border-[#E6D8C6]/15 pt-8 sm:flex-row sm:items-center sm:justify-between" data-reveal>
+          <p class="max-w-2xl text-[13px] text-white/50">{copy.legNote}</p>
+          <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn-ghost-light shrink-0">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+            {copy.maps}
+          </a>
+        </div>
+      </div>
+      <div class="gar-neat absolute inset-x-0 bottom-0 h-2" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============ Practical care ============ -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k relative">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end" data-reveal>
+          <div class="lg:col-span-7">
+            <p class="eyebrow mb-5">{copy.careEyebrow}</p>
+            <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.3rem]">{copy.careTitle}</h2>
+          </div>
+          <p class="text-lg leading-relaxed text-slate-600 lg:col-span-5 lg:pb-2">{copy.careDesc}</p>
+        </div>
+
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {care.map((c, i) => (
+            <li class="gar-card group relative flex flex-col rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]" data-reveal style={`--d:${(i % 3) * 0.07}s`}>
+              <div class="flex items-start justify-between">
+                <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-aqua-pale/70 text-accent ring-1 ring-accent/10"><TreatmentIcon name={c.key} size={34} /></span>
+                <span class="font-display text-lg italic text-coral">N° {String(i + 1).padStart(2, '0')}</span>
+              </div>
+              <h3 class="mt-6 font-sans text-xl font-semibold tracking-tight text-ocean-900">{c.name}</h3>
+              <p class="mt-2 flex-1 text-[15px] leading-relaxed text-slate-600">{c.desc}</p>
+              <a href={c.href} class="mt-5 inline-flex items-center gap-2 border-t border-dashed border-ocean-900/15 pt-4 text-sm font-semibold text-accent">
+                {c.link}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div class="mt-12 grid gap-8 rounded-[2rem] border border-ocean-900/[0.07] bg-white p-7 shadow-[var(--shadow-soft)] md:p-9 lg:grid-cols-12 lg:items-center" data-reveal>
+          <div class="lg:col-span-5">
+            <h3 class="text-3xl text-ocean-900">{copy.crewTitle}</h3>
+            <p class="mt-3 text-[15px] leading-relaxed text-slate-600" set:html={copy.crewDesc} />
+          </div>
+          <ul class="grid gap-5 sm:grid-cols-3 lg:col-span-7">
+            {crew.map((m) => (
+              <li class="flex items-center gap-4 sm:flex-col sm:items-start">
+                <Picture src={m.img} alt={`${copy.dr} ${m.name} – ${m.role}`} width={600} height={600} class="h-20 w-20 shrink-0 rounded-full object-cover ring-4 ring-sand" />
+                <div>
+                  <p class="font-semibold text-ocean-900">{copy.dr} {m.name}</p>
+                  <p class="mt-0.5 text-[13px] leading-snug text-slate-500">{m.role}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Best clinic? + tide table ============ -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k relative">
+        <div class="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-6">
+            <div data-reveal>
+              <p class="eyebrow mb-5">{copy.bestEyebrow}</p>
+              <h2 class="text-[2.2rem] leading-[1.06] sm:text-5xl lg:text-[3.2rem]">{copy.bestTitle}</h2>
+              <p class="mt-6 text-lg leading-relaxed text-slate-600">{copy.bestP}</p>
+            </div>
+            <ol class="mt-10 divide-y divide-ocean-900/[0.08] border-y border-ocean-900/[0.08]">
+              {copy.reasons.map(([name, desc], i) => (
+                <li class="flex gap-5 py-5" data-reveal style={`--d:${i * 0.05}s`}>
+                  <span class="gar-bearing mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent/25 text-[11px] font-semibold tabular text-accent">{String(i * 72).padStart(3, '0')}°</span>
+                  <div>
+                    <h3 class="font-sans text-lg font-semibold tracking-tight text-ocean-900">{name}</h3>
+                    <p class="mt-1 text-[15px] leading-relaxed text-slate-600" set:html={desc} />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div class="lg:col-span-6">
+            <div class="gar-tide relative isolate overflow-hidden rounded-[2rem] bg-ocean-900 p-7 text-white shadow-[var(--shadow-premium)] md:p-9" data-reveal="right">
+              <svg class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-28 w-full opacity-25" viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 60C75 20 150 20 225 60S375 100 450 60 525 20 600 40" fill="none" stroke="#8FE3EA" />
+                <path d="M0 76C75 40 150 40 225 76S375 108 450 76 525 44 600 60" fill="none" stroke="#8FE3EA" stroke-opacity=".5" stroke-dasharray="3 6" />
+              </svg>
+              <p class="eyebrow eyebrow-light mb-4">{copy.hoursEyebrow}</p>
+              <h3 class="text-3xl text-white md:text-[2.1rem]">{copy.hoursTitle}</h3>
+              <p class="mt-3 text-[15px] leading-relaxed text-white/70">{copy.hoursDesc}</p>
+
+              <div class="mt-8">
+                <div class="ml-[6.5rem] flex justify-between text-[10px] tabular tracking-wider text-[#E6D8C6]/50 sm:ml-[7.5rem]" aria-hidden="true">
+                  {[8, 11, 14, 17, 20].map((h) => <span>{h}h</span>)}
+                </div>
+                <ul class="mt-2 space-y-2.5">
+                  {HOURS.map(([o, c], i) => (
+                    <li class="grid grid-cols-[6rem_1fr] items-center gap-2 sm:grid-cols-[7rem_1fr]">
+                      <span class="text-[14px] font-semibold text-white">{copy.days[i]}</span>
+                      <span class="relative h-9 rounded-full bg-white/[0.06] ring-1 ring-white/5">
+                        <span class="gar-tide-bar absolute inset-y-1 flex items-center justify-center rounded-full bg-gradient-to-r from-aqua to-accent text-[12px] font-semibold tabular text-white" style={`left:${((o - DAY0) / SPAN) * 100}%;--w:${((c - o) / SPAN) * 100}%;--i:${i}`}>{hh(o)}–{hh(c)}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div class="mt-8 rounded-[1.25rem] border border-coral/30 bg-coral/10 p-5">
+                <p class="font-display text-xl text-white">{copy.quickTitle}</p>
+                <p class="gar-dark-links mt-1.5 text-[15px] leading-relaxed text-white/75" set:html={copy.quickDesc} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow="FAQ · Garrucha" title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="garrucha" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  .gar-hero .gar-grid,
+  .gar-trip .gar-grid {
+    background-image:
+      linear-gradient(rgba(230, 216, 198, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230, 216, 198, 0.06) 1px, transparent 1px),
+      linear-gradient(rgba(230, 216, 198, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230, 216, 198, 0.025) 1px, transparent 1px),
+      radial-gradient(60% 55% at 85% 20%, rgba(44, 197, 210, 0.14), transparent 70%),
+      radial-gradient(50% 50% at 5% 95%, rgba(242, 97, 122, 0.1), transparent 70%);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px, auto, auto;
+  }
+  .gar-neat {
+    background: repeating-linear-gradient(90deg, #e6d8c6 0 60px, #0a1f33 60px 120px);
+    opacity: 0.55;
+  }
+  .gar-paper {
+    background-color: #fbf8f4;
+    background-image:
+      linear-gradient(rgba(10, 31, 51, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 31, 51, 0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .gar-log { display: grid; }
+  .gar-log > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+  .gar-dark-links a { color: #8fe3ea; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(143, 227, 234, 0.4); text-underline-offset: 3px; }
+  .gar-dark-links a:hover { color: #fff; text-decoration-color: currentColor; }
+
+  .gar-chart, .gar-port { display: block; width: 100%; height: auto; }
+  .gar-chart .gar-rose-ring { transform-box: fill-box; transform-origin: center; animation: gar-spin 80s linear infinite; }
+  .gar-chart .gar-wp { opacity: 0; transition: opacity 0.8s ease var(--d, 1s); }
+  .visible .gar-chart .gar-wp { opacity: 1; }
+  .gar-chart .gar-pulse { transform-box: fill-box; transform-origin: center; animation: pulse-ring 2.6s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+
+  .gar-port .gar-boat { transform-box: fill-box; transform-origin: 50% 100%; animation: gar-bob 5.5s ease-in-out infinite; animation-delay: var(--bd, 0s); }
+  .gar-port .gar-wave { animation: gar-drift 14s linear infinite; }
+  .gar-port .gar-wave-2 { animation-duration: 20s; animation-direction: reverse; }
+  .gar-port .gar-wave-3 { animation-duration: 26s; }
+  .gar-port .gar-light { animation: twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .gar-port .gar-sunring { transform-box: fill-box; transform-origin: center; animation: gar-spin 60s linear infinite; }
+  .gar-port .gar-gulls { animation: float 9s ease-in-out infinite; }
+
+  @media (max-width: 767px) {
+    .gar-legs { position: relative; padding-left: 1.6rem; }
+    .gar-legs::before { content: ""; position: absolute; left: .42rem; top: 1.8rem; bottom: 1.8rem; border-left: 1.5px dashed rgba(230, 216, 198, 0.35); }
+    .gar-leg::before { content: ""; position: absolute; left: -1.6rem; top: 1.55rem; width: .8rem; height: .8rem; transform: rotate(45deg); background: #0a1f33; border: 1.5px solid #e6d8c6; }
+  }
+  .gar-tide-bar { width: 0; overflow: hidden; white-space: nowrap; transition: width 1.3s var(--ease-out-expo) calc(0.25s + var(--i) * 0.1s); }
+  .gar-tide.visible .gar-tide-bar { width: var(--w); }
+
+  @keyframes gar-spin { to { transform: rotate(360deg); } }
+  @keyframes gar-bob {
+    0%, 100% { transform: translateY(0) rotate(-1.2deg); }
+    50% { transform: translateY(3px) rotate(1.2deg); }
+  }
+  @keyframes gar-drift { from { transform: translateX(0); } to { transform: translateX(-320px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gar-chart .gar-vessel { display: none; }
+    .gar-chart .gar-wp { opacity: 1; transition: none; }
+    .gar-chart .gar-rose-ring, .gar-chart .gar-pulse, .gar-port .gar-boat, .gar-port .gar-wave, .gar-port .gar-light, .gar-port .gar-sunring, .gar-port .gar-gulls { animation: none; }
+    .gar-tide-bar { width: var(--w); transition: none; }
+  }
+</style>

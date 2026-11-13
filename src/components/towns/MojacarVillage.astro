@@ -1,0 +1,185 @@
+---
+/**
+ * Mojácar "pueblo blanco": cubic whitewashed houses cascading down the hill
+ * above the sea, a slow sun and an Indalo-inspired line figure that draws
+ * itself. Houses rise in when the SVG becomes visible (`data-reveal`).
+ */
+interface Props {
+  title: string;
+  seaLabel: string;
+  class?: string;
+}
+const { title, seaLabel, class: className = '' } = Astro.props;
+
+const W = 560;
+const BLUE = '#1D4E89';
+
+// Hill ridge as a polyline, used both to draw it and to sit the houses on it
+const ridge: [number, number][] = [[0, 405], [70, 352], [130, 292], [190, 206], [228, 166], [252, 156], [282, 168], [330, 214], [400, 282], [470, 322], [560, 344]];
+const surface = (x: number) => {
+  for (let i = 1; i < ridge.length; i++) {
+    const [x0, y0] = ridge[i - 1];
+    const [x1, y1] = ridge[i];
+    if (x <= x1) return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
+  }
+  return ridge[ridge.length - 1][1];
+};
+const hill = `M${ridge.map(([x, y]) => `${x} ${y}`).join('L')}V500H0Z`;
+
+// Deterministic pseudo-random so every build draws the same village
+let seed = 41;
+const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+
+type House = { x: number; y: number; w: number; h: number; win: number; door: boolean; delay: number };
+const houses: House[] = [];
+const rows = 7;
+for (let r = 0; r < rows; r++) {
+  // The village spills further towards the sea (right) than inland
+  const left = 22 + r * 30;
+  const right = 26 + r * 47;
+  const cx = 252;
+  let x = cx - left + rnd() * 12;
+  while (x < cx + right) {
+    const w = Math.round(22 + rnd() * 20);
+    const tall = rnd() > 0.8;
+    const h = Math.round(tall ? 32 + rnd() * 10 : 18 + rnd() * 12);
+    const base = Math.round(184 + r * 32 + (rnd() - 0.5) * 7);
+    const mid = x + w / 2;
+    if (mid > 8 && mid < W - 20 && base >= surface(mid) + 10 && base <= 404 && rnd() > 0.16) {
+      houses.push({
+        x: Math.round(x),
+        y: base - h,
+        w,
+        h,
+        win: w > 32 && rnd() > 0.4 ? 2 : 1,
+        door: rnd() > 0.55,
+        delay: +((rows - r) * 0.09 + rnd() * 0.12).toFixed(2),
+      });
+    }
+    x += w + 2 + rnd() * 12;
+  }
+}
+
+const D = 8; // depth of the side face
+const R = 5; // rise of the side face
+const sun = { x: 446, y: 104 };
+const rays = Array.from({ length: 16 }, (_, i) => {
+  const a = (i / 16) * Math.PI * 2;
+  const [r0, r1] = i % 2 ? [58, 68] : [56, 78];
+  return `M${(sun.x + Math.cos(a) * r0).toFixed(1)} ${(sun.y + Math.sin(a) * r0).toFixed(1)}L${(sun.x + Math.cos(a) * r1).toFixed(1)} ${(sun.y + Math.sin(a) * r1).toFixed(1)}`;
+}).join('');
+---
+
+<svg viewBox={`0 0 ${W} 500`} class:list={['moj-village', className]} role="img" aria-labelledby="moj-village-t" data-reveal="fade">
+  <title id="moj-village-t">{title}</title>
+  <defs>
+    <radialGradient id="moj-sun" cx=".4" cy=".35">
+      <stop offset="0" stop-color="#FFE3A8" />
+      <stop offset=".6" stop-color="#FFC27A" />
+      <stop offset="1" stop-color="#F59A7C" />
+    </radialGradient>
+    <radialGradient id="moj-halo">
+      <stop offset="0" stop-color="#FFD48A" stop-opacity=".55" />
+      <stop offset="1" stop-color="#FFD48A" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="moj-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9BE3EA" />
+      <stop offset="1" stop-color="#2CC5D2" />
+    </linearGradient>
+    <linearGradient id="moj-hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4CFB2" />
+      <stop offset="1" stop-color="#F4E9DA" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sun -->
+  <circle cx={sun.x} cy={sun.y} r="120" fill="url(#moj-halo)" class="moj-halo" />
+  <path d={rays} class="moj-rays" stroke="#F5A46B" stroke-width="2.4" stroke-linecap="round" />
+  <circle cx={sun.x} cy={sun.y} r="44" fill="url(#moj-sun)" />
+
+  <!-- Gulls -->
+  <path d="M330 92q7-7 14 0q7-7 14 0M372 130q5-5 10 0q5-5 10 0" fill="none" stroke="#0A1F33" stroke-opacity=".35" stroke-width="1.6" stroke-linecap="round" class="moj-gulls" />
+
+  <!-- Sierra behind, then the hill -->
+  <path d="M0 300C70 262 140 240 210 256C290 214 370 196 450 228C500 246 530 240 560 232V500H0Z" fill="#EFE2D0" />
+  <path d={hill} fill="url(#moj-hill)" />
+  <path d={`M${ridge.map(([x, y]) => `${x} ${y}`).join('L')}`} fill="none" stroke="#D2B994" stroke-opacity=".6" stroke-linejoin="round" />
+
+  <!-- Houses -->
+  <g stroke-linejoin="round">
+    {houses.map((h) => {
+      const winW = 4;
+      const gap = h.w / (h.win + 1);
+      return (
+        <g class="moj-house" style={`--hd:${h.delay}s`}>
+          <path d={`M${h.x + h.w} ${h.y}l${D} ${-R}v${h.h}l${-D} ${R}Z`} class="ms" />
+          <path d={`M${h.x} ${h.y}l${D} ${-R}h${h.w}l${-D} ${R}Z`} class="mt" />
+          <path d={`M${h.x} ${h.y}h${h.w}v${h.h}h${-h.w}Z`} class="mf" />
+          {Array.from({ length: h.win }, (_, k) => (
+            <path d={`M${Math.round(h.x + gap * (k + 1) - winW / 2)} ${h.y + 6}h${winW}v6h${-winW}Z`} class="mw" />
+          ))}
+          {h.door && <path d={`M${h.x + 5} ${h.y + h.h}v-8a3 3 0 0 1 6 0v8Z`} class="md" />}
+        </g>
+      );
+    })}
+  </g>
+
+  <!-- Indalo-inspired figure: arc held over the head, drawn with one line -->
+  <g class="draw moj-indalo" transform="translate(84 150) scale(1.45)" fill="none" stroke={BLUE} stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-30-10C-30-62 30-62 30-10" pathLength="1" style="--dd:.6s" />
+    <path d="M-30-10H30" pathLength="1" style="--dd:.9s" />
+    <path d="M0-38a7 7 0 1 0 .01 0" pathLength="1" style="--dd:1.1s" />
+    <path d="M0-24V18" pathLength="1" style="--dd:1.2s" />
+    <path d="M-17 52L0 18L17 52" pathLength="1" style="--dd:1.4s" />
+  </g>
+
+  <!-- Beach and sea -->
+  <path d="M0 428C140 414 300 436 560 410V500H0Z" fill="#F3E4CC" />
+  <path d="M0 446C150 432 330 456 560 428V500H0Z" fill="url(#moj-sea)" />
+  <g class="moj-waves" fill="none" stroke="#fff" stroke-linecap="round" stroke-opacity=".7">
+    <path d="M-40 466q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke-width="1.6" />
+    <path d="M-20 484q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke-width="1.2" stroke-opacity=".45" />
+  </g>
+
+  <!-- Labels -->
+  <g font-family="Fraunces, Georgia, serif" font-style="italic" fill="#0A1F33">
+    <path d="M252 140V112" stroke="#0A1F33" stroke-opacity=".35" stroke-dasharray="2 3" />
+    <text x="252" y="104" text-anchor="middle" font-size="15">Mojácar pueblo</text>
+    <text x="540" y="477" text-anchor="end" font-size="14" fill-opacity=".75">Mojácar Playa</text>
+    <text x="22" y="490" font-size="12" fill="#fff">{seaLabel}</text>
+  </g>
+</svg>
+
+<style is:global>
+  .moj-village { display: block; width: 100%; height: auto; overflow: visible; }
+  .moj-village .moj-house {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.9s ease var(--hd), transform 1.3s var(--ease-out-expo) var(--hd);
+  }
+  .moj-village.visible .moj-house { opacity: 1; transform: none; }
+  .moj-village .ms { fill: #dce5ee; }
+  .moj-village .mt { fill: #fffdf9; }
+  .moj-village .mf { fill: #fff; stroke: rgba(10, 31, 51, 0.1); }
+  .moj-village .mw { fill: rgba(29, 78, 137, 0.85); }
+  .moj-village .md { fill: rgba(29, 78, 137, 0.7); }
+  .moj-village .moj-rays {
+    transform-box: view-box;
+    transform-origin: 446px 104px;
+    animation: moj-spin 90s linear infinite;
+  }
+  .moj-village .moj-halo {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: moj-breathe 6s ease-in-out infinite;
+  }
+  .moj-village .moj-waves { animation: moj-drift 7s linear infinite; }
+  .moj-village .moj-gulls { animation: float 9s ease-in-out infinite; }
+  @keyframes moj-spin { to { transform: rotate(360deg); } }
+  @keyframes moj-breathe { 50% { transform: scale(1.08); opacity: 0.8; } }
+  @keyframes moj-drift { to { transform: translateX(-40px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .moj-village .moj-house { opacity: 1; transform: none; }
+    .moj-village .moj-rays, .moj-village .moj-halo, .moj-village .moj-waves, .moj-village .moj-gulls { animation: none; }
+  }
+</style>

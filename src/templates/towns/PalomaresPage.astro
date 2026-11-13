@@ -1,0 +1,908 @@
+---
+/**
+ * Palomares — "Tu jornada".
+ * A light, dawn-toned page built around the working day: a horizon of sea,
+ * Sierra Almagrera and furrowed fields; the clinic's week drawn as a day
+ * timeline (8:00 → 20:00) with "when suits you" filters; a sample morning;
+ * practical care rows; and the real route. The clinic is in Vera: the page
+ * never claims a practice in Palomares.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import FooterInfo from '../../components/FooterInfo.astro';
+import Contact from '../../components/Contact.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import FaqSection from '../../components/ui/FaqSection.astro';
+import TownNearby from '../../components/ui/TownNearby.astro';
+import TownRouteMap from '../../components/svg/TownRouteMap.astro';
+import TreatmentIcon from '../../components/svg/TreatmentIcon.astro';
+import { useTranslations } from '../../i18n/utils';
+import { pathFor, type Lang, type RouteKey } from '../../i18n/routes';
+import { TOWNS, fill } from '../../data/towns';
+import { townSchema } from '../../data/townSchema';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const town = TOWNS.palomares;
+const route = town.routes[0];
+const min = route.min;
+const km = lang === 'en' ? String(route.km) : String(route.km).replace('.', ',');
+// Non-breaking hyphens keep road numbers (A-352) on one line.
+const roads = route.roads.map((r) => r.replace(/-/g, '\u2011'));
+const join = (list: string[], and: string) => (list.length > 1 ? `${list.slice(0, -1).join(', ')} ${and} ${list[list.length - 1]}` : list[0]);
+/** Contextual in-body link (trusted HTML, rendered with set:html). */
+const to = (key: RouteKey, text: string) => `<a href="${pathFor(key, lang)}" class="prose-link">${text}</a>`;
+
+/** Opening hours, Monday → Friday, [open, close] in hours. */
+const HOURS: [number, number][] = [[10, 20], [8, 16], [10, 18], [8, 16], [8, 16]];
+const START = 8;
+const END = 20;
+const pct = (h: number) => +(((h - START) / (END - START)) * 100).toFixed(3);
+const fmtH = (h: number) => (lang === 'fr' ? `${h}h00` : `${h}:00`);
+// Leave Palomares so you arrive at 8:00.
+const depMin = START * 60 - min;
+const dep = lang === 'fr' ? `${Math.floor(depMin / 60)}h${String(depMin % 60).padStart(2, '0')}` : `${Math.floor(depMin / 60)}:${String(depMin % 60).padStart(2, '0')}`;
+const eight = fmtH(8);
+
+const copy = ({
+  es: {
+    metaTitle: `Dentista cerca de Palomares, a ${min} min | Clínica Dental Koral`,
+    metaDesc: `Dentista cerca de Palomares, a ${min} min en Vera: abrimos a las 8:00 y los lunes hasta las 20:00. Periodoncia, implantes Straumann y primera visita gratis.`,
+    hero: {
+      eyebrow: 'Clínica dental cerca de Palomares',
+      h1: 'Dentista cerca de Palomares,',
+      accent: 'a la medida de tu jornada',
+      lead: `Si buscas dentista en Palomares, Clínica Dental Koral está en Vera, a ${km} km: unos ${min} minutos en coche. Abrimos a las 8:00 los martes, jueves y viernes y hasta las 20:00 los lunes, para que la cita encaje antes o después de trabajar.`,
+      note: 'Estamos en Vera (Av. de Baria, 4), no en Palomares.',
+      svgTitle: 'Amanecer en Palomares: el Mediterráneo, la Sierra Almagrera y los surcos de los campos',
+      sierra: 'Sierra Almagrera',
+    },
+    week: {
+      eyebrow: 'Tu jornada, nuestro horario',
+      h2: 'Tu dentista cerca de Palomares, antes o después del trabajo',
+      lead: 'En Palomares, entre la sierra y el mar y con una larga tradición agrícola, el día empieza pronto y no se detiene por cualquier cosa. Por eso te enseñamos el horario como lo que es: un mapa de huecos para tu cita.',
+      caption: 'Horario semanal de Clínica Dental Koral, de 8:00 a 20:00',
+      filter: '¿Cuándo te viene mejor?',
+      windows: [['Antes de trabajar', 8, 10], ['A mediodía', 13, 15], ['Por la tarde', 16, 20]],
+      fit: 'Encaja: {days}',
+      none: 'Ningún día en esa franja',
+      today: 'Hoy',
+      closed: 'Cerrado',
+      days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+      short: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+      weekend: 'Sáb · Dom',
+      notes: [
+        ['Antes de trabajar', 'Martes, jueves y viernes abrimos a las 8:00: puedes pasar por la consulta antes de empezar tu jornada.'],
+        ['Al acabar el día', 'Los lunes atendemos hasta las 20:00, pensando en quien sale tarde del trabajo o del campo.'],
+        ['Miércoles sin madrugar', 'Los miércoles, de 10:00 a 18:00: sin prisas por la mañana y con margen por la tarde.'],
+      ],
+      book: 'Pide tu hueco por WhatsApp o por teléfono:',
+    },
+    day: {
+      eyebrow: 'Un día cualquiera',
+      h2: 'Una cita con el dentista que cabe en tu mañana',
+      stops: [
+        [dep, 'Sales de Palomares', `Por ${join(roads.map((r) => `la ${r}`), 'y')}: ${km} km.`],
+        [eight, 'Llegas a la consulta', 'Martes, jueves y viernes abrimos a esa hora, así que puedes pedir la primera cita de la mañana.'],
+        ['·', 'Lo que toque hoy', 'Revisión, higiene o la siguiente fase de tu tratamiento. Al reservar te decimos cuánto durará, para que organices el resto del día.'],
+        [`+${min} min`, 'De vuelta a lo tuyo', `${min} minutos de regreso a Palomares y el día sigue.`],
+      ],
+      alt: '¿Lo tuyo son las tardes? Los lunes puedes venir al salir del trabajo: atendemos hasta las 20:00.',
+    },
+    care: {
+      eyebrow: 'Cuidados prácticos',
+      h2: 'Clínica dental cerca de Palomares: encías, implantes y soluciones sin rodeos',
+      lead: 'Cuando el tiempo es justo, se agradece ir al grano: un diagnóstico claro el primer día, un plan por escrito y las visitas necesarias, ni una más.',
+      items: [
+        { tag: 'Encías', title: 'Periodoncia e higiene profesional', text: `Si te sangran las encías al cepillarte o notas los dientes más largos, no lo dejes para más adelante. Con ${to('periodoncia', 'periodoncia e higiene profesional para pacientes de Palomares')} cuidamos la encía y el hueso, la base que sujeta todo lo demás.` },
+        { tag: 'Implantes', title: 'Implantes Straumann con garantía de por vida', text: `La Dra. Ana Padilla planifica cada caso con diagnóstico 3D (CBCT) antes de empezar. Colocamos ${to('implantes', 'implantes dentales Straumann')}, con garantía de por vida, para que la solución dure tanto como tu jornada lo exige.` },
+        { tag: 'Rehabilitación', title: 'Volver a masticar con comodidad', text: `Cuando faltan varias piezas o las reconstrucciones antiguas fallan, la ${to('rehabilitacion', 'rehabilitación oral')} devuelve función y aspecto con un plan por fases que puedes encajar en tu calendario.` },
+        { tag: 'Primera visita', title: 'Gratis y con presupuesto claro', text: `Revisión completa, diagnóstico y presupuesto sin compromiso. La mayoría de tratamientos admiten ${to('pricing', 'financiación al 0 %')}, para que tu boca no tenga que esperar a otro mes.` },
+      ],
+      team: `Detrás de cada tratamiento hay especialistas: la Dra. Ana Padilla (cirugía e implantes), la Dra. Ana Soler (ortodoncia y odontopediatría) y la Dra. Ángeles Parra (endodoncia). Conócelas en la página del ${to('team', 'equipo de la clínica')}.`,
+    },
+    route: {
+      eyebrow: 'Entre la sierra y el mar',
+      paras: [
+        'Palomares es una pedanía costera de Cuevas del Almanzora, tendida entre la Sierra Almagrera y el Mediterráneo, con Villaricos a un paso y una larga tradición agrícola. Desde aquí, Vera queda a un trayecto corto.',
+        `Desde el centro de Palomares tomas la ${roads[0]}, enlazas con la ${roads[1]} y entras en Vera por la ${roads[2]}: ${km} km y unos ${min} minutos sin tráfico, según datos de OpenStreetMap.`,
+        `Palomares forma parte del municipio de Cuevas del Almanzora: si vives en el núcleo urbano, tienes tu página en ${to('cuevas', 'dentista para Cuevas del Almanzora')}. Si te mueves más por la costa, mira también la de ${to('garrucha', 'pacientes de Garrucha')} o la de ${to('vera', 'dentista en Vera')}.`,
+      ],
+      clinic: 'Koral · Vera',
+      maps: 'Abrir la ruta en Google Maps',
+      all: `Ver ${to('areas', 'todas las zonas que atendemos en el Levante Almeriense')}.`,
+    },
+    faqTitle: 'Preguntas de pacientes de Palomares',
+    faqs: [
+      ['¿Hay dentista en Palomares o tengo que ir a Vera?', `Clínica Dental Koral está en Vera (Av. de Baria, 4), no en Palomares. Desde Palomares son ${km} km por ${join(roads.map((r) => `la ${r}`), 'y')}, unos ${min} minutos en coche, y tenemos horario de primera hora y de tarde para que no pierdas el día.`],
+      ['¿Cuál es la mejor clínica dental cerca de Palomares si trabajo todo el día?', 'La que se adapta a tu horario y te explica las cosas con claridad. Te damos razones concretas para valorarnos: abrimos a las 8:00 tres días por semana y hasta las 20:00 los lunes, la primera visita es gratuita, hay especialistas en cada área y hacemos el diagnóstico 3D (CBCT) en la propia clínica.'],
+      ['¿Puedo pedir cita a primera hora o por la tarde?', `Sí. Martes, jueves y viernes abrimos de 8:00 a 16:00; los lunes, de 10:00 a 20:00; y los miércoles, de 10:00 a 18:00. Pide cita en el +34 950 39 53 19, por WhatsApp en el +34 634 68 36 39 o desde ${to('contact', 'contacto')}.`],
+      ['Me sangran las encías al cepillarme: ¿tengo que ir al dentista?', `Sí, conviene revisarlo. El sangrado suele ser la primera señal de que las encías están inflamadas, y tratarlo a tiempo es más sencillo. En la primera visita gratuita las valoramos y, si hace falta, te proponemos un tratamiento de ${to('periodoncia', 'periodoncia')}.`],
+      ['¿Qué implantes ponéis y tienen garantía?', `Trabajamos con implantes Straumann, con garantía de por vida, y planificamos cada caso con diagnóstico 3D (CBCT). El presupuesto te lo damos por escrito en la primera visita y puedes financiarlo al 0 %. Más información en ${to('implantes', 'implantes dentales')}.`],
+      ['¿Atendéis en inglés u otros idiomas?', 'Sí. Atendemos en español, inglés, alemán, neerlandés y francés, para que puedas explicar lo que te pasa y entender tu tratamiento en tu idioma.'],
+    ],
+  },
+  en: {
+    metaTitle: `Dentist near Palomares, ${min} min away | Clínica Dental Koral`,
+    metaDesc: `Dentist near Palomares, ${min} minutes away in Vera: open from 8 am and until 8 pm on Mondays. Gum care, Straumann implants and a free first visit.`,
+    hero: {
+      eyebrow: 'Dental clinic near Palomares',
+      h1: 'A dentist near Palomares,',
+      accent: 'built around your working day',
+      lead: `Looking for a dentist in Palomares? Clínica Dental Koral is in Vera, ${km} km away — about ${min} minutes by car. We open at 8:00 on Tuesdays, Thursdays and Fridays and stay open until 20:00 on Mondays, so your appointment fits before or after work.`,
+      note: 'We are in Vera (Av. de Baria, 4), not in Palomares.',
+      svgTitle: 'Dawn over Palomares: the Mediterranean, the Sierra Almagrera and the furrowed fields',
+      sierra: 'Sierra Almagrera',
+    },
+    week: {
+      eyebrow: 'Your day, our hours',
+      h2: 'Your dentist near Palomares, before or after work',
+      lead: 'In Palomares, between the sierra and the sea and with a long farming tradition, the day starts early and does not stop for just anything. So here are our opening hours for what they really are: a map of slots for your appointment.',
+      caption: 'Clínica Dental Koral weekly opening hours, 8:00 to 20:00',
+      filter: 'When suits you best?',
+      windows: [['Before work', 8, 10], ['Around lunchtime', 13, 15], ['Late afternoon', 16, 20]],
+      fit: 'Fits on: {days}',
+      none: 'No day in that slot',
+      today: 'Today',
+      closed: 'Closed',
+      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      short: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      weekend: 'Sat · Sun',
+      notes: [
+        ['Before work', 'On Tuesdays, Thursdays and Fridays we open at 8:00, so you can come in before your working day begins.'],
+        ['After the day is done', 'On Mondays we see patients until 20:00, for anyone who finishes late at work or in the fields.'],
+        ['A gentler Wednesday', 'Wednesdays run from 10:00 to 18:00: no early start, and time to spare in the afternoon.'],
+      ],
+      book: 'Ask for a slot by WhatsApp or phone:',
+    },
+    day: {
+      eyebrow: 'An ordinary day',
+      h2: 'A dental appointment that fits into your morning',
+      stops: [
+        [dep, 'Leave Palomares', `Along the ${join(roads, 'and')}: ${km} km.`],
+        [eight, 'Arrive at the clinic', 'On Tuesdays, Thursdays and Fridays we open at that time, so you can ask for the first appointment of the morning.'],
+        ['·', "Whatever today's visit needs", 'A check-up, a hygiene session or the next stage of your treatment. When you book, we tell you how long it will take so you can plan the rest of the day.'],
+        [`+${min} min`, 'Back to your day', `${min} minutes back to Palomares and the day carries on.`],
+      ],
+      alt: 'More of an afternoon person? On Mondays you can come straight from work: we are open until 20:00.',
+    },
+    care: {
+      eyebrow: 'Practical care',
+      h2: 'A dental clinic near Palomares: gums, implants and straightforward solutions',
+      lead: 'When time is tight, it helps to get to the point: a clear diagnosis on day one, a written plan, and only the visits you actually need.',
+      items: [
+        { tag: 'Gums', title: 'Periodontics and professional hygiene', text: `If your gums bleed when you brush or your teeth look longer than they used to, it should not wait. With ${to('periodoncia', 'gum treatment and professional hygiene for patients from Palomares')} we look after the gums and bone that hold everything else in place.` },
+        { tag: 'Implants', title: 'Straumann implants with a lifetime warranty', text: `Dr Ana Padilla plans every case with 3D imaging (CBCT) before starting. We place ${to('implantes', 'Straumann dental implants')} with a lifetime warranty, so the result lasts as long as your working life demands.` },
+        { tag: 'Restoration', title: 'Chewing comfortably again', text: `When several teeth are missing or old restorations are failing, ${to('rehabilitacion', 'full-mouth rehabilitation')} restores function and appearance through a phased plan you can fit around your calendar.` },
+        { tag: 'First visit', title: 'Free, with a clear quote', text: `A full check-up, diagnosis and a no-obligation quote. Most treatments can be paid with ${to('pricing', '0% financing')}, so your teeth don't have to wait for another month.` },
+      ],
+      team: `Behind every treatment there is a specialist: Dr Ana Padilla (surgery and implants), Dr Ana Soler (orthodontics and children's dentistry) and Dr Ángeles Parra (endodontics). Meet them on the ${to('team', 'clinic team page')}.`,
+    },
+    route: {
+      eyebrow: 'Between the sierra and the sea',
+      paras: [
+        'Palomares is a coastal village within the municipality of Cuevas del Almanzora, stretched between the Sierra Almagrera and the Mediterranean, close to Villaricos and with a long farming tradition. From here, Vera is only a short drive away.',
+        `From the centre of Palomares, take the ${roads[0]}, join the ${roads[1]} and enter Vera on the ${roads[2]}: ${km} km and about ${min} minutes without traffic, according to OpenStreetMap data.`,
+        `Palomares belongs to the municipality of Cuevas del Almanzora: if you live in the town itself, see ${to('cuevas', 'dentist for Cuevas del Almanzora')}. If you spend more time along the coast, there are also pages for ${to('garrucha', 'patients from Garrucha')} and for a ${to('vera', 'dentist in Vera')}.`,
+      ],
+      clinic: 'Koral · Vera',
+      maps: 'Open the route in Google Maps',
+      all: `See ${to('areas', 'every area we serve in the Levante Almeriense')}.`,
+    },
+    faqTitle: 'Questions from patients in Palomares',
+    faqs: [
+      ['Is there a dentist in Palomares, or do I have to go to Vera?', `Clínica Dental Koral is in Vera (Av. de Baria, 4), not in Palomares. From Palomares it is ${km} km along the ${join(roads, 'and')}, about ${min} minutes by car, and we have early-morning and evening hours so you don't lose the day.`],
+      ['What is the best dental clinic near Palomares if I work all day?', 'The one that fits your schedule and explains things clearly. Here are concrete reasons to consider us: we open at 8:00 three days a week and until 20:00 on Mondays, the first visit is free, there is a specialist for each area and 3D imaging (CBCT) is done at the clinic itself.'],
+      ['Can I book an early-morning or evening appointment?', `Yes. Tuesdays, Thursdays and Fridays 8:00–16:00; Mondays 10:00–20:00; Wednesdays 10:00–18:00. Book on +34 950 39 53 19, by WhatsApp on +34 634 68 36 39 or through the ${to('contact', 'contact page')}.`],
+      ['My gums bleed when I brush: should I see a dentist?', `Yes, it is worth checking. Bleeding is often the first sign that the gums are inflamed, and treating it early is simpler. At the free first visit we assess your gums and, if needed, suggest ${to('periodoncia', 'periodontal treatment')}.`],
+      ['Which implants do you use, and do they come with a warranty?', `We use Straumann implants with a lifetime warranty and plan every case with 3D imaging (CBCT). You get a written quote at the first visit and can spread the cost with 0% financing. More on ${to('implantes', 'dental implants')}.`],
+      ['Do you see patients in English?', 'Yes. We see patients in Spanish, English, German, Dutch and French, so you can explain your symptoms and understand your treatment in your own language.'],
+    ],
+  },
+  de: {
+    metaTitle: `Zahnarzt Palomares, ${min} Min. entfernt | Clínica Dental Koral`,
+    metaDesc: `Zahnarzt nahe Palomares, ${min} Min. entfernt in Vera: ab 8 Uhr geöffnet, montags bis 20 Uhr. Parodontologie, Straumann-Implantate, Erstbesuch kostenlos.`,
+    hero: {
+      eyebrow: 'Zahnarztpraxis nahe Palomares',
+      h1: 'Ihr Zahnarzt nahe Palomares,',
+      accent: 'passend zu Ihrem Arbeitstag',
+      lead: `Sie suchen einen Zahnarzt in Palomares? Die Clínica Dental Koral liegt in Vera, ${km} km entfernt – rund ${min} Minuten mit dem Auto. Dienstags, donnerstags und freitags öffnen wir um 8:00 Uhr, montags sind wir bis 20:00 Uhr da: So passt der Termin vor oder nach der Arbeit.`,
+      note: 'Wir sind in Vera (Av. de Baria, 4), nicht in Palomares.',
+      svgTitle: 'Morgendämmerung über Palomares: das Mittelmeer, die Sierra Almagrera und die gefurchten Felder',
+      sierra: 'Sierra Almagrera',
+    },
+    week: {
+      eyebrow: 'Ihr Tag, unsere Zeiten',
+      h2: 'Ihr Zahnarzt nahe Palomares – vor oder nach der Arbeit',
+      lead: 'In Palomares, zwischen Sierra und Meer und mit langer landwirtschaftlicher Tradition, beginnt der Tag früh und hält nicht für jede Kleinigkeit an. Deshalb zeigen wir Ihnen unsere Öffnungszeiten als das, was sie sind: eine Karte freier Zeitfenster für Ihren Termin.',
+      caption: 'Wöchentliche Öffnungszeiten der Clínica Dental Koral, 8:00 bis 20:00 Uhr',
+      filter: 'Wann passt es Ihnen am besten?',
+      windows: [['Vor der Arbeit', 8, 10], ['Über Mittag', 13, 15], ['Am späten Nachmittag', 16, 20]],
+      fit: 'Passt am: {days}',
+      none: 'Kein Tag in diesem Zeitfenster',
+      today: 'Heute',
+      closed: 'Geschlossen',
+      days: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'],
+      short: ['Mo', 'Di', 'Mi', 'Do', 'Fr'],
+      weekend: 'Sa · So',
+      notes: [
+        ['Vor der Arbeit', 'Dienstags, donnerstags und freitags öffnen wir um 8:00 Uhr – Sie können vor Arbeitsbeginn in die Praxis kommen.'],
+        ['Nach Feierabend', 'Montags behandeln wir bis 20:00 Uhr, für alle, die spät aus dem Büro oder vom Feld kommen.'],
+        ['Mittwoch ohne Frühstart', 'Mittwochs von 10:00 bis 18:00 Uhr: kein frühes Aufstehen und Luft am Nachmittag.'],
+      ],
+      book: 'Ihr Zeitfenster per WhatsApp oder Telefon:',
+    },
+    day: {
+      eyebrow: 'Ein ganz normaler Tag',
+      h2: 'Ein Zahnarzttermin, der in Ihren Vormittag passt',
+      stops: [
+        [dep, 'Abfahrt in Palomares', `Über die ${join(roads, 'und')}: ${km} km.`],
+        [eight, 'Ankunft in der Praxis', 'Dienstags, donnerstags und freitags öffnen wir zu dieser Zeit – Sie können also den ersten Termin des Morgens anfragen.'],
+        ['·', 'Was heute ansteht', 'Kontrolle, Prophylaxe oder der nächste Schritt Ihrer Behandlung. Bei der Buchung sagen wir Ihnen, wie lange es dauert, damit Sie den Rest des Tages planen können.'],
+        [`+${min} Min.`, 'Zurück in den Alltag', `${min} Minuten zurück nach Palomares, und der Tag geht weiter.`],
+      ],
+      alt: 'Eher ein Nachmittagsmensch? Montags können Sie direkt nach der Arbeit kommen: Wir sind bis 20:00 Uhr da.',
+    },
+    care: {
+      eyebrow: 'Praktische Versorgung',
+      h2: 'Zahnarztpraxis nahe Palomares: Zahnfleisch, Implantate und klare Lösungen',
+      lead: 'Wenn die Zeit knapp ist, zählt Klarheit: eine eindeutige Diagnose am ersten Tag, ein schriftlicher Plan und nur so viele Termine wie nötig.',
+      items: [
+        { tag: 'Zahnfleisch', title: 'Parodontologie und professionelle Zahnreinigung', text: `Blutet Ihr Zahnfleisch beim Putzen oder wirken die Zähne länger als früher, sollten Sie nicht warten. Mit ${to('periodoncia', 'Parodontologie und Prophylaxe für Patienten aus Palomares')} kümmern wir uns um Zahnfleisch und Knochen – das Fundament für alles andere.` },
+        { tag: 'Implantate', title: 'Straumann-Implantate mit lebenslanger Garantie', text: `Dr. Ana Padilla plant jeden Fall vorab mit 3D-Diagnostik (DVT). Wir setzen ${to('implantes', 'Straumann-Zahnimplantate')} mit lebenslanger Garantie – damit die Lösung so lange hält, wie Ihr Arbeitsalltag es verlangt.` },
+        { tag: 'Rehabilitation', title: 'Wieder bequem kauen', text: `Fehlen mehrere Zähne oder versagen alte Versorgungen, stellt die ${to('rehabilitacion', 'orale Rehabilitation')} Funktion und Ästhetik wieder her – mit einem Stufenplan, der sich in Ihren Kalender einfügt.` },
+        { tag: 'Erstbesuch', title: 'Kostenlos und mit klarem Kostenvoranschlag', text: `Vollständige Untersuchung, Diagnose und unverbindlicher Kostenvoranschlag. Die meisten Behandlungen sind mit ${to('pricing', '0 %-Finanzierung')} möglich, damit Ihre Zähne nicht auf den nächsten Monat warten müssen.` },
+      ],
+      team: `Hinter jeder Behandlung steht eine Spezialistin: Dr. Ana Padilla (Chirurgie und Implantate), Dr. Ana Soler (Kieferorthopädie und Kinderzahnheilkunde) und Dr. Ángeles Parra (Endodontie). Lernen Sie sie auf der Seite ${to('team', 'Praxisteam')} kennen.`,
+    },
+    route: {
+      eyebrow: 'Zwischen Sierra und Meer',
+      paras: [
+        'Palomares ist ein Küstenort der Gemeinde Cuevas del Almanzora, zwischen der Sierra Almagrera und dem Mittelmeer gelegen, nahe Villaricos und mit langer landwirtschaftlicher Tradition. Von hier aus ist Vera nur eine kurze Fahrt entfernt.',
+        `Vom Zentrum von Palomares nehmen Sie die ${roads[0]}, wechseln auf die ${roads[1]} und fahren über die ${roads[2]} nach Vera: ${km} km und etwa ${min} Minuten ohne Verkehr, laut OpenStreetMap-Daten.`,
+        `Palomares gehört zur Gemeinde Cuevas del Almanzora: Wohnen Sie im Hauptort, finden Sie Ihre Seite unter ${to('cuevas', 'Zahnarzt für Cuevas del Almanzora')}. Sind Sie eher an der Küste unterwegs, gibt es auch Seiten für ${to('garrucha', 'Patienten aus Garrucha')} und ${to('vera', 'Zahnarzt in Vera')}.`,
+      ],
+      clinic: 'Koral · Vera',
+      maps: 'Route in Google Maps öffnen',
+      all: `Alle ${to('areas', 'Orte, die wir im Levante Almeriense betreuen')}.`,
+    },
+    faqTitle: 'Fragen von Patienten aus Palomares',
+    faqs: [
+      ['Gibt es einen Zahnarzt in Palomares oder muss ich nach Vera?', `Die Clínica Dental Koral befindet sich in Vera (Av. de Baria, 4), nicht in Palomares. Von Palomares sind es ${km} km über die ${join(roads, 'und')}, etwa ${min} Minuten mit dem Auto – und mit Terminen am frühen Morgen und am Abend verlieren Sie keinen ganzen Tag.`],
+      ['Welche Zahnarztpraxis nahe Palomares ist die beste, wenn ich den ganzen Tag arbeite?', 'Die, die zu Ihrem Zeitplan passt und alles verständlich erklärt. Konkrete Gründe, uns in Betracht zu ziehen: Wir öffnen an drei Tagen pro Woche um 8:00 Uhr und montags bis 20:00 Uhr, der Erstbesuch ist kostenlos, für jeden Bereich gibt es eine Spezialistin und die 3D-Diagnostik (DVT) erfolgt direkt in der Praxis.'],
+      ['Kann ich einen Termin früh morgens oder am Abend bekommen?', `Ja. Dienstag, Donnerstag und Freitag 8:00–16:00 Uhr; Montag 10:00–20:00 Uhr; Mittwoch 10:00–18:00 Uhr. Termine unter +34 950 39 53 19, per WhatsApp unter +34 634 68 36 39 oder über die ${to('contact', 'Kontaktseite')}.`],
+      ['Mein Zahnfleisch blutet beim Putzen – sollte ich zum Zahnarzt?', `Ja, das sollte untersucht werden. Bluten ist oft das erste Zeichen einer Zahnfleischentzündung, und früh behandelt ist es einfacher. Beim kostenlosen Erstbesuch beurteilen wir Ihr Zahnfleisch und schlagen bei Bedarf eine ${to('periodoncia', 'parodontologische Behandlung')} vor.`],
+      ['Welche Implantate verwenden Sie und gibt es eine Garantie?', `Wir arbeiten mit Straumann-Implantaten mit lebenslanger Garantie und planen jeden Fall mit 3D-Diagnostik (DVT). Den Kostenvoranschlag erhalten Sie schriftlich beim Erstbesuch, finanzierbar zu 0 %. Mehr unter ${to('implantes', 'Zahnimplantate')}.`],
+      ['Behandeln Sie auf Deutsch?', 'Ja. Wir behandeln auf Spanisch, Englisch, Deutsch, Niederländisch und Französisch, damit Sie Ihre Beschwerden schildern und Ihre Behandlung in Ihrer Sprache verstehen können.'],
+    ],
+  },
+  nl: {
+    metaTitle: `Tandarts bij Palomares, op ${min} minuten | Clínica Dental Koral`,
+    metaDesc: `Tandarts bij Palomares, op ${min} minuten in Vera: open vanaf 8 uur en op maandag tot 20 uur. Tandvleesbehandeling, Straumann-implantaten, gratis eerste bezoek.`,
+    hero: {
+      eyebrow: 'Tandartspraktijk bij Palomares',
+      h1: 'Uw tandarts bij Palomares,',
+      accent: 'afgestemd op uw werkdag',
+      lead: `Zoekt u een tandarts in Palomares? Clínica Dental Koral zit in Vera, op ${km} km – zo'n ${min} minuten met de auto. Op dinsdag, donderdag en vrijdag gaan we om 8:00 open en op maandag blijven we tot 20:00, zodat uw afspraak past voor of na het werk.`,
+      note: 'We zitten in Vera (Av. de Baria, 4), niet in Palomares.',
+      svgTitle: 'Dageraad boven Palomares: de Middellandse Zee, de Sierra Almagrera en de omgeploegde velden',
+      sierra: 'Sierra Almagrera',
+    },
+    week: {
+      eyebrow: 'Uw dag, onze tijden',
+      h2: 'Uw tandarts bij Palomares, voor of na het werk',
+      lead: 'In Palomares, tussen de sierra en de zee en met een lange landbouwtraditie, begint de dag vroeg en stopt hij niet zomaar. Daarom tonen we onze openingstijden als wat ze zijn: een kaart met vrije momenten voor uw afspraak.',
+      caption: 'Weekrooster van Clínica Dental Koral, van 8:00 tot 20:00',
+      filter: 'Wanneer komt het u het best uit?',
+      windows: [['Voor het werk', 8, 10], ['Rond lunchtijd', 13, 15], ['Eind van de middag', 16, 20]],
+      fit: 'Past op: {days}',
+      none: 'Geen dag in dat tijdvak',
+      today: 'Vandaag',
+      closed: 'Gesloten',
+      days: ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'],
+      short: ['Ma', 'Di', 'Wo', 'Do', 'Vr'],
+      weekend: 'Za · Zo',
+      notes: [
+        ['Voor het werk', 'Op dinsdag, donderdag en vrijdag gaan we om 8:00 open: u kunt langskomen voordat uw werkdag begint.'],
+        ['Na de werkdag', 'Op maandag behandelen we tot 20:00, voor wie laat klaar is op het werk of op het land.'],
+        ['Woensdag zonder vroege start', 'Op woensdag van 10:00 tot 18:00: niet vroeg op en ruimte in de middag.'],
+      ],
+      book: 'Vraag uw tijdslot aan via WhatsApp of telefoon:',
+    },
+    day: {
+      eyebrow: 'Een gewone dag',
+      h2: 'Een tandartsafspraak die in uw ochtend past',
+      stops: [
+        [dep, 'Vertrek uit Palomares', `Via de ${join(roads, 'en')}: ${km} km.`],
+        [eight, 'Aankomst in de praktijk', 'Op dinsdag, donderdag en vrijdag gaan we op dat uur open, dus u kunt de eerste afspraak van de ochtend vragen.'],
+        ['·', 'Wat er vandaag nodig is', 'Een controle, een mondhygiënebehandeling of de volgende stap van uw behandeling. Bij het boeken zeggen we hoe lang het duurt, zodat u de rest van de dag kunt plannen.'],
+        [`+${min} min`, 'Terug naar uw dag', `${min} minuten terug naar Palomares en de dag gaat verder.`],
+      ],
+      alt: 'Bent u meer een middagmens? Op maandag kunt u direct na het werk komen: we zijn open tot 20:00.',
+    },
+    care: {
+      eyebrow: 'Praktische zorg',
+      h2: 'Tandartspraktijk bij Palomares: tandvlees, implantaten en heldere oplossingen',
+      lead: 'Als de tijd krap is, helpt duidelijkheid: een heldere diagnose op de eerste dag, een schriftelijk plan en alleen de bezoeken die echt nodig zijn.',
+      items: [
+        { tag: 'Tandvlees', title: 'Parodontologie en professionele reiniging', text: `Bloedt uw tandvlees bij het poetsen of lijken uw tanden langer dan vroeger? Wacht er dan niet mee. Met ${to('periodoncia', 'parodontologie en mondhygiëne voor patiënten uit Palomares')} zorgen we voor tandvlees en bot, het fundament van al het andere.` },
+        { tag: 'Implantaten', title: 'Straumann-implantaten met levenslange garantie', text: `Dr. Ana Padilla plant elke behandeling vooraf met 3D-diagnostiek (CBCT). We plaatsen ${to('implantes', 'Straumann-tandimplantaten')} met levenslange garantie, zodat het resultaat net zo lang meegaat als uw werkende leven vraagt.` },
+        { tag: 'Rehabilitatie', title: 'Weer comfortabel kauwen', text: `Ontbreken er meerdere tanden of falen oude restauraties, dan herstelt ${to('rehabilitacion', 'orale rehabilitatie')} functie en uiterlijk met een plan in fasen dat u in uw agenda kunt inpassen.` },
+        { tag: 'Eerste bezoek', title: 'Gratis, met een duidelijke offerte', text: `Volledig onderzoek, diagnose en een vrijblijvende offerte. De meeste behandelingen kunnen met ${to('pricing', '0%-financiering')}, zodat uw gebit niet hoeft te wachten tot volgende maand.` },
+      ],
+      team: `Achter elke behandeling staat een specialist: Dr. Ana Padilla (chirurgie en implantaten), Dr. Ana Soler (orthodontie en kindertandheelkunde) en Dr. Ángeles Parra (endodontie). Maak kennis op de pagina ${to('team', 'team van de praktijk')}.`,
+    },
+    route: {
+      eyebrow: 'Tussen de sierra en de zee',
+      paras: [
+        'Palomares is een kustdorp binnen de gemeente Cuevas del Almanzora, tussen de Sierra Almagrera en de Middellandse Zee, vlak bij Villaricos en met een lange landbouwtraditie. Vanaf hier is Vera maar een kort ritje.',
+        `Vanuit het centrum van Palomares neemt u de ${roads[0]}, gaat u verder op de ${roads[1]} en rijdt u via de ${roads[2]} Vera binnen: ${km} km en ongeveer ${min} minuten zonder verkeer, volgens OpenStreetMap.`,
+        `Palomares hoort bij de gemeente Cuevas del Almanzora: woont u in de kern zelf, kijk dan bij ${to('cuevas', 'tandarts voor Cuevas del Almanzora')}. Bent u vaker langs de kust, dan zijn er ook pagina's voor ${to('garrucha', 'patiënten uit Garrucha')} en ${to('vera', 'tandarts in Vera')}.`,
+      ],
+      clinic: 'Koral · Vera',
+      maps: 'Open de route in Google Maps',
+      all: `Bekijk ${to('areas', 'alle plaatsen in de Levante Almeriense die we bedienen')}.`,
+    },
+    faqTitle: 'Vragen van patiënten uit Palomares',
+    faqs: [
+      ['Is er een tandarts in Palomares, of moet ik naar Vera?', `Clínica Dental Koral zit in Vera (Av. de Baria, 4), niet in Palomares. Vanuit Palomares is het ${km} km via de ${join(roads, 'en')}, zo'n ${min} minuten met de auto, en met vroege en late openingstijden verliest u geen hele dag.`],
+      ['Wat is de beste tandartspraktijk bij Palomares als ik de hele dag werk?', 'De praktijk die bij uw planning past en alles helder uitlegt. Concrete redenen om ons te overwegen: we gaan drie dagen per week om 8:00 open en op maandag blijven we tot 20:00, het eerste bezoek is gratis, er is een specialist voor elk vakgebied en de 3D-diagnostiek (CBCT) gebeurt in de praktijk zelf.'],
+      ['Kan ik vroeg in de ochtend of in de avond terecht?', `Ja. Dinsdag, donderdag en vrijdag 8:00–16:00; maandag 10:00–20:00; woensdag 10:00–18:00. Maak een afspraak via +34 950 39 53 19, via WhatsApp op +34 634 68 36 39 of via de ${to('contact', 'contactpagina')}.`],
+      ['Mijn tandvlees bloedt bij het poetsen: moet ik naar de tandarts?', `Ja, laat het controleren. Bloeden is vaak het eerste teken van ontstoken tandvlees, en vroeg behandelen is eenvoudiger. Tijdens het gratis eerste bezoek beoordelen we uw tandvlees en stellen we zo nodig een ${to('periodoncia', 'parodontologische behandeling')} voor.`],
+      ['Welke implantaten gebruikt u en is er garantie?', `We werken met Straumann-implantaten met levenslange garantie en plannen elke behandeling met 3D-diagnostiek (CBCT). U krijgt bij het eerste bezoek een schriftelijke offerte, te financieren tegen 0%. Meer bij ${to('implantes', 'tandimplantaten')}.`],
+      ['Spreekt u Nederlands?', 'Ja. We behandelen in het Spaans, Engels, Duits, Nederlands en Frans, zodat u uw klachten kunt uitleggen en uw behandeling in uw eigen taal begrijpt.'],
+    ],
+  },
+  fr: {
+    metaTitle: `Dentiste près de Palomares, à ${min} min | Clínica Dental Koral`,
+    metaDesc: `Dentiste près de Palomares, à ${min} min à Vera : ouvert dès 8h et jusqu’à 20h le lundi. Parodontologie, implants Straumann et première visite gratuite.`,
+    hero: {
+      eyebrow: 'Cabinet dentaire près de Palomares',
+      h1: 'Votre dentiste près de Palomares,',
+      accent: 'au rythme de votre journée',
+      lead: `Vous cherchez un dentiste à Palomares ? La Clínica Dental Koral se trouve à Vera, à ${km} km – environ ${min} minutes en voiture. Nous ouvrons à 8h00 le mardi, le jeudi et le vendredi, et jusqu’à 20h00 le lundi, pour que le rendez-vous se cale avant ou après le travail.`,
+      note: 'Nous sommes à Vera (Av. de Baria, 4), pas à Palomares.',
+      svgTitle: 'Aube sur Palomares : la Méditerranée, la Sierra Almagrera et les sillons des champs',
+      sierra: 'Sierra Almagrera',
+    },
+    week: {
+      eyebrow: 'Votre journée, nos horaires',
+      h2: 'Votre dentiste près de Palomares, avant ou après le travail',
+      lead: 'À Palomares, entre la sierra et la mer et avec une longue tradition agricole, la journée commence tôt et ne s’arrête pas pour un rien. Voici donc nos horaires pour ce qu’ils sont : une carte des créneaux possibles pour votre rendez-vous.',
+      caption: 'Horaires hebdomadaires de la Clínica Dental Koral, de 8h00 à 20h00',
+      filter: 'Quand cela vous arrange-t-il ?',
+      windows: [['Avant le travail', 8, 10], ['À midi', 13, 15], ['En fin d’après-midi', 16, 20]],
+      fit: 'Possible le : {days}',
+      none: 'Aucun jour sur ce créneau',
+      today: 'Aujourd’hui',
+      closed: 'Fermé',
+      days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
+      short: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'],
+      weekend: 'Sam · Dim',
+      notes: [
+        ['Avant le travail', 'Le mardi, le jeudi et le vendredi, nous ouvrons à 8h00 : vous pouvez passer au cabinet avant de commencer votre journée.'],
+        ['Après la journée', 'Le lundi, nous recevons jusqu’à 20h00, pour ceux qui finissent tard au bureau ou aux champs.'],
+        ['Un mercredi sans réveil matinal', 'Le mercredi, de 10h00 à 18h00 : pas besoin de se lever tôt, et de la marge l’après-midi.'],
+      ],
+      book: 'Demandez votre créneau par WhatsApp ou par téléphone :',
+    },
+    day: {
+      eyebrow: 'Une journée ordinaire',
+      h2: 'Un rendez-vous chez le dentiste qui tient dans votre matinée',
+      stops: [
+        [dep, 'Départ de Palomares', `Par l’${join(roads, 'et l’')} : ${km} km.`],
+        [eight, 'Arrivée au cabinet', 'Le mardi, le jeudi et le vendredi, nous ouvrons à cette heure-là : vous pouvez demander le premier rendez-vous de la matinée.'],
+        ['·', 'Ce qui est prévu aujourd’hui', 'Un contrôle, un détartrage ou l’étape suivante de votre traitement. À la réservation, nous vous indiquons la durée pour que vous organisiez le reste de la journée.'],
+        [`+${min} min`, 'Retour à votre journée', `${min} minutes pour rentrer à Palomares, et la journée continue.`],
+      ],
+      alt: 'Plutôt du soir ? Le lundi, vous pouvez venir en sortant du travail : nous sommes ouverts jusqu’à 20h00.',
+    },
+    care: {
+      eyebrow: 'Des soins pratiques',
+      h2: 'Cabinet dentaire près de Palomares : gencives, implants et solutions sans détour',
+      lead: 'Quand le temps est compté, mieux vaut aller à l’essentiel : un diagnostic clair dès le premier jour, un plan écrit et uniquement les rendez-vous nécessaires.',
+      items: [
+        { tag: 'Gencives', title: 'Parodontologie et hygiène professionnelle', text: `Si vos gencives saignent au brossage ou si vos dents paraissent plus longues, n’attendez pas. Avec la ${to('periodoncia', 'parodontologie et l’hygiène professionnelle pour les patients de Palomares')}, nous prenons soin de la gencive et de l’os, la base qui tient tout le reste.` },
+        { tag: 'Implants', title: 'Implants Straumann garantis à vie', text: `La Dre Ana Padilla planifie chaque cas avec une imagerie 3D (CBCT) avant de commencer. Nous posons des ${to('implantes', 'implants dentaires Straumann')} garantis à vie, pour une solution qui dure autant que votre vie active l’exige.` },
+        { tag: 'Réhabilitation', title: 'Mastiquer de nouveau confortablement', text: `Quand plusieurs dents manquent ou que d’anciennes restaurations lâchent, la ${to('rehabilitacion', 'réhabilitation orale')} rend fonction et esthétique grâce à un plan par étapes, compatible avec votre agenda.` },
+        { tag: 'Première visite', title: 'Gratuite, avec un devis clair', text: `Examen complet, diagnostic et devis sans engagement. La plupart des traitements peuvent bénéficier d’un ${to('pricing', 'financement à 0 %')}, pour que votre bouche n’ait pas à attendre le mois prochain.` },
+      ],
+      team: `Derrière chaque traitement, une spécialiste : la Dre Ana Padilla (chirurgie et implants), la Dre Ana Soler (orthodontie et pédodontie) et la Dre Ángeles Parra (endodontie). Découvrez-les sur la page ${to('team', 'équipe du cabinet')}.`,
+    },
+    route: {
+      eyebrow: 'Entre la sierra et la mer',
+      paras: [
+        'Palomares est un hameau côtier de la commune de Cuevas del Almanzora, étiré entre la Sierra Almagrera et la Méditerranée, tout près de Villaricos et riche d’une longue tradition agricole. D’ici, Vera n’est qu’à un court trajet.',
+        `Depuis le centre de Palomares, prenez l’${roads[0]}, rejoignez l’${roads[1]} puis entrez dans Vera par l’${roads[2]} : ${km} km et environ ${min} minutes sans circulation, d’après les données OpenStreetMap.`,
+        `Palomares fait partie de la commune de Cuevas del Almanzora : si vous habitez le bourg, votre page est ${to('cuevas', 'dentiste pour Cuevas del Almanzora')}. Si vous circulez plutôt le long de la côte, voyez aussi celles pour ${to('garrucha', 'les patients de Garrucha')} et ${to('vera', 'dentiste à Vera')}.`,
+      ],
+      clinic: 'Koral · Vera',
+      maps: 'Ouvrir l’itinéraire dans Google Maps',
+      all: `Voir ${to('areas', 'toutes les communes du Levante Almeriense que nous servons')}.`,
+    },
+    faqTitle: 'Questions des patients de Palomares',
+    faqs: [
+      ['Y a-t-il un dentiste à Palomares, ou dois-je aller à Vera ?', `La Clínica Dental Koral se trouve à Vera (Av. de Baria, 4), pas à Palomares. Depuis Palomares, il y a ${km} km par l’${join(roads, 'et l’')}, environ ${min} minutes en voiture, et nos horaires tôt le matin et en soirée vous évitent de perdre une journée.`],
+      ['Quel est le meilleur cabinet dentaire près de Palomares quand on travaille toute la journée ?', 'Celui qui s’adapte à votre emploi du temps et vous explique tout clairement. Quelques raisons concrètes de nous choisir : nous ouvrons à 8h00 trois jours par semaine et jusqu’à 20h00 le lundi, la première visite est gratuite, chaque domaine a sa spécialiste et l’imagerie 3D (CBCT) se fait au cabinet même.'],
+      ['Puis-je avoir un rendez-vous tôt le matin ou en soirée ?', `Oui. Mardi, jeudi et vendredi de 8h00 à 16h00 ; lundi de 10h00 à 20h00 ; mercredi de 10h00 à 18h00. Prenez rendez-vous au +34 950 39 53 19, par WhatsApp au +34 634 68 36 39 ou via la ${to('contact', 'page de contact')}.`],
+      ['Mes gencives saignent au brossage : dois-je consulter ?', `Oui, mieux vaut vérifier. Le saignement est souvent le premier signe d’une inflammation des gencives, et le traiter tôt est plus simple. Lors de la première visite gratuite, nous examinons vos gencives et, si besoin, vous proposons un ${to('periodoncia', 'traitement parodontal')}.`],
+      ['Quels implants posez-vous et sont-ils garantis ?', `Nous posons des implants Straumann garantis à vie et planifions chaque cas avec une imagerie 3D (CBCT). Vous recevez un devis écrit dès la première visite, finançable à 0 %. Plus d’informations sur les ${to('implantes', 'implants dentaires')}.`],
+      ['Parlez-vous français ?', 'Oui. Nous recevons en espagnol, anglais, allemand, néerlandais et français, pour que vous puissiez décrire vos symptômes et comprendre votre traitement dans votre langue.'],
+    ],
+  },
+} as const)[lang];
+
+const title = copy.metaTitle;
+const description = copy.metaDesc;
+const schema = townSchema({ town: 'palomares', lang, title, description, serviceName: fill(t('areas.dentist.in'), { town: town.name }) });
+const crumbs = [{ label: t('areas.nav'), href: pathFor('areas', lang) }, { label: town.name }];
+const mapsUrl = 'https://www.google.com/maps/dir/?api=1&origin=Palomares,+Cuevas+del+Almanzora&destination=Clinica+Dental+Koral+Vera+Almeria';
+const ticks = [8, 10, 12, 14, 16, 18, 20];
+
+/* ---------- Horizon (viewBox 1440 × 460) ---------- */
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const VP: [number, number] = [640, 238];
+const FIELD_TOP = 302;
+const furrow = (xb: number) => {
+  const k = (FIELD_TOP - VP[1]) / (470 - VP[1]);
+  return `M${xb} 470L${r1(VP[0] + (xb - VP[0]) * k)} ${FIELD_TOP}`;
+};
+const furrows = Array.from({ length: 30 }, (_, i) => furrow(-860 + i * 110));
+const crops = Array.from({ length: 29 }, (_, i) => furrow(-805 + i * 110));
+const waves = [252, 262, 274, 288];
+const careIcons = ['periodoncia', 'implantes', 'rehabilitacion', 'tooth'] as const;
+---
+
+<Layout title={title} description={description} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main" class="pal-page">
+    <!-- 1 · Hero: dawn horizon -->
+    <section class="pal-hero relative isolate overflow-hidden">
+      <div class="container-k relative z-10 pt-32 text-center md:pt-44">
+        <Breadcrumbs items={crumbs} tone="light" class="[&_ol]:justify-center" />
+        <p class="eyebrow eyebrow-center mt-9" data-reveal>{copy.hero.eyebrow}</p>
+        <h1 class="mx-auto mt-5 max-w-4xl text-[2.45rem] leading-[1.04] sm:text-[3.4rem] lg:text-[4.3rem]" data-reveal style="--d:.06s">
+          {copy.hero.h1}
+          <span class="accent-italic block text-coral-deep">{copy.hero.accent}</span>
+        </h1>
+        <p class="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-slate-700 md:text-lg" data-reveal style="--d:.12s">{copy.hero.lead}</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3" data-reveal style="--d:.18s">
+          <a href="#appointment" class="btn btn-coral">
+            {t('nav.appointment')}
+            <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+          <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="btn btn-outline">WhatsApp · +34 634 68 36 39</a>
+        </div>
+        <ul class="mt-7 flex flex-wrap justify-center gap-2 text-[13px] font-medium text-ocean-900/80" data-reveal style="--d:.24s">
+          <li class="rounded-full bg-white/70 px-3.5 py-1.5 ring-1 ring-ocean-900/[0.08] tabular">{fill(t('areas.drive'), { min, km })}</li>
+          <li class="rounded-full bg-white/70 px-3.5 py-1.5 ring-1 ring-ocean-900/[0.08]">{roads.join(' → ')}</li>
+          <li class="rounded-full bg-white/70 px-3.5 py-1.5 ring-1 ring-ocean-900/[0.08]">{t('trust.7')}</li>
+        </ul>
+        <p class="mt-4 text-[13px] text-slate-500" data-reveal style="--d:.28s">{copy.hero.note}</p>
+      </div>
+
+      <div class="pal-horizon relative mt-8 aspect-[390/290] sm:aspect-[1440/460]" data-reveal="fade">
+        <svg viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" class="absolute inset-0 h-full w-full" role="img" aria-labelledby="pal-hero-t">
+          <title id="pal-hero-t">{copy.hero.svgTitle}</title>
+          <defs>
+            <radialGradient id="pal-sun-glow">
+              <stop offset="0" stop-color="#FF9AAA" stop-opacity=".55" />
+              <stop offset=".45" stop-color="#FFC9B8" stop-opacity=".25" />
+              <stop offset="1" stop-color="#FFE4E8" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="pal-sun" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FFB59F" />
+              <stop offset="1" stop-color="#F2617A" />
+            </linearGradient>
+            <linearGradient id="pal-sea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#9FE4EA" />
+              <stop offset="1" stop-color="#D5F6F8" />
+            </linearGradient>
+            <linearGradient id="pal-field" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#EFE2CF" />
+              <stop offset="1" stop-color="#FBF8F4" />
+            </linearGradient>
+            <clipPath id="pal-field-clip"><rect x="0" y={FIELD_TOP} width="1440" height="200" /></clipPath>
+          </defs>
+
+          <!-- Sky: light clouds -->
+          <g class="pal-clouds" stroke="#FFFFFF" stroke-linecap="round" fill="none">
+            <path d="M180 70H420M240 84H380" stroke-width="5" stroke-opacity=".8" />
+            <path d="M1040 52H1260M1100 66H1220" stroke-width="5" stroke-opacity=".75" />
+            <path d="M700 120H820" stroke-width="4" stroke-opacity=".6" />
+          </g>
+
+          <!-- Sun rising over the sea -->
+          <circle cx="980" cy="246" r="190" fill="url(#pal-sun-glow)" />
+          <g class="pal-sun"><circle cx="980" cy="246" r="54" fill="url(#pal-sun)" /></g>
+
+          <!-- Sierra Almagrera -->
+          <path d="M0 302V168C80 150 140 116 214 120C286 124 322 90 392 94C462 98 504 126 574 140C644 154 706 190 784 214C826 226 866 236 912 242V302Z" fill="#CFE8E9" />
+          <path d="M0 302V220C92 200 152 174 232 182C312 190 362 158 442 170C522 182 602 212 682 230C724 240 764 244 826 246V302Z" fill="#A9D3D6" />
+          <path d="M0 220C92 200 152 174 232 182C312 190 362 158 442 170C522 182 602 212 682 230C724 240 764 244 826 246" fill="none" stroke="#0B7C86" stroke-opacity=".45" stroke-width="1.6" class="draw-me" pathLength="1" style="--dd:.3s" />
+          <text x="560" y="132" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="16" fill="#0B7C86" fill-opacity=".85">{copy.hero.sierra}</text>
+
+          <!-- Sea -->
+          <rect x="760" y="242" width="680" height="64" fill="url(#pal-sea)" />
+          <path d="M760 242H1440" stroke="#0B7C86" stroke-opacity=".35" />
+          <g class="pal-waves" stroke="#FFFFFF" stroke-linecap="round">
+            {waves.map((y, i) => <path d={`M${780 + i * 30} ${y}H1440`} stroke-width={2.2 - i * 0.3} stroke-dasharray={`${26 + i * 8} ${44 + i * 10}`} stroke-opacity=".85" />)}
+          </g>
+          <text x="1400" y="282" text-anchor="end" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="15" fill="#0B7C86" fill-opacity=".8">{t('areas.sea')}</text>
+
+          <!-- Fields with furrows in perspective -->
+          <path d={`M0 ${FIELD_TOP}C320 296 620 306 900 300S1300 298 1440 304V460H0Z`} fill="url(#pal-field)" />
+          <g clip-path="url(#pal-field-clip)">
+            <g class="pal-crops" stroke="#0B7C86" stroke-opacity=".32" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0.1 13">
+              {crops.map((d) => <path d={d} />)}
+            </g>
+            <g class="draw">
+              {furrows.map((d, i) => <path d={d} fill="none" stroke={i % 3 === 0 ? '#D9A66B' : '#E6D8C6'} stroke-width={i % 3 === 0 ? 1.6 : 1.2} pathLength="1" style={`--dd:${0.2 + Math.abs(i - 14) * 0.06}s`} />)}
+            </g>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 2 · Your day / our week -->
+    <section class="section-y relative overflow-hidden bg-sand !pt-14 md:!pt-20">
+      <div class="container-k">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <p class="eyebrow" data-reveal>{copy.week.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.8rem]" data-reveal style="--d:.05s">{copy.week.h2}</h2>
+          </div>
+          <p class="text-[16px] leading-relaxed text-slate-600 lg:col-span-5" data-reveal style="--d:.1s">{copy.week.lead}</p>
+        </div>
+
+        <figure
+          class="pal-chart mt-12 rounded-[2rem] bg-white p-5 shadow-[var(--shadow-card)] ring-1 ring-ocean-900/[0.05] sm:p-8 md:p-10"
+          data-reveal
+          data-pal-chart
+          data-fit={copy.week.fit}
+          data-none={copy.week.none}
+          data-today-label={copy.week.today}
+        >
+          <figcaption class="sr-only">{copy.week.caption}</figcaption>
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p class="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-500">{copy.week.filter}</p>
+            <div class="flex flex-wrap gap-2" role="group" aria-label={copy.week.filter}>
+              {copy.week.windows.map(([label, a, b]) => (
+                <button type="button" class="pal-win-btn rounded-full border border-ocean-900/10 px-4 py-2 text-[13px] font-semibold text-ocean-900 transition-colors" data-from={a} data-to={b} aria-pressed="false">
+                  {label} <span class="tabular font-normal text-slate-500">{fmtH(a)}–{fmtH(b)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <p class="pal-fit mt-3 min-h-[1.5rem] text-[14px] font-semibold text-accent" aria-live="polite"></p>
+
+          <div class="pal-grid mt-6" style={`--ws:0%;--we:0%`}>
+            <div class="pal-row pal-axis" aria-hidden="true">
+              <span></span>
+              <div class="relative h-14">
+                <svg class="absolute inset-x-0 top-0 h-10 w-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <path d="M0 40Q50 -26 100 40" fill="none" stroke="#F2617A" stroke-opacity=".45" stroke-dasharray="1.2 2.4" vector-effect="non-scaling-stroke" stroke-width="1.5" />
+                </svg>
+                <span class="pal-noon absolute left-1/2 top-[2px] h-4 w-4 -translate-x-1/2 rounded-full bg-gradient-to-b from-[#FFB59F] to-coral shadow-[0_0_0_6px_rgba(242,97,122,0.12)]"></span>
+                {ticks.map((h) => (
+                  <span class:list={['absolute bottom-0 -translate-x-1/2 text-[11px] font-semibold text-slate-400 tabular', h % 4 !== 0 && 'max-sm:hidden']} style={`left:${pct(h)}%`}>{fmtH(h)}</span>
+                ))}
+              </div>
+            </div>
+            {HOURS.map(([o, c], i) => (
+              <div class="pal-row" data-day={i + 1} data-open={o} data-close={c} data-name={copy.week.days[i]}>
+                <span class="pal-day text-[14px] font-semibold text-ocean-900">
+                  <span class="hidden sm:inline">{copy.week.days[i]}</span><span class="sm:hidden">{copy.week.short[i]}</span>
+                </span>
+                <div class="pal-track">
+                  <span class="pal-win" aria-hidden="true"></span>
+                  <span class="pal-bar" style={`left:${pct(o)}%;width:${pct(c) - pct(o)}%;--i:${i}`}>
+                    <span class="tabular">{fmtH(o)}–{fmtH(c)}</span>
+                  </span>
+                </div>
+              </div>
+            ))}
+            <div class="pal-row">
+              <span class="pal-day text-[14px] font-semibold text-slate-400">{copy.week.weekend}</span>
+              <div class="pal-track pal-closed"><span class="text-[12px] font-semibold uppercase tracking-[0.16em] text-slate-400">{copy.week.closed}</span></div>
+            </div>
+          </div>
+        </figure>
+
+        <ul class="mt-10 grid gap-5 md:grid-cols-3">
+          {copy.week.notes.map(([h, p], i) => (
+            <li class="rounded-[1.5rem] border border-ocean-900/[0.07] bg-white/70 p-6" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class="mb-4 block h-1.5 w-12 rounded-full" style={`background:${['#2CC5D2', '#F2617A', '#D9A66B'][i]}`} aria-hidden="true"></span>
+              <h3 class="font-sans text-lg font-semibold tracking-tight">{h}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-slate-600">{p}</p>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-8 text-[15px] text-slate-600" data-reveal>
+          {copy.week.book}
+          <a href="https://wa.me/34634683639" target="_blank" rel="noopener" class="prose-link tabular">+34 634 68 36 39</a> ·
+          <a href="tel:+34950395319" class="prose-link tabular">+34 950 39 53 19</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- 3 · A sample morning -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="mx-auto max-w-3xl text-center">
+          <p class="eyebrow eyebrow-center" data-reveal>{copy.day.eyebrow}</p>
+          <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.8rem]" data-reveal style="--d:.05s">{copy.day.h2}</h2>
+        </div>
+        <ol class="pal-steps relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6" data-reveal>
+          <span class="pal-steps-line" aria-hidden="true"></span>
+          {copy.day.stops.map(([time, h, p], i) => (
+            <li class="relative pl-14 md:pl-0 md:pt-16 md:text-center">
+              <span class:list={['pal-node', i === 0 && 'is-sun', i === 3 && 'is-home']} style={`--n:${i}`} aria-hidden="true"></span>
+              {time === '·' ? (
+                <span class="flex h-[1.9rem] items-center text-accent md:justify-center" aria-hidden="true"><TreatmentIcon name="tooth" size={30} /></span>
+              ) : (
+                <p class="font-display text-[1.9rem] leading-none text-accent tabular">{time}</p>
+              )}
+              <h3 class="mt-3 font-sans text-lg font-semibold tracking-tight">{h}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-slate-600 md:mx-auto md:max-w-[16rem]">{p}</p>
+            </li>
+          ))}
+        </ol>
+        <p class="mx-auto mt-14 max-w-2xl rounded-full bg-coral-pale/60 px-6 py-4 text-center text-[15px] font-medium text-ocean-900" data-reveal>{copy.day.alt}</p>
+      </div>
+    </section>
+
+    <!-- 4 · Practical care, row by row like furrows -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div class="lg:col-span-7">
+            <p class="eyebrow" data-reveal>{copy.care.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.8rem]" data-reveal style="--d:.05s">{copy.care.h2}</h2>
+          </div>
+          <p class="text-[16px] leading-relaxed text-slate-600 lg:col-span-5" data-reveal style="--d:.1s">{copy.care.lead}</p>
+        </div>
+        <ul class="mt-14">
+          {copy.care.items.map((it, i) => (
+            <li class="pal-furrow grid gap-4 py-9 md:grid-cols-[13rem_1fr_auto] md:items-start md:gap-10" data-reveal style={`--d:${i * 0.05}s`}>
+              <svg class="pal-furrow-line" viewBox="0 0 1200 14" preserveAspectRatio="none" aria-hidden="true">
+                <path class="draw-me" pathLength="1" d="M0 4C200 1 400 7 600 4S1000 1 1200 4" />
+                <path class="draw-me" pathLength="1" d="M0 10C200 7 400 13 600 10S1000 7 1200 10" style="--dd:.35s" />
+              </svg>
+              <p class="flex items-center gap-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <span class="font-display text-[1.4rem] normal-case italic tracking-normal text-coral">{String(i + 1).padStart(2, '0')}</span>{it.tag}
+              </p>
+              <div>
+                <h3 class="text-[1.6rem] leading-snug md:text-[1.85rem]">{it.title}</h3>
+                <p class="mt-3 max-w-2xl text-[16px] leading-relaxed text-slate-600" set:html={it.text} />
+              </div>
+              <span class="hidden h-16 w-16 items-center justify-center rounded-2xl bg-white text-accent shadow-[var(--shadow-soft)] md:flex" aria-hidden="true">
+                <TreatmentIcon name={careIcons[i]} size={32} />
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-6 border-t border-ocean-900/[0.07] pt-8 text-[15px] leading-relaxed text-slate-600" data-reveal set:html={copy.care.team} />
+      </div>
+    </section>
+
+    <!-- 5 · Between the sierra and the sea: route -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <div class="container-k">
+        <div class="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-6">
+            <p class="eyebrow" data-reveal>{copy.route.eyebrow}</p>
+            <h2 class="mt-5 text-[2.1rem] leading-tight md:text-[2.7rem]" data-reveal style="--d:.05s">{fill(t('areas.route'), { town: town.name })}</h2>
+            <div class="mt-7 space-y-5 text-[16px] leading-relaxed text-slate-700">
+              {copy.route.paras.map((p, i) => <p data-reveal style={`--d:${0.08 + i * 0.05}s`} set:html={p} />)}
+            </div>
+
+            <ol class="pal-strip mt-10 flex items-start" data-reveal aria-label={`${route.from} → ${copy.route.clinic}: ${km} km, ${min} min`}>
+              <li class="pal-stop"><span class="pal-dot"></span><span class="pal-stop-label">{route.from}</span></li>
+              {roads.map((r) => (
+                <li class="pal-seg"><span class="pal-road">{r}</span></li>
+              ))}
+              <li class="pal-stop is-end"><span class="pal-dot"></span><span class="pal-stop-label">{copy.route.clinic}</span></li>
+            </ol>
+            <p class="mt-5 text-[13px] font-semibold uppercase tracking-[0.18em] text-slate-500 tabular" data-reveal>{fill(t('areas.drive'), { min, km })}</p>
+
+            <div class="mt-8 flex flex-wrap gap-3" data-reveal>
+              <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn-dark">{copy.route.maps}</a>
+              <a href="tel:+34950395319" class="btn btn-outline">{t('nav.call')}</a>
+            </div>
+          </div>
+          <div class="lg:col-span-6" data-reveal="right">
+            <div class="overflow-hidden rounded-[2rem] shadow-[var(--shadow-card)] ring-1 ring-ocean-900/[0.06]">
+              <TownRouteMap town="palomares" tone="light" seaLabel={t('areas.sea')} />
+            </div>
+            <p class="mt-4 text-[14px] text-slate-500" set:html={copy.route.all} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow="FAQ" title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <TownNearby current="palomares" />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<script>
+  // Week chart: "when suits you" filters + today's row (Madrid time).
+  document.querySelectorAll<HTMLElement>('[data-pal-chart]').forEach((chart) => {
+    const grid = chart.querySelector<HTMLElement>('.pal-grid')!;
+    const rows = [...chart.querySelectorAll<HTMLElement>('.pal-row[data-day]')];
+    const out = chart.querySelector<HTMLElement>('.pal-fit')!;
+    const buttons = [...chart.querySelectorAll<HTMLButtonElement>('.pal-win-btn')];
+    const pos = (h: number) => `${((h - 8) / 12) * 100}%`;
+    const lang = document.documentElement.lang || 'es';
+    const list = (items: string[]) => {
+      try {
+        return new Intl.ListFormat(lang, { type: 'conjunction' }).format(items);
+      } catch {
+        return items.join(', ');
+      }
+    };
+
+    const select = (btn: HTMLButtonElement | null) => {
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      if (!btn) {
+        chart.removeAttribute('data-window');
+        rows.forEach((r) => r.removeAttribute('data-match'));
+        out.textContent = '';
+        return;
+      }
+      const from = Number(btn.dataset.from);
+      const to = Number(btn.dataset.to);
+      chart.setAttribute('data-window', '');
+      grid.style.setProperty('--ws', pos(from));
+      grid.style.setProperty('--we', pos(to));
+      const fits: string[] = [];
+      rows.forEach((r) => {
+        const ok = Math.min(to, Number(r.dataset.close)) - Math.max(from, Number(r.dataset.open)) > 0;
+        r.dataset.match = String(ok);
+        if (ok) fits.push(r.dataset.name!.toLowerCase());
+      });
+      out.textContent = fits.length ? chart.dataset.fit!.replace('{days}', list(fits)) : chart.dataset.none!;
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => select(b.getAttribute('aria-pressed') === 'true' ? null : b)));
+
+    // Highlight today (the clinic is in Spain, so use Madrid time).
+    try {
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+      const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+      const day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(get('weekday')) + 1;
+      const row = rows.find((r) => Number(r.dataset.day) === day);
+      if (row) {
+        row.dataset.today = '';
+        const now = Number(get('hour')) + Number(get('minute')) / 60;
+        const day$ = row.querySelector('.pal-day');
+        const tag = document.createElement('span');
+        tag.className = 'pal-today';
+        tag.textContent = chart.dataset.todayLabel || '';
+        day$?.appendChild(tag);
+        if (now >= 8 && now <= 20) {
+          const line = document.createElement('span');
+          line.className = 'pal-now';
+          line.style.left = pos(now);
+          line.setAttribute('aria-hidden', 'true');
+          row.querySelector('.pal-track')?.appendChild(line);
+        }
+      }
+    } catch {
+      /* no Intl time zone support: skip the "today" hint */
+    }
+  });
+</script>
+
+<style is:global>
+  /* The hero is light: keep the transparent header readable on it. */
+  html:has(.pal-page) .site-header:not([data-solid='true']):not([data-menu='true']) { color: var(--color-ocean-900); }
+  html:has(.pal-page) .site-header:not([data-solid='true']):not([data-menu='true']) .logo-img { filter: none; }
+
+  .pal-hero {
+    background:
+      radial-gradient(60% 45% at 68% 62%, rgba(255, 196, 170, 0.45) 0%, transparent 70%),
+      linear-gradient(180deg, #d5f6f8 0%, #e9f7f4 34%, #fff0ea 66%, #fbf8f4 100%);
+  }
+  .pal-horizon { pointer-events: none; }
+  .pal-sun { transform: translateY(46px); transition: transform 2.6s var(--ease-out-expo) 0.3s; }
+  .pal-horizon.visible .pal-sun { transform: none; }
+  .pal-clouds { opacity: 0; transform: translateX(-24px); transition: opacity 2s ease 0.6s, transform 3s var(--ease-out-expo) 0.6s; }
+  .pal-horizon.visible .pal-clouds { opacity: 1; transform: none; }
+  .pal-waves path { stroke-dashoffset: 120; transition: stroke-dashoffset 3.2s var(--ease-out-expo) 0.8s; }
+  .pal-horizon.visible .pal-waves path { stroke-dashoffset: 0; }
+  .pal-crops { opacity: 0; transition: opacity 1.6s ease 1.4s; }
+  .pal-horizon.visible .pal-crops { opacity: 1; }
+
+  /* Week chart */
+  .pal-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+  .pal-row { display: grid; grid-template-columns: 3.4rem 1fr; align-items: center; gap: 0.75rem; transition: opacity 0.4s ease; }
+  @media (min-width: 640px) { .pal-row { grid-template-columns: 7.5rem 1fr; gap: 1.25rem; } }
+  .pal-day { display: flex; flex-direction: column; gap: 0.2rem; line-height: 1.1; }
+  .pal-track {
+    position: relative;
+    height: 3rem;
+    border-radius: 999px;
+    background-color: #f6f1ea;
+    background-image: repeating-linear-gradient(90deg, rgba(10, 31, 51, 0.07) 0 1px, transparent 1px calc(100% / 6));
+  }
+  .pal-closed { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(135deg, #f6f1ea 0 8px, #fbf8f4 8px 16px); }
+  .pal-bar {
+    position: absolute;
+    inset-block: 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2cc5d2, #0b7c86);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px -14px rgba(11, 124, 134, 0.8);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.3s var(--ease-out-expo) calc(0.2s + var(--i) * 0.1s), filter 0.4s ease;
+  }
+  .pal-row[data-open='8'] .pal-bar { background: linear-gradient(90deg, #f2617a 0%, #2cc5d2 22%, #0b7c86 100%); }
+  .pal-row[data-close='20'] .pal-bar { background: linear-gradient(90deg, #2cc5d2 0%, #0b7c86 70%, #c9304a 100%); }
+  .pal-chart.visible .pal-bar { transform: none; }
+  .pal-win { position: absolute; inset-block: -0.3rem; left: var(--ws); width: calc(var(--we) - var(--ws)); border-radius: 0.8rem; background: rgba(242, 97, 122, 0.12); outline: 1.5px dashed rgba(201, 48, 74, 0.45); opacity: 0; transition: opacity 0.35s ease, left 0.45s var(--ease-out-expo), width 0.45s var(--ease-out-expo); }
+  .pal-chart[data-window] .pal-win { opacity: 1; }
+  .pal-chart[data-window] .pal-row[data-match='false'] { opacity: 0.38; }
+  .pal-chart[data-window] .pal-row[data-match='false'] .pal-bar { filter: grayscale(1); }
+  .pal-win-btn[aria-pressed='true'] { background: var(--color-ocean-900); border-color: var(--color-ocean-900); color: #fff; }
+  .pal-win-btn[aria-pressed='true'] span { color: rgba(255, 255, 255, 0.7); }
+  .pal-win-btn:hover { border-color: var(--color-accent); }
+  .pal-today { align-self: flex-start; border-radius: 999px; background: var(--color-coral-pale); padding: 0.1rem 0.5rem; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-coral-deep); }
+  .pal-row[data-today] .pal-track { box-shadow: inset 0 0 0 1.5px rgba(242, 97, 122, 0.45); }
+  .pal-now { position: absolute; inset-block: -0.35rem; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--color-coral-deep); z-index: 2; }
+  .pal-now::before { content: ''; position: absolute; top: -4px; left: -3px; width: 8px; height: 8px; border-radius: 999px; background: var(--color-coral-deep); }
+
+  /* Sample morning */
+  .pal-steps-line { position: absolute; left: 1.15rem; top: 0.5rem; bottom: 0.5rem; width: 2px; border-radius: 2px; background: linear-gradient(180deg, #2cc5d2, #0b7c86 60%, #f2617a); transform: scaleY(0); transform-origin: top; transition: transform 1.6s var(--ease-out-expo) 0.2s; }
+  .pal-steps.visible .pal-steps-line { transform: none; }
+  @media (min-width: 768px) {
+    .pal-steps-line { left: 12.5%; right: 12.5%; top: 1.15rem; bottom: auto; width: auto; height: 2px; background: linear-gradient(90deg, #2cc5d2, #0b7c86 60%, #f2617a); transform: scaleX(0); transform-origin: left; }
+  }
+  .pal-node { position: absolute; left: 0; top: -0.2rem; width: 2.3rem; height: 2.3rem; border-radius: 999px; background: #fff; box-shadow: 0 0 0 2px #0b7c86, 0 0 0 8px rgba(44, 197, 210, 0.12); transform: scale(0.4); opacity: 0; transition: transform 0.7s var(--ease-spring) calc(0.4s + var(--n) * 0.25s), opacity 0.4s ease calc(0.4s + var(--n) * 0.25s); }
+  .pal-node::after { content: ''; position: absolute; inset: 0.65rem; border-radius: 999px; background: #0b7c86; }
+  .pal-node.is-sun { box-shadow: 0 0 0 2px #f2617a, 0 0 0 8px rgba(242, 97, 122, 0.14); }
+  .pal-node.is-sun::after { background: linear-gradient(180deg, #ffb59f, #f2617a); inset: 0.5rem; }
+  .pal-node.is-home { box-shadow: 0 0 0 2px #c9304a, 0 0 0 8px rgba(242, 97, 122, 0.12); }
+  .pal-node.is-home::after { background: #c9304a; }
+  .pal-steps.visible .pal-node { transform: none; opacity: 1; }
+  @media (min-width: 768px) { .pal-node { left: 50%; top: 0; margin-left: -1.15rem; } }
+
+  /* Furrow rows */
+  .pal-furrow { position: relative; }
+  .pal-furrow-line { position: absolute; inset-inline: 0; top: -7px; width: 100%; height: 14px; overflow: visible; }
+  .pal-furrow-line path { fill: none; stroke: #d9a66b; stroke-opacity: 0.55; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+  .pal-furrow:hover .pal-furrow-line path { stroke: #0b7c86; stroke-opacity: 0.6; }
+
+  /* Route strip */
+  .pal-strip { position: relative; isolation: isolate; }
+  .pal-stop { position: relative; display: flex; width: 4.5rem; flex-shrink: 0; flex-direction: column; align-items: center; text-align: center; }
+  .pal-dot { width: 1rem; height: 1rem; border-radius: 999px; background: #fff; box-shadow: 0 0 0 3px #2cc5d2; margin-top: 0.4rem; }
+  .pal-stop.is-end .pal-dot { box-shadow: 0 0 0 3px #f2617a; background: #f2617a; }
+  .pal-stop-label { margin-top: 0.75rem; font-size: 12px; font-weight: 600; line-height: 1.25; color: var(--color-ocean-900); }
+  .pal-seg { position: relative; flex: 1; display: flex; justify-content: center; padding-top: 0; }
+  .pal-seg::before { content: ''; position: absolute; left: -2.25rem; right: -2.25rem; top: 0.9rem; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #2cc5d2, #0b7c86); z-index: -1; }
+  .pal-seg:last-of-type::before { background: linear-gradient(90deg, #0b7c86, #f2617a); }
+  .pal-road { position: relative; border-radius: 0.5rem; background: #0b7c86; padding: 0.3rem 0.5rem; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; color: #fff; white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pal-sun, .pal-bar, .pal-node, .pal-steps-line { transform: none !important; opacity: 1 !important; transition: none !important; }
+    .pal-crops { opacity: 1; transition: none; }
+    .pal-clouds, .pal-waves path { opacity: 1; transform: none; stroke-dashoffset: 0; transition: none; }
+  }
+</style>

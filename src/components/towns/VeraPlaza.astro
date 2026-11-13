@@ -1,0 +1,136 @@
+---
+/**
+ * Vera "Plaza Mayor" plate: line drawing of a crenellated fortress-church over
+ * a perspective plaza, whitewashed blocks and the drive to the clinic pin on
+ * Av. de Baria. Draws itself when it scrolls into view; a dot then travels the
+ * street. Labels are hidden on small screens (the page shows an HTML caption).
+ */
+interface Props {
+  title: string;
+  plaza: string;
+  church: string;
+  clinic: string;
+  route: string;
+  class?: string;
+}
+
+const { title, plaza, church, clinic, route, class: className = '' } = Astro.props;
+const uid = `vp-${Math.random().toString(36).slice(2, 7)}`;
+const G = 392; // ground line
+
+/** Battlement line from x0 to x1 at wall height y (merlons rise above it). */
+const crenel = (x0: number, x1: number, y: number, mh = 11, w = 13, g = 9) => {
+  const n = Math.floor((x1 - x0 + g) / (w + g));
+  const ww = +((x1 - x0 - (n - 1) * g) / n).toFixed(2);
+  let d = '';
+  for (let i = 0; i < n; i++) d += `V${y - mh}h${ww}V${y}${i < n - 1 ? `h${g}` : ''}`;
+  return d;
+};
+
+const churchD = [
+  `M168 ${G}V206${crenel(168, 256, 206)}V${G}`, // left tower
+  `M256 ${G}V262${crenel(256, 478, 262)}V${G}`, // nave
+  `M478 ${G}V160${crenel(478, 574, 160)}V${G}`, // bell tower
+  'M168 250H256M256 274H478M478 214H574', // string courses
+  'M494 206V189a11 11 0 0 1 22 0V206ZM536 206V189a11 11 0 0 1 22 0V206Z', // belfry
+  'M208 288h6v30h-6ZM520 262h6v30h-6Z', // slits
+  `M331 ${G}V324a36 36 0 0 1 72 0V${G}M343 ${G}V330a24 24 0 0 1 48 0V${G}`, // portal
+  'M354 292a13 13 0 1 0 26 0a13 13 0 1 0-26 0', // oculus
+  `M296 ${G}V300h12V${G}M426 ${G}V300h12V${G}`, // buttresses
+];
+
+// Plaza paving in one-point perspective
+const top = [150, 584];
+const bot = [40, 700];
+const rows = [G, 404, 420, 442, 470, 504, 540];
+const at = (y: number) => {
+  const k = (y - G) / (540 - G);
+  return [top[0] + (bot[0] - top[0]) * k, top[1] + (bot[1] - top[1]) * k];
+};
+let plazaD = rows.map((y) => { const [a, b] = at(y); return `M${a.toFixed(1)} ${y}H${b.toFixed(1)}`; }).join('');
+for (let k = 0; k <= 10; k++) {
+  const xt = top[0] + ((top[1] - top[0]) * k) / 10;
+  const xb = bot[0] + ((bot[1] - bot[0]) * k) / 10;
+  plazaD += `M${xt.toFixed(1)} ${G}L${xb.toFixed(1)} 540`;
+}
+
+const houses = [
+  `M680 ${G}V318h86V${G}M700 340h14v18h-14ZM736 ${G}V368a9 9 0 0 1 18 0V${G}`,
+  `M766 ${G}V286h96V${G}M786 306h14v18h-14ZM826 306h14v18h-14ZM786 346h14v18h-14ZM780 332h44`,
+  `M1030 ${G}V332h76V${G}M1050 350h14v16h-14Z`,
+  `M1106 ${G}V350h54V${G}`,
+];
+const clinicD = `M880 ${G}V300h150V${G}M880 322H1030M898 340h64v${G - 340}M988 ${G}V340h26V${G}`;
+const palms = [
+  'M632 392c-4-40 2-80 10-104M642 288c-20-10-40-6-52 6M642 288c-14-18-34-22-48-18M642 288c8-20 26-28 44-26M642 288c20-6 40 2 50 16M642 288c4 14 0 28-8 40',
+  'M112 392c3-36-1-70-8-94M104 298c-18-8-36-2-46 10M104 298c-10-16-28-22-42-18M104 298c8-18 24-24 40-20M104 298c18-2 34 8 40 22',
+];
+const routeD = 'M367 470C470 478 560 470 640 452S820 432 900 426S990 418 1001 400';
+---
+
+<svg viewBox="0 70 1200 490" class:list={['ver-plaza', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <defs>
+    <linearGradient id={`${uid}-road`} x1="0" x2="1">
+      <stop offset="0" stop-color="#0B7C86" />
+      <stop offset="1" stop-color="#F2617A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sun and haze -->
+  <g fill="none" stroke="#0B7C86" stroke-opacity=".35">
+    <circle cx="1090" cy="112" r="34" />
+    <path d="M1020 160h140M1040 172h100M1060 184h60" stroke-opacity=".25" />
+  </g>
+
+  <g class="draw" fill="none" stroke="#0A1F33" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 300C160 270 260 286 380 262S620 236 760 258S1000 230 1160 250" stroke-opacity=".18" pathLength="1" style="--dd:0s" />
+    <path d={plazaD} stroke="#0B7C86" stroke-opacity=".45" stroke-width="1.1" pathLength="1" style="--dd:.1s" />
+    {churchD.map((d, i) => <path d={d} fill={i < 3 ? '#FBF8F4' : 'none'} pathLength="1" style={`--dd:${0.2 + i * 0.12}s`} />)}
+    {houses.map((d, i) => <path d={d} fill="#fff" stroke-opacity=".55" pathLength="1" style={`--dd:${0.6 + i * 0.12}s`} />)}
+    <path d={clinicD} fill="#fff" stroke="#0B7C86" stroke-width="2" pathLength="1" style="--dd:.9s" />
+    {palms.map((d) => <path d={d} stroke="#0B7C86" stroke-opacity=".7" pathLength="1" style="--dd:1s" />)}
+    <path d="M40 392H1160" stroke-opacity=".5" pathLength="1" style="--dd:0s" />
+  </g>
+
+  <text x="955" y="316" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="3" fill="#0B7C86">KORAL</text>
+
+  <!-- Route through the streets -->
+  <path d={routeD} fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" />
+  <g class="draw">
+    <path id={`${uid}-route`} d={routeD} fill="none" stroke={`url(#${uid}-road)`} stroke-width="3.5" stroke-linecap="round" pathLength="1" style="--dd:1.3s" />
+  </g>
+  <circle r="6" fill="#fff" stroke="#F2617A" stroke-width="2.5" class="ver-car">
+    <animateMotion dur="6s" begin="3.2s" repeatCount="indefinite" calcMode="linear"><mpath href={`#${uid}-route`} /></animateMotion>
+  </circle>
+  <circle cx="367" cy="470" r="7" fill="#FBF8F4" stroke="#0B7C86" stroke-width="3" />
+
+  <!-- Clinic pin -->
+  <g class="ver-pin">
+    <path d="M955 282c-11-13.6-17-21.8-17-30a17 17 0 0 1 34 0c0 8.2-6 16.4-17 30Z" fill="#F2617A" stroke="#fff" stroke-width="2.5" />
+    <circle cx="955" cy="252" r="6" fill="#fff" />
+  </g>
+
+  <g class="ver-plaza-lbl" font-family="Inter, system-ui, sans-serif">
+    <path d="M367 146V244" stroke="#0A1F33" stroke-opacity=".35" stroke-dasharray="2 4" />
+    <text x="367" y="132" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="21" fill="#0A1F33">{church}</text>
+    <text x="230" y="520" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="2.4" fill="#0B7C86" paint-order="stroke" stroke="#FBF8F4" stroke-width="5">{plaza.toUpperCase()}</text>
+    <text x="955" y="214" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="2.4" fill="#C9304A" paint-order="stroke" stroke="#FBF8F4" stroke-width="5">{clinic.toUpperCase()}</text>
+    <text x="760" y="486" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="22" fill="#C9304A" paint-order="stroke" stroke="#FBF8F4" stroke-width="6">{route}</text>
+  </g>
+</svg>
+
+<style is:global>
+  .ver-plaza { display: block; width: 100%; height: auto; overflow: visible; }
+  .ver-plaza .ver-pin {
+    opacity: 0;
+    transform: translateY(-26px);
+    transition: opacity 0.6s ease 2.2s, transform 0.9s var(--ease-spring) 2.2s;
+  }
+  .visible .ver-plaza .ver-pin, .ver-plaza.visible .ver-pin { opacity: 1; transform: none; }
+  @media (max-width: 640px) { .ver-plaza .ver-plaza-lbl { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ver-plaza .ver-car { display: none; }
+    .ver-plaza .ver-pin { opacity: 1; transform: none; }
+  }
+</style>

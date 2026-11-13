@@ -1,0 +1,216 @@
+---
+/**
+ * Nautical-chart rendering of the real Garrucha → clinic route: graticule with
+ * true coordinates, neatline, land hatch, depth contours off the coastline,
+ * compass rose, the route as a dashed navigation track that draws itself,
+ * waypoints where the road changes and a small vessel sailing the track.
+ */
+import { COAST, CLINIC, TOWNS } from '../../data/towns';
+import { GARRUCHA_ROUTE, GARRUCHA_CUTS, garruchaLegs } from './GarruchaLegs';
+
+interface Props {
+  title: string;
+  seaLabel: string;
+  clinicSub: string;
+  class?: string;
+}
+const { title, seaLabel, clinicSub, class: className = '' } = Astro.props;
+
+const B = { minLon: -1.872, maxLon: -1.784, minLat: 37.166, maxLat: 37.252 };
+const cos = Math.cos(((B.minLat + B.maxLat) / 2) * (Math.PI / 180));
+const W = 520;
+const H = Math.round((W * (B.maxLat - B.minLat)) / ((B.maxLon - B.minLon) * cos));
+const x = (lon: number) => +(((lon - B.minLon) / (B.maxLon - B.minLon)) * W).toFixed(1);
+const y = (lat: number) => +(((B.maxLat - lat) / (B.maxLat - B.minLat)) * H).toFixed(1);
+const line = (pts: [number, number][]) => pts.map(([lon, lat], i) => `${i ? 'L' : 'M'}${x(lon)} ${y(lat)}`).join('');
+
+const coast = COAST.map(([lat, lon]) => [x(lon), y(lat)] as [number, number]);
+const coastD = coast.map(([cx, cy], i) => `${i ? 'L' : 'M'}${cx} ${cy}`).join('');
+const seaD = `${coastD}L${W * 3} ${coast[coast.length - 1][1]}L${W * 3} ${coast[0][1]}Z`;
+const offsetCoast = (dx: number) => coast.map(([cx, cy], i) => `${i ? 'L' : 'M'}${(cx + dx).toFixed(1)} ${cy}`).join('');
+const coastXAt = (py: number) => {
+  for (let i = 1; i < coast.length; i++) {
+    const [x0, y0] = coast[i - 1];
+    const [x1, y1] = coast[i];
+    if ((py >= y0 && py <= y1) || (py <= y0 && py >= y1)) return x0 + ((py - y0) / (y1 - y0 || 1)) * (x1 - x0);
+  }
+  return W;
+};
+// Sounding marks (no values) scattered over the sea, on a jittered grid
+const soundings: [number, number][] = [];
+for (let gy = 40; gy < H - 30; gy += 34) {
+  for (let gx = 20; gx < W - 16; gx += 38) {
+    const jx = gx + (((gx * 7 + gy * 13) % 17) - 8);
+    const jy = gy + (((gx * 11 + gy * 5) % 13) - 6);
+    if (jx > coastXAt(jy) + 26) soundings.push([jx, jy]);
+  }
+}
+
+const route = GARRUCHA_ROUTE;
+const trackD = line(route.path);
+const legs = garruchaLegs();
+const wps = GARRUCHA_CUTS.slice(1, -1).map((idx, i) => ({ n: i + 1, road: legs[i + 1].road, px: x(route.path[idx][0]), py: y(route.path[idx][1]) }));
+const start = { px: x(route.path[0][0]), py: y(route.path[0][1]) };
+const clinic = { px: x(CLINIC.lon), py: y(CLINIC.lat) };
+const courseLabels = legs.slice(1, 3).map((leg) => {
+  const mid = route.path[Math.round((leg.from + leg.to) / 2)];
+  return { px: x(mid[0]), py: y(mid[1]), course: leg.course };
+});
+
+// Graticule: one line per arc-minute
+const minutes = (a: number, b: number) => {
+  const out: number[] = [];
+  for (let m = Math.ceil(a * 60); m <= Math.floor(b * 60); m++) out.push(m / 60);
+  return out;
+};
+const latLines = minutes(B.minLat, B.maxLat);
+const lonLines = minutes(Math.abs(B.maxLon), Math.abs(B.minLon)).map((v) => -v);
+const dm = (v: number, hemi: string) => {
+  const a = Math.abs(v);
+  const d = Math.floor(a + 1e-9);
+  return `${d}°${String(Math.round((a - d) * 60)).padStart(2, '0')}′${hemi}`;
+};
+// Neatline: alternating bands between graticule ticks
+const ys = [0, ...latLines.map(y).sort((a, b) => a - b), H];
+const xs = [0, ...lonLines.map(x).sort((a, b) => a - b), W];
+
+const ticks = Array.from({ length: 36 }, (_, i) => {
+  const a = (i * 10 * Math.PI) / 180;
+  const r0 = i % 9 === 0 ? 40 : 45;
+  return `M${(Math.sin(a) * r0).toFixed(1)} ${(-Math.cos(a) * r0).toFixed(1)}L${(Math.sin(a) * 48).toFixed(1)} ${(-Math.cos(a) * 48).toFixed(1)}`;
+}).join("");
+
+const kmPerPx = ((B.maxLon - B.minLon) * 111.32 * cos) / W;
+const kmPx = 1 / kmPerPx;
+
+const vera = TOWNS.vera;
+const palomares = TOWNS.palomares;
+const uid = 'gar-chart';
+const sand = '#E6D8C6';
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class:list={['gar-chart', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <defs>
+    <pattern id={`${uid}-hatch`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 0v7" stroke={sand} stroke-opacity=".07" stroke-width="1" />
+    </pattern>
+    <clipPath id={`${uid}-clip`}><rect width={W} height={H} rx="0" /></clipPath>
+    <mask id={`${uid}-reveal`} maskUnits="userSpaceOnUse" x="0" y="0" width={W} height={H}>
+      <path d={trackD} fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" pathLength="1" class="draw-me" style="--dd:.5s" />
+    </mask>
+    <radialGradient id={`${uid}-glow`}>
+      <stop offset="0" stop-color="#F2617A" stop-opacity=".45" />
+      <stop offset="1" stop-color="#F2617A" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <g clip-path={`url(#${uid}-clip)`}>
+    <!-- Land and sea -->
+    <rect width={W} height={H} fill="#143754" />
+    <rect width={W} height={H} fill={`url(#${uid}-hatch)`} />
+    <path d={seaD} fill="#0A1F33" />
+    {[12, 30, 56, 92].map((o, i) => (
+      <path d={offsetCoast(o)} fill="none" stroke="#8FE3EA" stroke-opacity={0.3 - i * 0.06} stroke-dasharray={i % 2 ? '3 5' : i === 3 ? '10 4 2 4' : undefined} />
+    ))}
+    <path d={soundings.map(([sx, sy]) => `M${sx} ${sy}h0`).join("")} stroke="#8FE3EA" stroke-opacity=".25" stroke-width="2" stroke-linecap="round" />
+    <path d={coastD} fill="none" stroke={sand} stroke-opacity=".75" stroke-width="1.4" />
+
+    <!-- Graticule -->
+    <path d={[...latLines.map((l) => `M0 ${y(l)}H${W}`), ...lonLines.map((l) => `M${x(l)} 0V${H}`)].join("")} stroke={sand} stroke-opacity=".1" />
+    <g font-family="Inter, system-ui, sans-serif" font-size="9.5" letter-spacing=".6" fill={sand} fill-opacity=".55">
+      {latLines.filter((l) => y(l) > 40).map((l) => <text x="16" y={y(l) - 4}>{dm(l, 'N')}</text>)}
+      {lonLines.map((l) => <text x={x(l) + 4} y="24">{dm(l, 'W')}</text>)}
+    </g>
+
+    <!-- Compass rose -->
+    <g transform={`translate(${W - 78} ${H - 84})`} class="gar-rose" aria-hidden="true">
+      <g class="gar-rose-ring" fill="none" stroke={sand} stroke-opacity=".4">
+        <circle r="54" />
+        <circle r="48" stroke-dasharray="1 3.2" />
+        <path d={ticks} />
+      </g>
+      <path d="M0-38 5-5 38 0 5 5 0 38-5 5-38 0-5-5Z" fill={sand} fill-opacity=".08" stroke={sand} stroke-opacity=".5" stroke-width=".8" />
+      <path d="M0-38 5-5 0 0Z M38 0 5 5 0 0Z M0 38-5 5 0 0Z M-38 0-5-5 0 0Z" fill={sand} fill-opacity=".45" />
+      <path d="M0-24 3-3 0 0Z" fill="#F2617A" />
+      <path d="M17-17 3-1-1-3Z M17 17 1 3 3-1Z M-17 17-3 1 1 3Z M-17-17-1-3-3 1Z" fill={sand} fill-opacity=".25" />
+      <text y="-60" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="13" font-style="italic" fill={sand}>N</text>
+    </g>
+
+    <text x={W - 78} y={y(37.198)} text-anchor="middle" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="15" fill="#8FE3EA" fill-opacity=".7">{seaLabel}</text>
+
+    <!-- Towns -->
+    <g font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" letter-spacing="2.2" fill={sand} fill-opacity=".75">
+      <circle cx={x(vera.lon)} cy={y(vera.lat)} r="2.5" fill={sand} />
+      <text x={x(vera.lon) - 6} y={y(vera.lat) - 8} text-anchor="middle">VERA</text>
+      <circle cx={x(palomares.lon)} cy={y(palomares.lat)} r="2.5" fill={sand} />
+      <text x={x(palomares.lon) - 8} y={y(palomares.lat) + 4} text-anchor="end">PALOMARES</text>
+      <text x={x(TOWNS.mojacar.lon)} y={H - 18} text-anchor="middle">↓ MOJÁCAR</text>
+    </g>
+
+    <!-- Track -->
+    <path d={trackD} fill="none" stroke="#0A1F33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".75" />
+    <path d={trackD} fill="none" stroke="#8FE3EA" stroke-opacity=".28" stroke-width="1.4" stroke-linejoin="round" />
+    <g mask={`url(#${uid}-reveal)`}>
+      <path id={`${uid}-track`} d={trackD} fill="none" stroke="#F2617A" stroke-width="3" stroke-dasharray="8 5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+    <path d="M7 0-5-4.5-2.5 0-5 4.5Z" fill={sand} stroke="#0A1F33" stroke-width="1" class="gar-vessel">
+      <animateMotion dur="9s" repeatCount="indefinite" begin="2.6s" rotate="auto">
+        <mpath href={`#${uid}-track`} />
+      </animateMotion>
+    </path>
+
+    <!-- Courses -->
+    <g font-family="Inter, system-ui, sans-serif" font-size="9.5" letter-spacing="1" fill="#8FE3EA" fill-opacity=".85">
+      {courseLabels.map((c) => <text x={c.px + 12} y={c.py + 3}>{String(c.course).padStart(3, '0')}°</text>)}
+    </g>
+
+    <!-- Waypoints -->
+    <g font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" letter-spacing=".8">
+      {wps.map((w) => (
+        <g class="gar-wp" style={`--d:${0.9 + w.n * 0.45}s`}>
+          <rect x={w.px - 6} y={w.py - 6} width="12" height="12" transform={`rotate(45 ${w.px} ${w.py})`} fill="#0A1F33" stroke={sand} stroke-width="1.4" />
+          <circle cx={w.px} cy={w.py} r="2.2" fill="#F2617A" />
+          <text x={w.px - 13} y={w.py + 4} text-anchor="end" fill={sand} paint-order="stroke" stroke="#143754" stroke-width="4" stroke-linejoin="round">WP{w.n} · {w.road}</text>
+        </g>
+      ))}
+    </g>
+
+    <!-- Origin: Garrucha harbour -->
+    <g>
+      <circle cx={start.px} cy={start.py} r="9" fill="none" stroke={sand} stroke-opacity=".6" />
+      <circle cx={start.px} cy={start.py} r="4" fill="#2CC5D2" />
+      <g transform={`translate(${start.px + 16} ${start.py + 14})`} fill="none" stroke={sand} stroke-width="1.3" stroke-linecap="round">
+        <path d="M6 0v12M2 3h8M0 8c1 3 3 4 6 4s5-1 6-4" />
+        <circle cx="6" cy="-1.5" r="1.5" />
+      </g>
+      <text x={start.px + 34} y={start.py + 25} font-family="Fraunces, Georgia, serif" font-style="italic" font-size="17" fill="#fff">Garrucha</text>
+    </g>
+
+    <!-- Destination: clinic -->
+    <g>
+      <circle cx={clinic.px} cy={clinic.py} r="30" fill={`url(#${uid}-glow)`} />
+      <circle cx={clinic.px} cy={clinic.py} r="10" fill="none" stroke="#F2617A" stroke-width="1.4" class="gar-pulse" />
+      <path d={`M${clinic.px} ${clinic.py + 1}c-6-7.5-9.5-12-9.5-16.6a9.5 9.5 0 0 1 19 0c0 4.6-3.5 9.1-9.5 16.6Z`} fill="#F2617A" stroke="#fff" stroke-width="1.6" />
+      <circle cx={clinic.px} cy={clinic.py - 15} r="3.4" fill="#fff" />
+      <text x={clinic.px + 16} y={clinic.py - 8} font-family="Fraunces, Georgia, serif" font-style="italic" font-size="19" fill="#fff" paint-order="stroke" stroke="#143754" stroke-width="4">Koral</text>
+      <text x={clinic.px + 16} y={clinic.py + 6} font-family="Inter, system-ui, sans-serif" font-size="8.5" letter-spacing="1.3" fill="#FF9AAA" paint-order="stroke" stroke="#143754" stroke-width="3">{clinicSub}</text>
+    </g>
+
+    <!-- Scale -->
+    <g transform={`translate(18 ${H - 46})`} font-family="Inter, system-ui, sans-serif" font-size="9" fill={sand} fill-opacity=".7">
+      <rect width={kmPx} height="4" fill={sand} fill-opacity=".7" />
+      <rect x={kmPx} width={kmPx} height="4" fill="none" stroke={sand} stroke-opacity=".7" stroke-width=".8" />
+      <text y="16">0</text>
+      <text x={kmPx} y="16" text-anchor="middle">1</text>
+      <text x={kmPx * 2} y="16" text-anchor="middle">2 km</text>
+    </g>
+  </g>
+
+  <!-- Neatline -->
+  <g aria-hidden="true">
+    <rect x=".75" y=".75" width={W - 1.5} height={H - 1.5} fill="none" stroke={sand} stroke-opacity=".5" stroke-width="1.5" />
+    {ys.slice(1).map((yy, i) => (i % 2 === 0 ? <g fill={sand} fill-opacity=".5"><rect x="0" y={ys[i]} width="5" height={yy - ys[i]} /><rect x={W - 5} y={ys[i]} width="5" height={yy - ys[i]} /></g> : null))}
+    {xs.slice(1).map((xx, i) => (i % 2 === 0 ? <g fill={sand} fill-opacity=".5"><rect y="0" x={xs[i]} height="5" width={xx - xs[i]} /><rect y={H - 5} x={xs[i]} height="5" width={xx - xs[i]} /></g> : null))}
+  </g>
+</svg>

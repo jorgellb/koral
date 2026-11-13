@@ -1,0 +1,355 @@
+---
+/**
+ * Hub for the local landing pages: every town the clinic serves, with real
+ * driving times, linking down to each town page (and back up from them).
+ */
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import FooterInfo from '../components/FooterInfo.astro';
+import Contact from '../components/Contact.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import FaqSection from '../components/ui/FaqSection.astro';
+import CoastMap from '../components/svg/CoastMap.astro';
+import CoralBranch from '../components/svg/CoralBranch.astro';
+import Bubbles from '../components/svg/Bubbles.astro';
+import Waves from '../components/svg/Waves.astro';
+import { useTranslations } from '../i18n/utils';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL, TOWN_KEYS, type Lang } from '../i18n/routes';
+import { TOWNS, fill } from '../data/towns';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const copy = ({
+  es: {
+    metaTitle: 'Dentista en el Levante Almeriense | Clínica Dental Koral',
+    metaDesc: 'Clínica dental en Vera para pacientes de Garrucha, Mojácar, Cuevas, Turre, Antas, Los Gallardos y Palomares, a menos de 20 min. Primera visita gratis.',
+    highlight: '8 pueblos a menos de 20 min',
+    townsEyebrow: 'Elige tu pueblo',
+    townsTitle: 'Tu clínica dental, cerca de casa',
+    townsDesc: 'Cada página te explica cómo llegar desde tu pueblo, cuánto se tarda y cómo te acompañamos desde la primera visita.',
+    chartEyebrow: 'Distancias reales',
+    chartTitle: 'Minutos hasta la clínica',
+    chartDesc: 'Ningún pueblo de la comarca está a más de 20 minutos en coche de la Av. de Baria, 4.',
+    chartNote: 'Tiempos en coche sin tráfico, calculados con datos de OpenStreetMap.',
+    whyEyebrow: 'Por qué vienen hasta Vera',
+    whyTitle: 'Merece la pena el trayecto',
+    why: [
+      ['Primera visita gratuita', 'Valoración completa y presupuesto claro, sin compromiso.'],
+      ['Todas las especialidades', 'Implantes, ortodoncia, endodoncia, estética, odontopediatría y más, en la misma clínica.'],
+      ['Atendemos en 5 idiomas', 'Español, inglés, alemán, neerlandés y francés.'],
+      ['Financiación al 0 %', 'Planes de pago a medida para la mayoría de tratamientos.'],
+    ],
+    hoursTitle: 'Horario pensado para venir desde fuera',
+    hoursDesc: 'Lunes hasta las 20:00; martes, jueves y viernes desde las 8:00.',
+    faqTitle: 'Dudas de pacientes de la comarca',
+    faqs: [
+      ['¿Atendéis a pacientes que no viven en Vera?', 'Sí. Muchos de nuestros pacientes vienen de Garrucha, Mojácar, Cuevas del Almanzora, Palomares, Antas, Turre y Los Gallardos. Todos están a menos de 20 minutos en coche.'],
+      ['¿Dónde está exactamente la clínica?', 'En la Av. de Baria, 4 (local), 04620 Vera, Almería. Desde la A-352 se llega directamente a la avenida.'],
+      ['¿Cuánto cuesta la primera visita?', 'Es gratuita: hacemos una valoración completa y te explicamos las opciones y el presupuesto, sin compromiso.'],
+      ['¿Puedo pedir cita por WhatsApp?', 'Sí, en el +34 634 68 36 39, o llamando al +34 950 39 53 19. También puedes usar el formulario de esta página.'],
+      ['¿En qué idiomas atendéis?', 'En español, inglés, alemán, neerlandés y francés.'],
+    ],
+  },
+  en: {
+    metaTitle: 'Dentist on the Almería Coast (Levante) | Koral Dental Clinic',
+    metaDesc: 'Dental clinic in Vera for patients from Garrucha, Mojácar, Cuevas, Turre, Antas, Los Gallardos and Palomares, under 20 min away. English spoken. Free first visit.',
+    highlight: '8 towns under 20 min away',
+    townsEyebrow: 'Choose your town',
+    townsTitle: 'Your dental clinic, close to home',
+    townsDesc: 'Each page explains how to get here from your town, how long it takes and how we look after you from the very first visit.',
+    chartEyebrow: 'Real distances',
+    chartTitle: 'Minutes to the clinic',
+    chartDesc: 'No town in the area is more than a 20-minute drive from Av. de Baria, 4.',
+    chartNote: 'Driving times without traffic, calculated with OpenStreetMap data.',
+    whyEyebrow: 'Why patients drive to Vera',
+    whyTitle: 'Worth the short trip',
+    why: [
+      ['Free first visit', 'A full assessment and a clear, no-obligation quote.'],
+      ['Every speciality', 'Implants, orthodontics, root canals, cosmetic and children’s dentistry and more, under one roof.'],
+      ['We speak 5 languages', 'Spanish, English, German, Dutch and French.'],
+      ['0% financing', 'Tailored payment plans for most treatments.'],
+    ],
+    hoursTitle: 'Opening hours that suit a short drive',
+    hoursDesc: 'Mondays until 8 pm; Tuesdays, Thursdays and Fridays from 8 am.',
+    faqTitle: 'Questions from patients in the area',
+    faqs: [
+      ['Do you see patients who don’t live in Vera?', 'Yes. Many of our patients come from Garrucha, Mojácar, Cuevas del Almanzora, Palomares, Antas, Turre and Los Gallardos, all less than a 20-minute drive away.'],
+      ['Where exactly is the clinic?', 'At Av. de Baria, 4 (ground floor), 04620 Vera, Almería. The A-352 road takes you straight onto the avenue.'],
+      ['How much is the first visit?', 'It is free: we do a full assessment and explain your options and the quote, with no obligation.'],
+      ['Can I book on WhatsApp?', 'Yes, on +34 634 68 36 39, or call +34 950 39 53 19. You can also use the form on this page.'],
+      ['Which languages do you speak?', 'Spanish, English, German, Dutch and French.'],
+    ],
+  },
+  de: {
+    metaTitle: 'Zahnarzt im Levante Almeriense | Zahnklinik Koral',
+    metaDesc: 'Zahnklinik in Vera für Patienten aus Garrucha, Mojácar, Cuevas, Turre, Antas, Los Gallardos und Palomares, unter 20 Min. entfernt. Wir sprechen Deutsch.',
+    highlight: '8 Orte in unter 20 Min.',
+    townsEyebrow: 'Wählen Sie Ihren Ort',
+    townsTitle: 'Ihre Zahnklinik in der Nähe',
+    townsDesc: 'Jede Seite zeigt Ihnen die Anfahrt aus Ihrem Ort, die Fahrzeit und wie wir Sie vom ersten Termin an begleiten.',
+    chartEyebrow: 'Echte Entfernungen',
+    chartTitle: 'Minuten bis zur Klinik',
+    chartDesc: 'Kein Ort der Region ist mehr als 20 Autominuten von der Av. de Baria, 4 entfernt.',
+    chartNote: 'Fahrzeiten ohne Verkehr, berechnet mit Daten von OpenStreetMap.',
+    whyEyebrow: 'Warum Patienten nach Vera kommen',
+    whyTitle: 'Die kurze Fahrt lohnt sich',
+    why: [
+      ['Kostenloser Ersttermin', 'Gründliche Untersuchung und klarer, unverbindlicher Kostenvoranschlag.'],
+      ['Alle Fachbereiche', 'Implantate, Kieferorthopädie, Wurzelbehandlung, Ästhetik, Kinderzahnheilkunde und mehr – alles in einer Klinik.'],
+      ['Wir sprechen 5 Sprachen', 'Spanisch, Englisch, Deutsch, Niederländisch und Französisch.'],
+      ['0 % Finanzierung', 'Individuelle Ratenpläne für die meisten Behandlungen.'],
+    ],
+    hoursTitle: 'Öffnungszeiten für die Anfahrt von außerhalb',
+    hoursDesc: 'Montags bis 20:00 Uhr; dienstags, donnerstags und freitags ab 8:00 Uhr.',
+    faqTitle: 'Fragen von Patienten aus der Region',
+    faqs: [
+      ['Behandeln Sie auch Patienten, die nicht in Vera wohnen?', 'Ja. Viele unserer Patienten kommen aus Garrucha, Mojácar, Cuevas del Almanzora, Palomares, Antas, Turre und Los Gallardos – alle weniger als 20 Autominuten entfernt.'],
+      ['Wo genau befindet sich die Klinik?', 'In der Av. de Baria, 4 (Ladenlokal), 04620 Vera, Almería. Über die A-352 gelangen Sie direkt in die Straße.'],
+      ['Was kostet der erste Termin?', 'Er ist kostenlos: Wir untersuchen Sie gründlich und erklären Ihnen Optionen und Kosten – unverbindlich.'],
+      ['Kann ich per WhatsApp einen Termin vereinbaren?', 'Ja, unter +34 634 68 36 39, oder rufen Sie +34 950 39 53 19 an. Sie können auch das Formular auf dieser Seite nutzen.'],
+      ['In welchen Sprachen behandeln Sie?', 'Auf Spanisch, Englisch, Deutsch, Niederländisch und Französisch.'],
+    ],
+  },
+  nl: {
+    metaTitle: 'Tandarts in de Levante Almeriense | Tandkliniek Koral',
+    metaDesc: 'Tandkliniek in Vera voor patiënten uit Garrucha, Mojácar, Cuevas, Turre, Antas, Los Gallardos en Palomares, binnen 20 min. Wij spreken Nederlands.',
+    highlight: '8 plaatsen binnen 20 min',
+    townsEyebrow: 'Kies uw plaats',
+    townsTitle: 'Uw tandkliniek, dicht bij huis',
+    townsDesc: 'Elke pagina laat zien hoe u vanuit uw plaats bij ons komt, hoe lang het duurt en hoe we u vanaf het eerste bezoek begeleiden.',
+    chartEyebrow: 'Echte afstanden',
+    chartTitle: 'Minuten tot de kliniek',
+    chartDesc: 'Geen enkele plaats in de regio ligt meer dan 20 minuten rijden van Av. de Baria, 4.',
+    chartNote: 'Rijtijden zonder verkeer, berekend met gegevens van OpenStreetMap.',
+    whyEyebrow: 'Waarom patiënten naar Vera komen',
+    whyTitle: 'Het korte ritje waard',
+    why: [
+      ['Gratis eerste bezoek', 'Volledig onderzoek en een duidelijke, vrijblijvende offerte.'],
+      ['Alle specialismen', 'Implantaten, orthodontie, wortelkanaalbehandeling, esthetiek, kindertandheelkunde en meer, onder één dak.'],
+      ['Wij spreken 5 talen', 'Spaans, Engels, Duits, Nederlands en Frans.'],
+      ['0% financiering', 'Betalingsplannen op maat voor de meeste behandelingen.'],
+    ],
+    hoursTitle: 'Openingstijden die passen bij een ritje',
+    hoursDesc: 'Maandag tot 20:00 uur; dinsdag, donderdag en vrijdag vanaf 8:00 uur.',
+    faqTitle: 'Vragen van patiënten uit de regio',
+    faqs: [
+      ['Behandelen jullie ook patiënten die niet in Vera wonen?', 'Ja. Veel van onze patiënten komen uit Garrucha, Mojácar, Cuevas del Almanzora, Palomares, Antas, Turre en Los Gallardos, allemaal binnen 20 minuten rijden.'],
+      ['Waar is de kliniek precies?', 'Aan de Av. de Baria, 4 (begane grond), 04620 Vera, Almería. Via de A-352 komt u direct op de laan.'],
+      ['Wat kost het eerste bezoek?', 'Het is gratis: we doen een volledig onderzoek en leggen uw opties en de offerte uit, vrijblijvend.'],
+      ['Kan ik via WhatsApp een afspraak maken?', 'Ja, via +34 634 68 36 39, of bel +34 950 39 53 19. U kunt ook het formulier op deze pagina gebruiken.'],
+      ['In welke talen behandelen jullie?', 'In het Spaans, Engels, Duits, Nederlands en Frans.'],
+    ],
+  },
+  fr: {
+    metaTitle: 'Dentiste dans le Levante Almeriense | Clinique Dentaire Koral',
+    metaDesc: 'Clinique dentaire à Vera pour les patients de Garrucha, Mojácar, Cuevas, Turre, Antas, Los Gallardos et Palomares, à moins de 20 min. Nous parlons français.',
+    highlight: '8 communes à moins de 20 min',
+    townsEyebrow: 'Choisissez votre commune',
+    townsTitle: 'Votre clinique dentaire, près de chez vous',
+    townsDesc: 'Chaque page vous explique comment venir depuis votre commune, le temps de trajet et comment nous vous accompagnons dès la première visite.',
+    chartEyebrow: 'Distances réelles',
+    chartTitle: 'Minutes jusqu’à la clinique',
+    chartDesc: 'Aucune commune de la région n’est à plus de 20 minutes en voiture de l’Av. de Baria, 4.',
+    chartNote: 'Temps de trajet en voiture sans trafic, calculés avec les données d’OpenStreetMap.',
+    whyEyebrow: 'Pourquoi venir jusqu’à Vera',
+    whyTitle: 'Le court trajet en vaut la peine',
+    why: [
+      ['Première visite gratuite', 'Bilan complet et devis clair, sans engagement.'],
+      ['Toutes les spécialités', 'Implants, orthodontie, endodontie, esthétique, soins pour enfants et plus, au même endroit.'],
+      ['Nous parlons 5 langues', 'Espagnol, anglais, allemand, néerlandais et français.'],
+      ['Financement à 0 %', 'Plans de paiement sur mesure pour la plupart des traitements.'],
+    ],
+    hoursTitle: 'Des horaires pensés pour venir de l’extérieur',
+    hoursDesc: 'Le lundi jusqu’à 20 h ; mardi, jeudi et vendredi dès 8 h.',
+    faqTitle: 'Questions des patients de la région',
+    faqs: [
+      ['Recevez-vous des patients qui n’habitent pas à Vera ?', 'Oui. Beaucoup de nos patients viennent de Garrucha, Mojácar, Cuevas del Almanzora, Palomares, Antas, Turre et Los Gallardos, tous à moins de 20 minutes en voiture.'],
+      ['Où se trouve exactement la clinique ?', 'Av. de Baria, 4 (local), 04620 Vera, Almería. La route A-352 mène directement à l’avenue.'],
+      ['Combien coûte la première visite ?', 'Elle est gratuite : nous faisons un bilan complet et vous expliquons les options et le devis, sans engagement.'],
+      ['Puis-je prendre rendez-vous par WhatsApp ?', 'Oui, au +34 634 68 36 39, ou appelez le +34 950 39 53 19. Vous pouvez aussi utiliser le formulaire de cette page.'],
+      ['Dans quelles langues nous recevez-vous ?', 'En espagnol, anglais, allemand, néerlandais et français.'],
+    ],
+  },
+} as const)[lang];
+
+const towns = TOWN_KEYS.map((k) => TOWNS[k]);
+const byTime = [...towns].sort((a, b) => a.routes[0].min - b.routes[0].min);
+const maxMin = Math.max(...towns.map((tw) => tw.routes[0].min));
+const num = (n: number) => String(n).replace('.', lang === 'en' ? '.' : ',');
+
+// Mini sparkline of each route, normalised into a 160×64 box
+const spark = (path: readonly (readonly [number, number])[]) => {
+  const xs = path.map((p) => p[0]);
+  const ys = path.map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const s = Math.max(x1 - x0, (y1 - y0) * 1.25, 1e-6);
+  return path
+    .map(([px, py], i) => `${i ? 'L' : 'M'}${(10 + ((px - x0) / s) * 140).toFixed(1)} ${(56 - ((py - y0) / s) * 1.25 * 48).toFixed(1)}`)
+    .join('');
+};
+
+const url = absoluteUrl(pathFor('areas', lang));
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': `${url}#webpage`,
+  url,
+  name: copy.metaTitle,
+  description: copy.metaDesc,
+  inLanguage: HTML_LANG[lang],
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: { '@id': `${SITE_URL}/#dentist` },
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: towns.map((tw, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: fill(t('areas.dentist.in'), { town: tw.name }),
+      url: absoluteUrl(pathFor(tw.key, lang)),
+    })),
+  },
+});
+
+const icons = [
+  'M4 6.5h16v13H4zM8 3.5v4M16 3.5v4M4 10.5h16M9 15l2 2 4-4',
+  'M12 3c-3 0-5 2.2-5 5 0 3 1.4 4.6 2 7.8.3 2 .7 4.2 1.8 4.2s1.2-2.6 1.2-4c0-.6.4-1 1-1s1 .4 1 1c0 1.4.1 4 1.2 4s1.5-2.2 1.8-4.2c.6-3.2 2-4.8 2-7.8 0-2.8-2-5-5-5-1.4 0-2 .7-3 .7S13.4 3 12 3Z',
+  'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3Z',
+  'M3 7.5h18v11H3zM3 11h18M7 15.5h4',
+];
+---
+
+<Layout title={copy.metaTitle} description={copy.metaDesc} lang={lang} schema={schema}>
+  <Navigation />
+  <main id="main">
+    <PageHero
+      badge={t('areas.nav')}
+      title={t('areas.title')}
+      subtitle={t('areas.desc')}
+      breadcrumbs={[{ label: t('areas.nav') }]}
+      highlights={[copy.highlight, t('trust.7'), t('trust.6')]}
+    >
+      <div slot="visual" class="overflow-hidden rounded-[2rem] shadow-[var(--shadow-premium)] ring-1 ring-white/10">
+        <CoastMap seaLabel={t('areas.sea')} linkLang={lang} />
+      </div>
+    </PageHero>
+
+    <!-- Towns -->
+    <section class="section-y relative overflow-hidden bg-white">
+      <CoralBranch seed={812} color="teal" class="pointer-events-none absolute -right-14 top-10 h-[300px] w-auto opacity-[0.08]" />
+      <div class="container-k relative">
+        <SectionHeading eyebrow={copy.townsEyebrow} title={copy.townsTitle} description={copy.townsDesc} split />
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {towns.map((tw, i) => {
+            const r = tw.routes[0];
+            return (
+              <li data-reveal style={`--d:${(i % 4) * 0.07}s`}>
+                <a href={pathFor(tw.key, lang)} class="group relative isolate flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-ocean-900/[0.07] bg-white p-6 shadow-[var(--shadow-soft)] transition-all duration-500 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-premium)]">
+                  <span class="absolute inset-0 -z-10 bg-ocean opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden="true"></span>
+                  <div class="flex items-start justify-between">
+                    <span class="font-display text-lg italic text-coral">{String(i + 1).padStart(2, '0')}</span>
+                    <span class="rounded-full bg-aqua-pale px-3 py-1 text-[12px] font-semibold tabular text-accent transition-colors duration-500 group-hover:bg-white/10 group-hover:text-aqua-soft">{r.min} min</span>
+                  </div>
+                  <svg viewBox="0 0 160 64" class="my-5 h-16 w-full" aria-hidden="true">
+                    <path d={spark(r.path)} fill="none" stroke="#0A1F33" stroke-opacity=".07" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" class="transition-[stroke-opacity] duration-500 group-hover:[stroke-opacity:.3]" />
+                    <path d={spark(r.path)} fill="none" stroke="#0B7C86" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="transition-colors duration-500 group-hover:stroke-[#2CC5D2]" />
+                    <circle cx={spark(r.path).split('L').pop()!.split(' ')[0]} cy={spark(r.path).split('L').pop()!.split(' ')[1]} r="4.5" fill="#F2617A" />
+                  </svg>
+                  <h3 class="text-[1.45rem] leading-tight text-ocean-900 transition-colors duration-500 group-hover:text-white">{fill(t('areas.dentist.in'), { town: tw.name })}</h3>
+                  <p class="mt-2 text-[13px] text-slate-500 transition-colors duration-500 group-hover:text-white/60">{num(r.km)} km · {r.roads.slice(0, 3).join(' · ')}</p>
+                  <span class="mt-auto pt-5 text-sm font-semibold text-accent transition-colors duration-500 group-hover:text-aqua-soft">{fill(t('areas.route'), { town: tw.name })} →</span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Minutes chart -->
+    <section class="section-y relative overflow-hidden bg-sand">
+      <div class="container-k">
+        <div class="grid gap-14 lg:grid-cols-12 lg:items-center">
+          <div class="lg:col-span-4">
+            <SectionHeading eyebrow={copy.chartEyebrow} title={copy.chartTitle} description={copy.chartDesc} />
+            <p class="mt-6 text-[13px] text-slate-500" data-reveal>{copy.chartNote}</p>
+          </div>
+          <ol class="minutes-chart space-y-3.5 lg:col-span-8" data-reveal>
+            {byTime.map((tw, i) => {
+              const r = tw.routes[0];
+              return (
+                <li>
+                  <a href={pathFor(tw.key, lang)} class="group grid grid-cols-[8.5rem_1fr] items-center gap-4 sm:grid-cols-[11rem_1fr]">
+                    <span class="truncate text-[15px] font-semibold text-ocean-900 group-hover:text-accent">{tw.name}</span>
+                    <span class="relative h-10 overflow-hidden rounded-full bg-white ring-1 ring-ocean-900/5">
+                      <span
+                        class="bar absolute inset-y-0 left-0 flex items-center justify-end rounded-full bg-gradient-to-r from-aqua to-accent pr-3 text-[12px] font-semibold tabular text-white group-hover:from-accent group-hover:to-coral-deep"
+                        style={`--w:${Math.max(18, (r.min / maxMin) * 100)}%;--i:${i}`}
+                      >
+                        {r.min} min
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section class="relative isolate overflow-hidden bg-ocean text-white">
+      <Waves fill="#FBF8F4" flip class="absolute inset-x-0 top-[-1px] z-10" />
+      <Waves fill="#FBF8F4" class="absolute inset-x-0 bottom-[-1px] z-10" />
+      <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <Bubbles count={12} seed={812} />
+        <CoralBranch seed={813} color="duo" class="absolute -right-10 bottom-20 h-[240px] w-auto opacity-25" />
+      </div>
+      <div class="container-k pb-36 pt-32 md:pb-44 md:pt-40">
+        <SectionHeading eyebrow={copy.whyEyebrow} title={copy.whyTitle} tone="dark" align="center" />
+        <ul class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {copy.why.map(([title, desc], i) => (
+            <li class="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-md" data-reveal style={`--d:${i * 0.08}s`}>
+              <span class="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-aqua/15 text-aqua ring-1 ring-aqua/25">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={icons[i]} /></svg>
+              </span>
+              <h3 class="font-sans text-lg font-semibold tracking-tight text-white">{title}</h3>
+              <p class="mt-2 text-[15px] leading-relaxed text-white/65">{desc}</p>
+            </li>
+          ))}
+        </ul>
+        <div class="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-4 rounded-[1.75rem] border border-coral/30 bg-coral/10 p-6 text-center sm:flex-row sm:text-left" data-reveal>
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-coral-deep text-white">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          </span>
+          <div>
+            <p class="font-display text-xl text-white">{copy.hoursTitle}</p>
+            <p class="mt-1 text-white/70">{copy.hoursDesc}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <FaqSection eyebrow="FAQ" title={copy.faqTitle} faqs={copy.faqs.map(([question, answer]) => ({ question, answer }))} />
+
+    <Contact />
+  </main>
+  <FooterInfo />
+</Layout>
+
+<style is:global>
+  .minutes-chart .bar {
+    width: 0;
+    transition: width 1.4s var(--ease-out-expo) calc(0.2s + var(--i) * 0.09s);
+  }
+  .minutes-chart.visible .bar { width: var(--w); }
+  @media (prefers-reduced-motion: reduce) {
+    .minutes-chart .bar { width: var(--w); transition: none; }
+  }
+</style>

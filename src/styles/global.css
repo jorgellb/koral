@@ -372,6 +372,34 @@
   transform: none;
 }
 
+/* Above the fold (first block of <main>): never start invisible, so the
+   hero text is painted at once (LCP). It still slides in, without fading. */
+main > :first-child .fade-up,
+main > :first-child [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  animation: rise-in 0.9s var(--ease-out-expo) var(--d, 0s) both;
+}
+main > :first-child [data-reveal='scale'] { animation-name: scale-in; }
+@keyframes rise-in {
+  from { transform: translateY(22px); }
+  to { transform: none; }
+}
+@keyframes scale-in {
+  from { transform: scale(0.95); }
+  to { transform: none; }
+}
+
+/* Sections below the fold are only laid out and painted when they get close
+   to the viewport: much less style/layout work on load. Only sections that
+   already clip their content, so nothing that overflows them gets cut. */
+main > :not(:first-child):is(.overflow-hidden, .overflow-clip),
+body > footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 /* SVG strokes that draw themselves when their container becomes visible.
    Every path/line inside `.draw` gets dashed, so they all need pathLength="1".
    For a single path inside other artwork, use `path.draw-me` instead. */
@@ -482,7 +510,7 @@ path.draw-me {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .fade-up, [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .fade-up, [data-reveal] { opacity: 1; transform: none; transition: none; animation: none !important; }
   .draw path, .draw line, .draw polyline, path.draw-me { stroke-dashoffset: 0 !important; transition: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

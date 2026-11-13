@@ -4,6 +4,15 @@
  * `es` is the source of truth; every other language must define the same keys.
  */
 const es = {
+  'areas.nav': 'Zonas que atendemos',
+  'areas.dentist.in': 'Dentista para {town}',
+  'areas.drive': '{min} min en coche · {km} km',
+  'areas.nearby.eyebrow': 'Pueblos cercanos',
+  'areas.nearby.title': 'También atendemos a pacientes de',
+  'areas.nearby.desc': 'Recibimos cada semana a pacientes de todo el Levante Almeriense. Elige tu pueblo para ver cómo llegar y qué podemos hacer por ti.',
+  'areas.all': 'Ver todas las zonas',
+  'areas.route': 'Cómo llegar desde {town}',
+  'areas.dentist.list': 'Dentista en',
   'slider.prev': 'Anterior',
   'slider.next': 'Siguiente',
   'slider.pause': 'Pausar el pase automático',
@@ -54,7 +63,7 @@ const es = {
 
   // Home: trust strip
   'trust.1': 'Implantes Straumann®',
-  'trust.2': 'Ortodoncia invisible Invisalign®',
+  'trust.2': 'Ortodoncia invisible con alineadores',
   'trust.3': 'Diagnóstico 3D con CBCT',
   'trust.4': 'Endodoncia con microscopio',
   'trust.5': 'Financiación al 0 %',
@@ -116,6 +125,15 @@ const es = {
 type Dict = Record<keyof typeof es, string>;
 
 const en: Dict = {
+  'areas.nav': 'Areas we serve',
+  'areas.dentist.in': 'Dentist for {town}',
+  'areas.drive': '{min} min drive · {km} km',
+  'areas.nearby.eyebrow': 'Nearby towns',
+  'areas.nearby.title': 'We also welcome patients from',
+  'areas.nearby.desc': 'Every week we see patients from all over the Levante Almeriense. Choose your town to see how to get here and what we can do for you.',
+  'areas.all': 'See all areas',
+  'areas.route': 'How to get here from {town}',
+  'areas.dentist.list': 'Dentist for',
   'slider.prev': 'Previous',
   'slider.next': 'Next',
   'slider.pause': 'Pause autoplay',
@@ -161,7 +179,7 @@ const en: Dict = {
   'home.scroll': 'Discover more',
 
   'trust.1': 'Straumann® implants',
-  'trust.2': 'Invisalign® clear aligners',
+  'trust.2': 'Clear aligner orthodontics',
   'trust.3': '3D CBCT diagnosis',
   'trust.4': 'Microscope-assisted root canals',
   'trust.5': '0% financing',
@@ -207,13 +225,22 @@ const en: Dict = {
   'footer.closed': 'Sat & Sun',
   'footer.closed.value': 'Closed',
 
-  'meta.default.description': 'Koral Dental Clinic in Vera, Almería: Straumann implants, Invisalign, cosmetic dentistry and children’s dentistry. English-speaking team. Free first visit.',
+  'meta.default.description': 'Koral Dental Clinic in Vera, Almería: Straumann implants, clear aligners, cosmetic dentistry and children’s dentistry. English-speaking team. Free first visit.',
   'contact.title.meta': 'Contact & appointments | Koral Dental Clinic Vera',
   'contact.meta.description': 'Contact Koral Dental Clinic in Vera, Almería: phone, WhatsApp, email and online form. English-speaking team and a free first visit.',
   'legal.meta.description': 'Legal information for Koral Dental Clinic, a dental clinic in Vera (Almería, Spain).',
 };
 
 const de: Dict = {
+  'areas.nav': 'Unser Einzugsgebiet',
+  'areas.dentist.in': 'Zahnarzt für {town}',
+  'areas.drive': '{min} Min. mit dem Auto · {km} km',
+  'areas.nearby.eyebrow': 'Orte in der Nähe',
+  'areas.nearby.title': 'Wir behandeln auch Patienten aus',
+  'areas.nearby.desc': 'Jede Woche kommen Patienten aus dem ganzen Levante Almeriense zu uns. Wählen Sie Ihren Ort, um Anfahrt und Leistungen zu sehen.',
+  'areas.all': 'Alle Orte ansehen',
+  'areas.route': 'Anfahrt aus {town}',
+  'areas.dentist.list': 'Zahnarzt für',
   'slider.prev': 'Zurück',
   'slider.next': 'Weiter',
   'slider.pause': 'Automatisches Weiterblättern anhalten',
@@ -259,7 +286,7 @@ const de: Dict = {
   'home.scroll': 'Mehr entdecken',
 
   'trust.1': 'Straumann®-Implantate',
-  'trust.2': 'Unsichtbare Zahnspange Invisalign®',
+  'trust.2': 'Unsichtbare Zahnspange mit Alignern',
   'trust.3': '3D-Diagnostik mit DVT',
   'trust.4': 'Wurzelbehandlung unter dem Mikroskop',
   'trust.5': '0 % Finanzierung',
@@ -305,13 +332,22 @@ const de: Dict = {
   'footer.closed': 'Sa. & So.',
   'footer.closed.value': 'Geschlossen',
 
-  'meta.default.description': 'Zahnklinik Koral in Vera, Almería: Straumann-Implantate, Invisalign, ästhetische Zahnmedizin und Kinderzahnheilkunde. Deutschsprachiges Team, kostenloser Ersttermin.',
+  'meta.default.description': 'Zahnklinik Koral in Vera, Almería: Straumann-Implantate, transparente Aligner, ästhetische Zahnmedizin und Kinderzahnheilkunde. Deutschsprachiges Team, kostenloser Ersttermin.',
   'contact.title.meta': 'Kontakt & Termin | Zahnklinik Koral in Vera',
   'contact.meta.description': 'Kontaktieren Sie die Zahnklinik Koral in Vera, Almería: Telefon, WhatsApp, E-Mail und Formular. Wir sprechen Deutsch. Kostenloser Ersttermin.',
   'legal.meta.description': 'Rechtliche Informationen der Zahnklinik Koral in Vera (Almería, Spanien).',
 };
 
 const nl: Dict = {
+  'areas.nav': 'Ons werkgebied',
+  'areas.dentist.in': 'Tandarts voor {town}',
+  'areas.drive': '{min} min rijden · {km} km',
+  'areas.nearby.eyebrow': 'Plaatsen in de buurt',
+  'areas.nearby.title': 'We ontvangen ook patiënten uit',
+  'areas.nearby.desc': 'Elke week behandelen we patiënten uit de hele Levante Almeriense. Kies uw plaats om de route en onze behandelingen te zien.',
+  'areas.all': 'Alle plaatsen bekijken',
+  'areas.route': 'Route vanuit {town}',
+  'areas.dentist.list': 'Tandarts voor',
   'slider.prev': 'Vorige',
   'slider.next': 'Volgende',
   'slider.pause': 'Automatisch afspelen pauzeren',
@@ -357,7 +393,7 @@ const nl: Dict = {
   'home.scroll': 'Ontdek meer',
 
   'trust.1': 'Straumann®-implantaten',
-  'trust.2': 'Onzichtbare beugel Invisalign®',
+  'trust.2': 'Onzichtbare beugel met aligners',
   'trust.3': '3D-diagnose met CBCT',
   'trust.4': 'Wortelkanaalbehandeling met microscoop',
   'trust.5': '0% financiering',
@@ -403,13 +439,22 @@ const nl: Dict = {
   'footer.closed': 'Za & zo',
   'footer.closed.value': 'Gesloten',
 
-  'meta.default.description': 'Tandkliniek Koral in Vera, Almería: Straumann-implantaten, Invisalign, esthetische tandheelkunde en kindertandheelkunde. Nederlandstalig team, gratis eerste bezoek.',
+  'meta.default.description': 'Tandkliniek Koral in Vera, Almería: Straumann-implantaten, transparante aligners, esthetische tandheelkunde en kindertandheelkunde. Nederlandstalig team, gratis eerste bezoek.',
   'contact.title.meta': 'Contact & afspraak | Tandkliniek Koral in Vera',
   'contact.meta.description': 'Neem contact op met Tandkliniek Koral in Vera, Almería: telefoon, WhatsApp, e-mail en formulier. Wij spreken Nederlands. Gratis eerste bezoek.',
   'legal.meta.description': 'Juridische informatie van Tandkliniek Koral in Vera (Almería, Spanje).',
 };
 
 const fr: Dict = {
+  'areas.nav': 'Zones desservies',
+  'areas.dentist.in': 'Dentiste pour {town}',
+  'areas.drive': '{min} min en voiture · {km} km',
+  'areas.nearby.eyebrow': 'Villes voisines',
+  'areas.nearby.title': 'Nous accueillons aussi des patients de',
+  'areas.nearby.desc': 'Chaque semaine, nous recevons des patients de tout le Levante Almeriense. Choisissez votre commune pour voir comment venir et ce que nous pouvons faire pour vous.',
+  'areas.all': 'Voir toutes les zones',
+  'areas.route': 'Venir depuis {town}',
+  'areas.dentist.list': 'Dentiste pour',
   'slider.prev': 'Précédent',
   'slider.next': 'Suivant',
   'slider.pause': 'Mettre en pause le défilement',
@@ -455,7 +500,7 @@ const fr: Dict = {
   'home.scroll': 'Découvrir',
 
   'trust.1': 'Implants Straumann®',
-  'trust.2': 'Orthodontie invisible Invisalign®',
+  'trust.2': 'Orthodontie invisible par aligneurs',
   'trust.3': 'Diagnostic 3D par CBCT',
   'trust.4': 'Endodontie au microscope',
   'trust.5': 'Financement à 0 %',
@@ -501,7 +546,7 @@ const fr: Dict = {
   'footer.closed': 'Sam. & dim.',
   'footer.closed.value': 'Fermé',
 
-  'meta.default.description': 'Clinique Dentaire Koral à Vera, Almería : implants Straumann, Invisalign, esthétique dentaire et soins pour enfants. Équipe francophone, première visite gratuite.',
+  'meta.default.description': 'Clinique Dentaire Koral à Vera, Almería : implants Straumann, aligneurs transparents, esthétique dentaire et soins pour enfants. Équipe francophone, première visite gratuite.',
   'contact.title.meta': 'Contact & rendez-vous | Clinique Koral à Vera',
   'contact.meta.description': 'Contactez la Clinique Dentaire Koral à Vera, Almería : téléphone, WhatsApp, e-mail et formulaire. Nous parlons français. Première visite gratuite.',
   'legal.meta.description': 'Informations légales de la Clinique Dentaire Koral à Vera (Almería, Espagne).',

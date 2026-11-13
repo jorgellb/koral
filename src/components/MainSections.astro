@@ -19,13 +19,6 @@ const stats = [
 
 const trust = ['trust.1', 'trust.2', 'trust.3', 'trust.4', 'trust.5', 'trust.6', 'trust.7'].map((k) => t(k as any));
 
-const heroAlt: Record<string, string> = {
-  es: 'Niña aprendiendo a cepillarse los dientes con una dentista en Clínica Dental Koral, Vera',
-  en: 'Girl learning to brush her teeth with a dentist at Koral Dental Clinic, Vera',
-  de: 'Mädchen lernt mit einer Zahnärztin der Zahnklinik Koral in Vera das Zähneputzen',
-  nl: 'Meisje leert tandenpoetsen met een tandarts van Tandkliniek Koral in Vera',
-  fr: 'Fillette apprenant à se brosser les dents avec une dentiste de la Clinique Koral à Vera',
-};
 const doctorAlt: Record<string, string> = {
   es: 'Dra. Ana Padilla, directora de Clínica Dental Koral en Vera (Almería)',
   en: 'Dr Ana Padilla, clinical director of Koral Dental Clinic in Vera (Almería)',
@@ -42,6 +35,7 @@ const doctorAlt: Record<string, string> = {
     <Picture
       src="/Slider imagen/clinica-koral-slider.jpg"
       webp={[
+        { src: '/Slider imagen/clinica-koral-slider-640.webp', w: 640 },
         { src: '/Slider imagen/clinica-koral-slider-960.webp', w: 960 },
         { src: '/Slider imagen/clinica-koral-slider.webp', w: 1920 },
       ]}
@@ -185,6 +179,11 @@ const doctorAlt: Record<string, string> = {
         <div class="relative overflow-hidden rounded-t-[999px] rounded-b-[2.5rem] bg-white shadow-[var(--shadow-premium)] ring-1 ring-ocean-900/5">
           <Picture
             src="/Presentacion/Ana-clinica-koral-vera-almeria.jpg"
+            webp={[
+              { src: '/Presentacion/Ana-clinica-koral-vera-almeria-480.webp', w: 480 },
+              { src: '/Presentacion/Ana-clinica-koral-vera-almeria.webp', w: 682 },
+            ]}
+            sizes="(min-width: 1024px) 460px, 90vw"
             alt={doctorAlt[lang]}
             width={682}
             height={948}

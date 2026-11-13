@@ -1,0 +1,147 @@
+---
+/**
+ * Isometric mini-map of the real drive from Vera's old town to the clinic
+ * (route geometry from src/data/towns.ts), on a block grid with extruded
+ * whitewashed houses placed away from the road.
+ */
+import { TOWNS } from '../../data/towns';
+
+interface Props {
+  title: string;
+  from: string;
+  to: string;
+  class?: string;
+}
+
+const { title, from, to, class: className = '' } = Astro.props;
+const route = TOWNS.vera.routes[0];
+const pts = route.path;
+const [lonA, latA] = pts[0];
+const [lonB, latB] = pts[pts.length - 1];
+const lonM = (lonA + lonB) / 2;
+const latM = (latA + latB) / 2;
+const cosM = Math.cos((latM * Math.PI) / 180);
+const km = ([lon, lat]: [number, number]): [number, number] => [(lon - lonM) * cosM * 111.32, (lat - latM) * 111.32];
+
+const W = 560;
+const H = 300;
+const S = 300; // px per km
+const C30 = Math.cos(Math.PI / 6);
+// east → up-right, north → up-left
+const iso = (e: number, n: number, h = 0): [number, number] => [
+  +(W / 2 + (e - n) * C30 * S).toFixed(1),
+  +(H / 2 + 14 - (e + n) * 0.5 * S - h).toFixed(1),
+];
+const poly = (p: [number, number][]) => p.map((q) => q.join(',')).join(' ');
+
+const road = pts.map((p) => km(p));
+const roadD = road.map(([e, n], i) => `${i ? 'L' : 'M'}${iso(e, n).join(' ')}`).join('');
+
+// Distance from a point to the route polyline (km)
+const distToRoad = (e: number, n: number) => {
+  let best = Infinity;
+  for (let i = 1; i < road.length; i++) {
+    const [x1, y1] = road[i - 1];
+    const [x2, y2] = road[i];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const t = Math.max(0, Math.min(1, ((e - x1) * dx + (n - y1) * dy) / (dx * dx + dy * dy || 1)));
+    best = Math.min(best, Math.hypot(e - (x1 + t * dx), n - (y1 + t * dy)));
+  }
+  return best;
+};
+const rnd = (i: number, j: number) => {
+  const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+// Grid lines
+const R = 0.66;
+const STEP = 0.12;
+let gridD = '';
+for (let v = -R; v <= R + 1e-6; v += STEP) {
+  gridD += `M${iso(v, -R).join(' ')}L${iso(v, R).join(' ')}M${iso(-R, v).join(' ')}L${iso(R, v).join(' ')}`;
+}
+
+// Blocks
+type Box = { e: number; n: number; h: number };
+const boxes: Box[] = [];
+for (let i = 0; i < 11; i++) {
+  for (let j = 0; j < 11; j++) {
+    const e = -R + STEP / 2 + i * STEP;
+    const n = -R + STEP / 2 + j * STEP;
+    const [sx, sy] = iso(e, n);
+    if (sx < 30 || sx > W - 30 || sy < 40 || sy > H - 24) continue;
+    if (distToRoad(e, n) < 0.075) continue;
+    if (rnd(i, j) > 0.42) continue;
+    boxes.push({ e, n, h: 8 + rnd(j, i) * 18 });
+  }
+}
+boxes.sort((a, b) => b.e + b.n - (a.e + a.n));
+const s = 0.036;
+const faces = boxes.map(({ e, n, h }) => {
+  const A = [e - s, n - s] as const;
+  const B = [e + s, n - s] as const;
+  const C = [e + s, n + s] as const;
+  const D = [e - s, n + s] as const;
+  return {
+    south: poly([iso(...A), iso(...B), iso(...B, h), iso(...A, h)]),
+    west: poly([iso(...D), iso(...A), iso(...A, h), iso(...D, h)]),
+    top: poly([iso(...A, h), iso(...B, h), iso(...C, h), iso(...D, h)]),
+  };
+});
+
+const start = iso(...road[0]);
+const end = iso(...road[road.length - 1]);
+// Little church block at the start (Plaza Mayor)
+const ch = { e: road[0][0] - 0.02, n: road[0][1] + 0.07, h: 34 };
+const cs = 0.045;
+const church = {
+  south: poly([iso(ch.e - cs, ch.n - cs), iso(ch.e + cs, ch.n - cs), iso(ch.e + cs, ch.n - cs, ch.h), iso(ch.e - cs, ch.n - cs, ch.h)]),
+  west: poly([iso(ch.e - cs, ch.n + cs), iso(ch.e - cs, ch.n - cs), iso(ch.e - cs, ch.n - cs, ch.h), iso(ch.e - cs, ch.n + cs, ch.h)]),
+  top: poly([iso(ch.e - cs, ch.n - cs, ch.h), iso(ch.e + cs, ch.n - cs, ch.h), iso(ch.e + cs, ch.n + cs, ch.h), iso(ch.e - cs, ch.n + cs, ch.h)]),
+};
+const uid = `vi-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class:list={['ver-iso', className]} role="img" aria-labelledby={`${uid}-t`}>
+  <title id={`${uid}-t`}>{title}</title>
+  <path d={gridD} fill="none" stroke="#0B7C86" stroke-opacity=".13" stroke-width="1" />
+  <g stroke="#0A1F33" stroke-opacity=".16" stroke-width=".8" stroke-linejoin="round">
+    {faces.map((f) => (
+      <g>
+        <polygon points={f.south} fill="#E6D8C6" />
+        <polygon points={f.west} fill="#F3ECE3" />
+        <polygon points={f.top} fill="#fff" />
+      </g>
+    ))}
+  </g>
+  <path d={roadD} fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+  <g class="draw">
+    <path id={`${uid}-r`} d={roadD} fill="none" stroke="#0B7C86" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" pathLength="1" style="--dd:.3s" />
+  </g>
+  <circle r="5" fill="#fff" stroke="#F2617A" stroke-width="2.5" class="ver-car">
+    <animateMotion dur="4s" begin="2.4s" repeatCount="indefinite"><mpath href={`#${uid}-r`} /></animateMotion>
+  </circle>
+  <g stroke="#0A1F33" stroke-opacity=".3" stroke-width=".9" stroke-linejoin="round">
+    <polygon points={church.south} fill="#9ADDE3" />
+    <polygon points={church.west} fill="#D5F6F8" />
+    <polygon points={church.top} fill="#fff" />
+  </g>
+  <circle cx={start[0]} cy={start[1]} r="6.5" fill="#FBF8F4" stroke="#0B7C86" stroke-width="3" />
+  <g>
+    <circle cx={end[0]} cy={end[1]} r="13" fill="none" stroke="#F2617A" stroke-width="1.5" class="ver-iso-pulse" />
+    <path d={`M${end[0]} ${end[1] + 1}c-8-10-12-16-12-22a12 12 0 0 1 24 0c0 6-4 12-12 22Z`} fill="#F2617A" stroke="#fff" stroke-width="2" />
+    <circle cx={end[0]} cy={end[1] - 20} r="4.2" fill="#fff" />
+  </g>
+  <g font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" letter-spacing="1.6" paint-order="stroke" stroke="#FBF8F4" stroke-width="5" stroke-linejoin="round">
+    <text x={start[0] - 8} y={start[1] + 36} fill="#0B7C86">{from.toUpperCase()}</text>
+    <text x={end[0]} y={end[1] - 40} text-anchor="end" fill="#C9304A">{to.toUpperCase()}</text>
+  </g>
+</svg>
+
+<style is:global>
+  .ver-iso { display: block; width: 100%; height: auto; }
+  .ver-iso .ver-iso-pulse { transform-box: fill-box; transform-origin: center; animation: pulse-ring 2.6s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+  @media (prefers-reduced-motion: reduce) { .ver-iso .ver-car, .ver-iso .ver-iso-pulse { display: none; } }
+</style>

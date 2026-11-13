@@ -1,13 +1,14 @@
 ---
 import { useTranslations, getLangFromUrl } from '../i18n/utils';
-import { pathFor } from '../i18n/routes';
+import { pathFor, TOWN_KEYS } from '../i18n/routes';
+import { TOWNS, fill } from '../data/towns';
 import SectionHeading from './ui/SectionHeading.astro';
 import CoastMap from './svg/CoastMap.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const towns = ['Vera', 'Garrucha', 'Mojácar', 'Cuevas del Almanzora', 'Turre', 'Antas', 'Los Gallardos', 'Palomares'];
+const towns = TOWN_KEYS.map((k) => TOWNS[k]);
 ---
 
 <section class="section-y relative overflow-hidden bg-sand !pt-12">
@@ -18,7 +19,19 @@ const towns = ['Vera', 'Garrucha', 'Mojácar', 'Cuevas del Almanzora', 'Turre', 
 
         <ul class="mt-8 flex flex-wrap gap-2" data-reveal style="--d:.1s">
           {towns.map((town, i) => (
-            <li class:list={['rounded-full border px-4 py-2 text-sm', i === 0 ? 'border-coral bg-coral text-white' : 'border-ocean-900/10 bg-white text-ocean-900']}>{town}</li>
+            <li>
+              <a
+                href={pathFor(town.key, lang)}
+                title={`${fill(t('areas.dentist.in'), { town: town.name })} · ${fill(t('areas.drive'), { min: town.routes[0].min, km: town.routes[0].km })}`}
+                class:list={[
+                  'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all hover:-translate-y-0.5',
+                  i === 0 ? 'border-coral bg-coral text-white hover:bg-coral-deep' : 'border-ocean-900/10 bg-white text-ocean-900 hover:border-accent hover:text-accent',
+                ]}
+              >
+                {town.name}
+                <span class:list={['text-[11px] tabular', i === 0 ? 'text-white/80' : 'text-slate-400']}>{town.routes[0].min}′</span>
+              </a>
+            </li>
           ))}
         </ul>
 
@@ -39,14 +52,14 @@ const towns = ['Vera', 'Garrucha', 'Mojácar', 'Cuevas del Almanzora', 'Turre', 
         </div>
 
         <div class="mt-8 flex flex-wrap gap-3" data-reveal style="--d:.3s">
-          <a href={pathFor('contact', lang)} class="btn btn-dark">{t('nav.contact')}</a>
-          <a href="tel:+34950395319" class="btn btn-outline tabular">+34 950 39 53 19</a>
+          <a href={pathFor('areas', lang)} class="btn btn-dark">{t('areas.all')}</a>
+          <a href={pathFor('contact', lang)} class="btn btn-outline">{t('nav.contact')}</a>
         </div>
       </div>
 
       <div class="lg:col-span-6" data-reveal="scale">
         <div class="relative mx-auto max-w-[520px] overflow-hidden rounded-[2.25rem] shadow-[var(--shadow-premium)] ring-1 ring-ocean-900/10">
-          <CoastMap seaLabel={t('areas.sea')} />
+          <CoastMap seaLabel={t('areas.sea')} linkLang={lang} />
         </div>
       </div>
     </div>

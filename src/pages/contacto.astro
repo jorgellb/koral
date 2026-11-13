@@ -1,4 +1,5 @@
 ---
+import { TOWNS } from '../data/towns';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import FooterInfo from '../components/FooterInfo.astro';
@@ -11,7 +12,7 @@ import Waves from '../components/svg/Waves.astro';
 import TreatmentIcon from '../components/svg/TreatmentIcon.astro';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
 import { consentHtml } from '../i18n/consent';
-import { pathFor, absoluteUrl, HTML_LANG, SITE_URL, type TreatmentKey } from '../i18n/routes';
+import { pathFor, absoluteUrl, HTML_LANG, SITE_URL, type TreatmentKey, TOWN_KEYS } from '../i18n/routes';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -117,7 +118,7 @@ const legalRows = [
 ] as const;
 
 const featured: TreatmentKey[] = ['implantes', 'ortodoncia', 'estetica', 'odontopediatria'];
-const towns = ['Vera', 'Garrucha', 'Mojácar', 'Cuevas del Almanzora', 'Turre', 'Antas', 'Los Gallardos', 'Palomares'];
+const towns = TOWN_KEYS.map((k) => ({ key: k, name: TOWNS[k].name }));
 
 const field =
   'w-full rounded-2xl border border-ocean-900/10 bg-sand px-5 py-3.5 text-[15px] text-ocean-900 outline-none transition-all placeholder:text-slate-400 hover:border-ocean-900/20 focus:border-accent focus:bg-white focus:ring-4 focus:ring-aqua/15';
@@ -346,7 +347,7 @@ const pageSchema = JSON.stringify({
             <SectionHeading eyebrow={t('areas.eyebrow')} title={t('areas.title')} description={t('areas.desc')} tone="dark" />
             <ul class="mt-8 flex flex-wrap gap-2" data-reveal style="--d:.1s">
               {towns.map((town, i) => (
-                <li class:list={['rounded-full px-4 py-2 text-sm', i === 0 ? 'bg-coral-deep text-white' : 'border border-white/15 bg-white/[0.05] text-white/80']}>{town}</li>
+                <li><a href={pathFor(town.key, lang)} class:list={['inline-block rounded-full px-4 py-2 text-sm transition-colors', i === 0 ? 'bg-coral-deep text-white hover:bg-coral' : 'border border-white/15 bg-white/[0.05] text-white/80 hover:border-aqua hover:text-white']}>{town.name}</a></li>
               ))}
             </ul>
             <address class="mt-10 flex items-start gap-4 not-italic" data-reveal style="--d:.15s">
